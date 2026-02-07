@@ -3,16 +3,12 @@
 
 import Image from 'next/image'
 import { useState } from 'react'
+import { Media } from '@/payload-types'
 
-type MediaItem = {
-  id: string | number
-  url: string
-  alt?: string | null
-  filename?: string
-}
+type MediaWithUrl = Media & { url: string }
 
-export default function GalleryGrid({ items }: { items: MediaItem[] }) {
-  const [selectedImage, setSelectedImage] = useState<MediaItem | null>(null)
+export default function GalleryGrid({ items }: { items: MediaWithUrl[] }) {
+  const [selectedImage, setSelectedImage] = useState<MediaWithUrl | null>(null)
 
   return (
     <>
