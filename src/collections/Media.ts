@@ -15,6 +15,13 @@ import { authenticated } from '../access/authenticated'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+type MediaWithExternalVideo = {
+  id: string | number
+  url?: string | null
+  isExternalVideo?: boolean | null
+  [key: string]: any
+}
+
 export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
@@ -144,9 +151,9 @@ export const Media: CollectionConfig = {
           const media = await payload.findByID({
             collection: 'media',
             id,
-          })
+          }) as MediaWithExternalVideo
 
-          if (media.isExternalVideo && media.url) {
+          if (media?.isExternalVideo && media?.url) {
             // Extract blob URL and delete
             // Note: You'll need to use @vercel/blob's del function
             // const { del } = await import('@vercel/blob')
