@@ -7,6 +7,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
+import { put } from '@vercel/blob'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
@@ -37,6 +38,14 @@ export const Media: CollectionConfig = {
           return [...rootFeatures, FixedToolbarFeature(), InlineToolbarFeature()]
         },
       }),
+    },
+    {
+      name: 'isExternalVideo',
+      type: 'checkbox',
+      admin: {
+        description: 'This file is stored on Vercel Blob (for large videos)',
+        readOnly: true,
+      },
     },
   ],
   upload: {
@@ -75,6 +84,81 @@ export const Media: CollectionConfig = {
         width: 1200,
         height: 630,
         crop: 'center',
+      },
+    ],
+  },
+  hooks: {
+    beforeChange: [
+      async ({ data, req, operation }) => {
+        // Only handle video uploads on create
+        if (operation === 'create' && req.file && req.file.mimetype?.startsWith('video/')) {
+          const file = req.file
+
+          // Check if file is too large for serverless (4.5MB limit)
+          const sizeLimit = 4.5 * 1024 * 1024 // 4.5MB
+
+          if (file.size > sizeLimit) {
+            try {
+              // Generate unique filename
+              const timestamp = Date.now()
+              const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
+              const filename = `${timestamp}-${safeFilename}`
+
+              console.log(`Uploading large video (${(file.size / 1024 / 1024).toFixed(2)}MB) to Vercel Blob...`)
+
+              // Upload to Vercel Blob
+              const blob = await put(filename, file.data, {
+                access: 'public',
+                token: process.env.BLOB_READ_WRITE_TOKEN!,
+                contentType: file.mimetype,
+              })
+
+              console.log(`Successfully uploaded to Blob: ${blob.url}`)
+
+              // Update data with Blob URL
+              data.url = blob.url
+              data.filename = safeFilename
+              data.mimeType = file.mimetype
+              data.filesize = file.size
+              data.isExternalVideo = true
+
+              // Prevent Payload from saving the file locally
+              delete req.file
+            } catch (error) {
+              console.error('Blob upload error:', error)
+              throw new Error(
+                `Failed to upload large video file: ${error instanceof Error ? error.message : 'Unknown error'}`
+              )
+            }
+          }
+        }
+
+        return data
+      },
+    ],
+    beforeDelete: [
+      async ({ req, id }) => {
+        // Optional: Delete from Vercel Blob when deleting from Payload
+        try {
+          const payload = req.payload
+          const media = await payload.findByID({
+            collection: 'media',
+            id,
+          })
+
+          if (media.isExternalVideo && media.url) {
+            // Extract blob URL and delete
+            // Note: You'll need to use @vercel/blob's del function
+            // const { del } = await import('@vercel/blob')
+            // await del(media.url, { token: process.env.BLOB_READ_WRITE_TOKEN })
+            console.log(`Would delete from Blob: ${media.url}`)
+          }
+        } catch (error) {
+          console.error('Error deleting from Blob:', error)
+          // Don't throw - allow Payload deletion to continue
+        }
+
+        return true
       },
     ],
   },
