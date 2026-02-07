@@ -291,6 +291,10 @@ export interface Media {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * This file is stored on Vercel Blob (for large videos)
+   */
+  isExternalVideo?: boolean | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -1224,6 +1228,7 @@ export interface PostsSelect<T extends boolean = true> {
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
+  isExternalVideo?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
