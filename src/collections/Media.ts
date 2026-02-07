@@ -8,19 +8,13 @@ import {
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { put } from '@vercel/blob'
+import { compressVideo, getVideoMetadata } from '../utilities/videoCompression'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
-
-type MediaWithExternalVideo = {
-  id: string | number
-  url?: string | null
-  isExternalVideo?: boolean | null
-  [key: string]: any
-}
 
 export const Media: CollectionConfig = {
   slug: 'media',
@@ -35,7 +29,6 @@ export const Media: CollectionConfig = {
     {
       name: 'alt',
       type: 'text',
-      //required: true,
     },
     {
       name: 'caption',
@@ -54,9 +47,32 @@ export const Media: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'originalSize',
+      type: 'number',
+      admin: {
+        description: 'Original file size before compression (bytes)',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'compressionRatio',
+      type: 'number',
+      admin: {
+        description: 'Compression ratio achieved',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'duration',
+      type: 'number',
+      admin: {
+        description: 'Video duration in seconds',
+        readOnly: true,
+      },
+    },
   ],
   upload: {
-    // Upload to the public/media directory in Next.js making them publicly accessible even outside of Payload
     staticDir: path.resolve(dirname, '../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
@@ -100,24 +116,58 @@ export const Media: CollectionConfig = {
         // Only handle video uploads on create
         if (operation === 'create' && req.file && req.file.mimetype?.startsWith('video/')) {
           const file = req.file
+          const originalSize = file.size
 
-          // Check if file is too large for serverless (4.5MB limit)
-          const sizeLimit = 4.5 * 1024 * 1024 // 4.5MB
+          try {
+            console.log(`Processing video: ${file.name} (${(originalSize / 1024 / 1024).toFixed(2)}MB)`)
 
-          if (file.size > sizeLimit) {
-            try {
+            // Get video metadata
+            const metadata = await getVideoMetadata(file.data)
+
+            // Compress video
+            const compressedBuffer = await compressVideo(file.data, {
+              maxWidth: 1920,
+              maxHeight: 1080,
+              videoBitrate: '1500k',
+              audioBitrate: '128k',
+              fps: 30,
+              crf: 23,
+            })
+
+            const compressedSize = compressedBuffer.length
+            const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(2)
+
+            console.log(
+              `Compressed from ${(originalSize / 1024 / 1024).toFixed(2)}MB to ${(compressedSize / 1024 / 1024).toFixed(2)}MB (${compressionRatio}% reduction)`
+            )
+
+            // Update file data with compressed version
+            file.data = compressedBuffer
+            file.size = compressedSize
+
+            // Store metadata
+            data.originalSize = originalSize
+            data.compressionRatio = parseFloat(compressionRatio)
+            data.duration = metadata.duration
+            data.width = metadata.width
+            data.height = metadata.height
+
+            // Check if still too large for serverless after compression
+            const sizeLimit = 4.5 * 1024 * 1024 // 4.5MB
+
+            if (compressedSize > sizeLimit) {
+              console.log('Compressed video still too large, uploading to Vercel Blob...')
+
               // Generate unique filename
               const timestamp = Date.now()
               const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
               const filename = `${timestamp}-${safeFilename}`
 
-              console.log(`Uploading large video (${(file.size / 1024 / 1024).toFixed(2)}MB) to Vercel Blob...`)
-
               // Upload to Vercel Blob
-              const blob = await put(filename, file.data, {
+              const blob = await put(filename, compressedBuffer, {
                 access: 'public',
                 token: process.env.BLOB_READ_WRITE_TOKEN!,
-                contentType: file.mimetype,
+                contentType: 'video/mp4',
               })
 
               console.log(`Successfully uploaded to Blob: ${blob.url}`)
@@ -125,18 +175,18 @@ export const Media: CollectionConfig = {
               // Update data with Blob URL
               data.url = blob.url
               data.filename = safeFilename
-              data.mimeType = file.mimetype
-              data.filesize = file.size
+              data.mimeType = 'video/mp4'
+              data.filesize = compressedSize
               data.isExternalVideo = true
 
               // Prevent Payload from saving the file locally
               delete req.file
-            } catch (error) {
-              console.error('Blob upload error:', error)
-              throw new Error(
-                `Failed to upload large video file: ${error instanceof Error ? error.message : 'Unknown error'}`
-              )
             }
+          } catch (error) {
+            console.error('Video processing error:', error)
+            throw new Error(
+              `Failed to process video file: ${error instanceof Error ? error.message : 'Unknown error'}`
+            )
           }
         }
 
@@ -145,24 +195,21 @@ export const Media: CollectionConfig = {
     ],
     beforeDelete: [
       async ({ req, id }) => {
-        // Optional: Delete from Vercel Blob when deleting from Payload
         try {
           const payload = req.payload
-          const media = await payload.findByID({
+          const media = (await payload.findByID({
             collection: 'media',
             id,
-          }) as MediaWithExternalVideo
+          })) as any
 
           if (media?.isExternalVideo && media?.url) {
-            // Extract blob URL and delete
-            // Note: You'll need to use @vercel/blob's del function
+            console.log(`Would delete from Blob: ${media.url}`)
+            // Uncomment to enable deletion:
             // const { del } = await import('@vercel/blob')
             // await del(media.url, { token: process.env.BLOB_READ_WRITE_TOKEN })
-            console.log(`Would delete from Blob: ${media.url}`)
           }
         } catch (error) {
           console.error('Error deleting from Blob:', error)
-          // Don't throw - allow Payload deletion to continue
         }
 
         return true
