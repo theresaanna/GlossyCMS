@@ -200,7 +200,7 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock)[];
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | GalleryBlock)[];
   meta?: {
     title?: string | null;
     /**
@@ -801,6 +801,29 @@ export interface Form {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock".
+ */
+export interface GalleryBlock {
+  /**
+   * Optional title displayed above the gallery
+   */
+  title?: string | null;
+  populateBy?: ('folder' | 'selection') | null;
+  /**
+   * Select a media folder. All images in this folder will be displayed.
+   */
+  folder?: (number | null) | FolderInterface;
+  limit?: number | null;
+  /**
+   * Choose individual media items for the gallery.
+   */
+  selectedMedia?: (number | Media)[] | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'gallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1107,6 +1130,7 @@ export interface PagesSelect<T extends boolean = true> {
         mediaBlock?: T | MediaBlockSelect<T>;
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
+        gallery?: T | GalleryBlockSelect<T>;
       };
   meta?:
     | T
@@ -1203,6 +1227,19 @@ export interface FormBlockSelect<T extends boolean = true> {
   form?: T;
   enableIntro?: T;
   introContent?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "GalleryBlock_select".
+ */
+export interface GalleryBlockSelect<T extends boolean = true> {
+  title?: T;
+  populateBy?: T;
+  folder?: T;
+  limit?: T;
+  selectedMedia?: T;
   id?: T;
   blockName?: T;
 }
