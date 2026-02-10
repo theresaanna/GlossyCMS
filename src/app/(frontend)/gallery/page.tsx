@@ -28,8 +28,8 @@ export default async function GalleryPage() {
 
       {validMedia.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 rounded-lg">
-          <h3 className="mt-4 text-lg font-medium text-gray-900">No images yet</h3>
-          <p className="mt-2 text-gray-500">Upload images through the admin panel.</p>
+          <h3 className="mt-4 text-lg font-medium text-gray-900">No media yet</h3>
+          <p className="mt-2 text-gray-500">Upload images or videos through the admin panel.</p>
         </div>
       ) : (
         <GalleryGrid items={validMedia} />

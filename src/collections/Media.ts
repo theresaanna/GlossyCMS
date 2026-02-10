@@ -8,7 +8,8 @@ import {
 import path from 'path'
 import { fileURLToPath } from 'url'
 import { put } from '@vercel/blob'
-import { compressVideo, getVideoMetadata } from '../utilities/videoCompression'
+import { compressVideo, extractVideoThumbnail, getVideoMetadata } from '../utilities/videoCompression'
+import { writeFile } from 'fs/promises'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
@@ -68,6 +69,14 @@ export const Media: CollectionConfig = {
       type: 'number',
       admin: {
         description: 'Video duration in seconds',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'videoThumbnailURL',
+      type: 'text',
+      admin: {
+        description: 'Auto-generated thumbnail URL for video files',
         readOnly: true,
       },
     },
@@ -151,6 +160,25 @@ export const Media: CollectionConfig = {
             data.duration = metadata.duration
             data.width = metadata.width
             data.height = metadata.height
+
+            // Generate video thumbnail
+            try {
+              const thumbnailBuffer = await extractVideoThumbnail(compressedBuffer, {
+                timestamp: '00:00:01',
+                width: 500,
+              })
+
+              const safeThumbName = file.name.replace(/\.[^.]+$/, '.jpg').replace(/[^a-zA-Z0-9.-]/g, '_')
+              const thumbFilename = `thumb-${Date.now()}-${safeThumbName}`
+              const thumbPath = path.resolve(dirname, '../../public/media', thumbFilename)
+              await writeFile(thumbPath, thumbnailBuffer)
+
+              data.videoThumbnailURL = `/media/${thumbFilename}`
+              console.log(`Generated video thumbnail: ${thumbFilename}`)
+            } catch (thumbError) {
+              console.error('Failed to generate video thumbnail:', thumbError)
+              // Non-fatal: video will still work without a thumbnail
+            }
 
             // Check if still too large for serverless after compression
             const sizeLimit = 4.5 * 1024 * 1024 // 4.5MB

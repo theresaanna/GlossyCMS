@@ -295,6 +295,22 @@ export interface Media {
    * This file is stored on Vercel Blob (for large videos)
    */
   isExternalVideo?: boolean | null;
+  /**
+   * Original file size before compression (bytes)
+   */
+  originalSize?: number | null;
+  /**
+   * Compression ratio achieved
+   */
+  compressionRatio?: number | null;
+  /**
+   * Video duration in seconds
+   */
+  duration?: number | null;
+  /**
+   * Auto-generated thumbnail URL for video files
+   */
+  videoThumbnailURL?: string | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -1229,6 +1245,10 @@ export interface MediaSelect<T extends boolean = true> {
   alt?: T;
   caption?: T;
   isExternalVideo?: T;
+  originalSize?: T;
+  compressionRatio?: T;
+  duration?: T;
+  videoThumbnailURL?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;

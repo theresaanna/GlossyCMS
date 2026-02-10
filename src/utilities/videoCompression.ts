@@ -83,6 +83,40 @@ export async function compressVideo(
   }
 }
 
+export async function extractVideoThumbnail(
+  inputBuffer: Buffer,
+  options: { timestamp?: string; width?: number } = {},
+): Promise<Buffer> {
+  const { timestamp = '00:00:01', width = 500 } = options
+
+  const tempId = randomBytes(16).toString('hex')
+  const inputPath = join(tmpdir(), `thumb-input-${tempId}.mp4`)
+  const outputPath = join(tmpdir(), `thumb-output-${tempId}.jpg`)
+
+  try {
+    await writeFile(inputPath, inputBuffer)
+
+    await new Promise<void>((resolve, reject) => {
+      ffmpeg(inputPath)
+        .outputOptions(['-ss', timestamp, '-vframes', '1', '-vf', `scale=${width}:-1`])
+        .output(outputPath)
+        .on('end', () => resolve())
+        .on('error', (err) => reject(err))
+        .run()
+    })
+
+    const thumbnailBuffer = await readFile(outputPath)
+    return thumbnailBuffer
+  } finally {
+    try {
+      await unlink(inputPath)
+      await unlink(outputPath)
+    } catch (err) {
+      console.error('Error cleaning up thumbnail temp files:', err)
+    }
+  }
+}
+
 export async function getVideoMetadata(buffer: Buffer): Promise<{
   duration: number
   width: number
