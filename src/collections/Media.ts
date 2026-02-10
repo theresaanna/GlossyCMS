@@ -78,6 +78,14 @@ export const Media: CollectionConfig = {
         readOnly: true,
       },
     },
+    {
+      name: 'videoThumbnailURL',
+      type: 'text',
+      admin: {
+        description: 'Auto-generated thumbnail URL for video files',
+        readOnly: true,
+      },
+    },
   ],
   upload: {
     staticDir: path.resolve(dirname, '../../public/media'),
@@ -120,8 +128,8 @@ export const Media: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        // Video compression is handled client-side via @ffmpeg/ffmpeg WASM.
-        // This hook only ensures metadata fallbacks are set.
+        // Video compression and thumbnail extraction are handled client-side
+        // via @ffmpeg/ffmpeg WASM. This hook ensures metadata fallbacks are set.
         if (operation === 'create' && req.file && req.file.mimetype?.startsWith('video/')) {
           console.log(
             `Video upload received: ${req.file.name} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`,

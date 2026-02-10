@@ -307,6 +307,10 @@ export interface Media {
    * Video duration in seconds
    */
   duration?: number | null;
+  /**
+   * Auto-generated thumbnail URL for video files
+   */
+  videoThumbnailURL?: string | null;
   folder?: (number | null) | FolderInterface;
   updatedAt: string;
   createdAt: string;
@@ -1244,6 +1248,7 @@ export interface MediaSelect<T extends boolean = true> {
   originalSize?: T;
   compressionRatio?: T;
   duration?: T;
+  videoThumbnailURL?: T;
   folder?: T;
   updatedAt?: T;
   createdAt?: T;
