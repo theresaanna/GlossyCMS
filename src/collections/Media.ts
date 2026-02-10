@@ -7,8 +7,7 @@ import {
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { put } from '@vercel/blob'
-import { compressVideo, extractVideoThumbnail, getVideoMetadata } from '../utilities/videoCompression'
+import { extractVideoThumbnail } from '../utilities/videoCompression'
 import { writeFile } from 'fs/promises'
 
 import { anyone } from '../access/anyone'
@@ -27,6 +26,15 @@ export const Media: CollectionConfig = {
     update: authenticated,
   },
   fields: [
+    {
+      name: 'videoCompressor',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/VideoCompressionField',
+        },
+      },
+    },
     {
       name: 'alt',
       type: 'text',
@@ -122,99 +130,34 @@ export const Media: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        // Only handle video uploads on create
+        // Video compression is handled client-side via @ffmpeg/ffmpeg WASM.
+        // This hook ensures metadata fallbacks are set and generates a thumbnail.
         if (operation === 'create' && req.file && req.file.mimetype?.startsWith('video/')) {
-          const file = req.file
-          const originalSize = file.size
+          console.log(
+            `Video upload received: ${req.file.name} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`,
+          )
 
+          if (!data.originalSize) {
+            data.originalSize = req.file.size
+          }
+
+          // Generate video thumbnail from the uploaded file
           try {
-            console.log(`Processing video: ${file.name} (${(originalSize / 1024 / 1024).toFixed(2)}MB)`)
-
-            // Get video metadata
-            const metadata = await getVideoMetadata(file.data)
-
-            // Compress video
-            const compressedBuffer = await compressVideo(file.data, {
-              maxWidth: 1920,
-              maxHeight: 1080,
-              videoBitrate: '1500k',
-              audioBitrate: '128k',
-              fps: 30,
-              crf: 23,
+            const thumbnailBuffer = await extractVideoThumbnail(req.file.data, {
+              timestamp: '00:00:01',
+              width: 500,
             })
 
-            const compressedSize = compressedBuffer.length
-            const compressionRatio = ((1 - compressedSize / originalSize) * 100).toFixed(2)
+            const safeThumbName = req.file.name.replace(/\.[^.]+$/, '.jpg').replace(/[^a-zA-Z0-9.-]/g, '_')
+            const thumbFilename = `thumb-${Date.now()}-${safeThumbName}`
+            const thumbPath = path.resolve(dirname, '../../public/media', thumbFilename)
+            await writeFile(thumbPath, thumbnailBuffer)
 
-            console.log(
-              `Compressed from ${(originalSize / 1024 / 1024).toFixed(2)}MB to ${(compressedSize / 1024 / 1024).toFixed(2)}MB (${compressionRatio}% reduction)`
-            )
-
-            // Update file data with compressed version
-            file.data = compressedBuffer
-            file.size = compressedSize
-
-            // Store metadata
-            data.originalSize = originalSize
-            data.compressionRatio = parseFloat(compressionRatio)
-            data.duration = metadata.duration
-            data.width = metadata.width
-            data.height = metadata.height
-
-            // Generate video thumbnail
-            try {
-              const thumbnailBuffer = await extractVideoThumbnail(compressedBuffer, {
-                timestamp: '00:00:01',
-                width: 500,
-              })
-
-              const safeThumbName = file.name.replace(/\.[^.]+$/, '.jpg').replace(/[^a-zA-Z0-9.-]/g, '_')
-              const thumbFilename = `thumb-${Date.now()}-${safeThumbName}`
-              const thumbPath = path.resolve(dirname, '../../public/media', thumbFilename)
-              await writeFile(thumbPath, thumbnailBuffer)
-
-              data.videoThumbnailURL = `/media/${thumbFilename}`
-              console.log(`Generated video thumbnail: ${thumbFilename}`)
-            } catch (thumbError) {
-              console.error('Failed to generate video thumbnail:', thumbError)
-              // Non-fatal: video will still work without a thumbnail
-            }
-
-            // Check if still too large for serverless after compression
-            const sizeLimit = 4.5 * 1024 * 1024 // 4.5MB
-
-            if (compressedSize > sizeLimit) {
-              console.log('Compressed video still too large, uploading to Vercel Blob...')
-
-              // Generate unique filename
-              const timestamp = Date.now()
-              const safeFilename = file.name.replace(/[^a-zA-Z0-9.-]/g, '_')
-              const filename = `${timestamp}-${safeFilename}`
-
-              // Upload to Vercel Blob
-              const blob = await put(filename, compressedBuffer, {
-                access: 'public',
-                token: process.env.BLOB_READ_WRITE_TOKEN!,
-                contentType: 'video/mp4',
-              })
-
-              console.log(`Successfully uploaded to Blob: ${blob.url}`)
-
-              // Update data with Blob URL
-              data.url = blob.url
-              data.filename = safeFilename
-              data.mimeType = 'video/mp4'
-              data.filesize = compressedSize
-              data.isExternalVideo = true
-
-              // Prevent Payload from saving the file locally
-              delete req.file
-            }
-          } catch (error) {
-            console.error('Video processing error:', error)
-            throw new Error(
-              `Failed to process video file: ${error instanceof Error ? error.message : 'Unknown error'}`
-            )
+            data.videoThumbnailURL = `/media/${thumbFilename}`
+            console.log(`Generated video thumbnail: ${thumbFilename}`)
+          } catch (thumbError) {
+            console.error('Failed to generate video thumbnail:', thumbError)
+            // Non-fatal: video will still work without a thumbnail
           }
         }
 

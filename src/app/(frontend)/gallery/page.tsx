@@ -19,7 +19,11 @@ export default async function GalleryPage() {
   })
 
   const validMedia = media.docs.filter((item): item is typeof item & { url: string } => {
-    return typeof item.url === 'string' && item.url.length > 0
+    return (
+      typeof item.url === 'string' &&
+      item.url.length > 0 &&
+      !item.mimeType?.startsWith('video/')
+    )
   })
 
   return (
