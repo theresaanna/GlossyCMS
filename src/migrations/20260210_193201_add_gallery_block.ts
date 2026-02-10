@@ -31,10 +31,6 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   
   ALTER TABLE "pages_rels" ADD COLUMN "media_id" integer;
   ALTER TABLE "_pages_v_rels" ADD COLUMN "media_id" integer;
-  ALTER TABLE "media" ADD COLUMN "original_size" numeric;
-  ALTER TABLE "media" ADD COLUMN "compression_ratio" numeric;
-  ALTER TABLE "media" ADD COLUMN "duration" numeric;
-  ALTER TABLE "media" ADD COLUMN "video_thumbnail_u_r_l" varchar;
   ALTER TABLE "pages_blocks_gallery" ADD CONSTRAINT "pages_blocks_gallery_folder_id_payload_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."payload_folders"("id") ON DELETE set null ON UPDATE no action;
   ALTER TABLE "pages_blocks_gallery" ADD CONSTRAINT "pages_blocks_gallery_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
   ALTER TABLE "_pages_v_blocks_gallery" ADD CONSTRAINT "_pages_v_blocks_gallery_folder_id_payload_folders_id_fk" FOREIGN KEY ("folder_id") REFERENCES "public"."payload_folders"("id") ON DELETE set null ON UPDATE no action;
@@ -67,10 +63,6 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
   DROP INDEX "_pages_v_rels_media_id_idx";
   ALTER TABLE "pages_rels" DROP COLUMN "media_id";
   ALTER TABLE "_pages_v_rels" DROP COLUMN "media_id";
-  ALTER TABLE "media" DROP COLUMN "original_size";
-  ALTER TABLE "media" DROP COLUMN "compression_ratio";
-  ALTER TABLE "media" DROP COLUMN "duration";
-  ALTER TABLE "media" DROP COLUMN "video_thumbnail_u_r_l";
   DROP TYPE "public"."enum_pages_blocks_gallery_populate_by";
   DROP TYPE "public"."enum__pages_v_blocks_gallery_populate_by";`)
 }
