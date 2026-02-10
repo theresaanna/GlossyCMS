@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import path from 'path'
-import { writeFile } from 'fs/promises'
+import { put } from '@vercel/blob'
 
 export async function POST(req: NextRequest) {
   try {
@@ -13,11 +12,14 @@ export async function POST(req: NextRequest) {
 
     const buffer = Buffer.from(await file.arrayBuffer())
     const thumbFilename = `thumb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`
-    const thumbPath = path.resolve(process.cwd(), 'public/media', thumbFilename)
 
-    await writeFile(thumbPath, buffer)
+    const blob = await put(thumbFilename, buffer, {
+      access: 'public',
+      token: process.env.BLOB_READ_WRITE_TOKEN!,
+      contentType: 'image/jpeg',
+    })
 
-    return NextResponse.json({ url: `/media/${thumbFilename}` })
+    return NextResponse.json({ url: blob.url })
   } catch (error) {
     console.error('Failed to save video thumbnail:', error)
     return NextResponse.json({ error: 'Failed to save thumbnail' }, { status: 500 })
