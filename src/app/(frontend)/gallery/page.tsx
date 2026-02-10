@@ -11,7 +11,7 @@ export default async function GalleryPage() {
     limit: 100,
     sort: '-createdAt',
     where: {
-      url: {
+      filename: {
         exists: true,
         not_equals: null,
       },
