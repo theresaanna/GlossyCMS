@@ -10,12 +10,6 @@ export default async function GalleryPage() {
     collection: 'media',
     limit: 100,
     sort: '-createdAt',
-    where: {
-      filename: {
-        exists: true,
-        not_equals: null,
-      },
-    },
   })
 
   // Debug: log media items to understand URL population
@@ -23,9 +17,16 @@ export default async function GalleryPage() {
     console.log(`[Gallery] id=${item.id} mime=${item.mimeType} filename=${item.filename} url=${item.url}`)
   })
 
-  const validMedia = media.docs.filter((item): item is typeof item & { url: string } => {
-    return typeof item.url === 'string' && item.url.length > 0
-  })
+  // Include items that have a url OR a filename (fallback for videos)
+  const validMedia = media.docs
+    .filter((item) => {
+      return (typeof item.url === 'string' && item.url.length > 0) ||
+        (typeof item.filename === 'string' && item.filename.length > 0)
+    })
+    .map((item) => ({
+      ...item,
+      url: item.url || `/api/media/file/${item.filename}`,
+    })) as (typeof media.docs[number] & { url: string })[]
 
   return (
     <div className="container mx-auto px-4 py-8">
