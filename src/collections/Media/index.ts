@@ -8,8 +8,9 @@ import {
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { anyone } from '../access/anyone'
-import { authenticated } from '../access/authenticated'
+import { anyone } from '../../access/anyone'
+import { authenticated } from '../../access/authenticated'
+import { revalidateMedia, revalidateMediaDelete } from './hooks/revalidateMedia'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -88,7 +89,7 @@ export const Media: CollectionConfig = {
     },
   ],
   upload: {
-    staticDir: path.resolve(dirname, '../../public/media'),
+    staticDir: path.resolve(dirname, '../../../public/media'),
     adminThumbnail: 'thumbnail',
     focalPoint: true,
     imageSizes: [
@@ -143,6 +144,8 @@ export const Media: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [revalidateMedia],
+    afterDelete: [revalidateMediaDelete],
     beforeDelete: [
       async ({ req, id }) => {
         try {
