@@ -2,6 +2,7 @@ import React, { Fragment } from 'react'
 
 import type { Props } from './types'
 
+import { AudioMedia } from './AudioMedia'
 import { ImageMedia } from './ImageMedia'
 import { VideoMedia } from './VideoMedia'
 
@@ -9,6 +10,7 @@ export const Media: React.FC<Props> = (props) => {
   const { className, htmlElement = 'div', resource } = props
 
   const isVideo = typeof resource === 'object' && resource?.mimeType?.includes('video')
+  const isAudio = typeof resource === 'object' && resource?.mimeType?.startsWith('audio/')
   const Tag = htmlElement || Fragment
 
   return (
@@ -19,7 +21,7 @@ export const Media: React.FC<Props> = (props) => {
           }
         : {})}
     >
-      {isVideo ? <VideoMedia {...props} /> : <ImageMedia {...props} />}
+      {isVideo ? <VideoMedia {...props} /> : isAudio ? <AudioMedia {...props} /> : <ImageMedia {...props} />}
     </Tag>
   )
 }
