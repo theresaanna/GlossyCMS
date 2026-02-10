@@ -10,13 +10,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
     }
 
-    const buffer = Buffer.from(await file.arrayBuffer())
     const thumbFilename = `thumb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`
 
-    const blob = await put(thumbFilename, buffer, {
+    const blob = await put(thumbFilename, file, {
       access: 'public',
       token: process.env.BLOB_READ_WRITE_TOKEN!,
       contentType: 'image/jpeg',
+      multipart: true,
     })
 
     return NextResponse.json({ url: blob.url })
