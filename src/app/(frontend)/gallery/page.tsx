@@ -18,6 +18,11 @@ export default async function GalleryPage() {
     },
   })
 
+  // Debug: log media items to understand URL population
+  media.docs.forEach((item) => {
+    console.log(`[Gallery] id=${item.id} mime=${item.mimeType} filename=${item.filename} url=${item.url}`)
+  })
+
   const validMedia = media.docs.filter((item): item is typeof item & { url: string } => {
     return typeof item.url === 'string' && item.url.length > 0
   })
