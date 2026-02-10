@@ -96,7 +96,7 @@ export async function compressVideo(
   const data = await ffmpeg.readFile(outputName)
   const uint8 = data as Uint8Array
 
-  const compressedFile = new File([uint8.buffer], file.name.replace(/\.[^.]+$/, '.mp4'), {
+  const compressedFile = new File([uint8.slice()], file.name.replace(/\.[^.]+$/, '.mp4'), {
     type: 'video/mp4',
   })
 
@@ -146,7 +146,7 @@ export async function extractVideoThumbnail(
   const data = await ffmpeg.readFile(outputName)
   const uint8 = data as Uint8Array
 
-  const thumbnailFile = new File([uint8.buffer], 'thumbnail.jpg', {
+  const thumbnailFile = new File([uint8.slice()], 'thumbnail.jpg', {
     type: 'image/jpeg',
   })
 
