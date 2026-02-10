@@ -116,6 +116,47 @@ export async function compressVideo(
   return { compressedFile, originalSize, compressedSize, compressionRatio }
 }
 
+export async function extractVideoThumbnail(
+  file: File,
+  options: { timestamp?: number; width?: number } = {},
+): Promise<File> {
+  const { timestamp = 1, width = 500 } = options
+
+  const ffmpeg = await loadFFmpeg()
+
+  const inputName = `thumb-input${getExtension(file.name)}`
+  const outputName = 'thumbnail.jpg'
+
+  await ffmpeg.writeFile(inputName, await fetchFile(file))
+
+  await ffmpeg.exec([
+    '-ss',
+    String(timestamp),
+    '-i',
+    inputName,
+    '-vframes',
+    '1',
+    '-vf',
+    `scale=${width}:-1`,
+    '-q:v',
+    '2',
+    outputName,
+  ])
+
+  const data = await ffmpeg.readFile(outputName)
+  const uint8 = data as Uint8Array
+
+  const thumbnailFile = new File([uint8.buffer], 'thumbnail.jpg', {
+    type: 'image/jpeg',
+  })
+
+  // Clean up virtual FS
+  await ffmpeg.deleteFile(inputName)
+  await ffmpeg.deleteFile(outputName)
+
+  return thumbnailFile
+}
+
 function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
   const k = 1024

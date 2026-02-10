@@ -7,8 +7,6 @@ import {
 } from '@payloadcms/richtext-lexical'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { extractVideoThumbnail } from '../utilities/videoCompression'
-import { writeFile } from 'fs/promises'
 
 import { anyone } from '../access/anyone'
 import { authenticated } from '../access/authenticated'
@@ -130,8 +128,8 @@ export const Media: CollectionConfig = {
   hooks: {
     beforeChange: [
       async ({ data, req, operation }) => {
-        // Video compression is handled client-side via @ffmpeg/ffmpeg WASM.
-        // This hook ensures metadata fallbacks are set and generates a thumbnail.
+        // Video compression and thumbnail extraction are handled client-side
+        // via @ffmpeg/ffmpeg WASM. This hook ensures metadata fallbacks are set.
         if (operation === 'create' && req.file && req.file.mimetype?.startsWith('video/')) {
           console.log(
             `Video upload received: ${req.file.name} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`,
@@ -139,25 +137,6 @@ export const Media: CollectionConfig = {
 
           if (!data.originalSize) {
             data.originalSize = req.file.size
-          }
-
-          // Generate video thumbnail from the uploaded file
-          try {
-            const thumbnailBuffer = await extractVideoThumbnail(req.file.data, {
-              timestamp: '00:00:01',
-              width: 500,
-            })
-
-            const safeThumbName = req.file.name.replace(/\.[^.]+$/, '.jpg').replace(/[^a-zA-Z0-9.-]/g, '_')
-            const thumbFilename = `thumb-${Date.now()}-${safeThumbName}`
-            const thumbPath = path.resolve(dirname, '../../public/media', thumbFilename)
-            await writeFile(thumbPath, thumbnailBuffer)
-
-            data.videoThumbnailURL = `/media/${thumbFilename}`
-            console.log(`Generated video thumbnail: ${thumbFilename}`)
-          } catch (thumbError) {
-            console.error('Failed to generate video thumbnail:', thumbError)
-            // Non-fatal: video will still work without a thumbnail
           }
         }
 

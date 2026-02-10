@@ -2,12 +2,17 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useField } from '@payloadcms/ui'
-import { compressVideo, type CompressionProgress } from '@/utilities/clientVideoCompression'
+import {
+  compressVideo,
+  extractVideoThumbnail,
+  type CompressionProgress,
+} from '@/utilities/clientVideoCompression'
 
 const VideoCompressionField: React.FC = () => {
   const { value: fileValue, setValue: setFileValue } = useField<File | null>({ path: 'file' })
   const { setValue: setOriginalSize } = useField<number>({ path: 'originalSize' })
   const { setValue: setCompressionRatio } = useField<number>({ path: 'compressionRatio' })
+  const { setValue: setVideoThumbnailURL } = useField<string>({ path: 'videoThumbnailURL' })
 
   const [progress, setProgress] = useState<CompressionProgress | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -18,13 +23,37 @@ const VideoCompressionField: React.FC = () => {
     async (file: File) => {
       if (processingRef.current) return
       if (!file.type.startsWith('video/')) return
-      if (file.size < 1 * 1024 * 1024) return // Skip small files (<1MB)
       if (processedFilesRef.current.has(file)) return // Already compressed
 
       processingRef.current = true
       setError(null)
 
       try {
+        // Extract thumbnail first (works even for small files that skip compression)
+        try {
+          setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
+          const thumbnailFile = await extractVideoThumbnail(file, { timestamp: 1, width: 500 })
+
+          // Upload thumbnail via API
+          const formData = new FormData()
+          formData.append('file', thumbnailFile)
+          const res = await fetch('/api/video-thumbnail', { method: 'POST', body: formData })
+          if (res.ok) {
+            const { url } = await res.json()
+            setVideoThumbnailURL(url)
+          }
+        } catch (thumbErr) {
+          console.error('Thumbnail extraction failed:', thumbErr)
+          // Non-fatal: video will still work without a thumbnail
+        }
+
+        // Skip compression for small files
+        if (file.size < 1 * 1024 * 1024) {
+          processingRef.current = false
+          setProgress(null)
+          return
+        }
+
         const result = await compressVideo(file, setProgress)
 
         // Mark the compressed file so we don't re-process it
@@ -46,7 +75,7 @@ const VideoCompressionField: React.FC = () => {
         processingRef.current = false
       }
     },
-    [setFileValue, setOriginalSize, setCompressionRatio],
+    [setFileValue, setOriginalSize, setCompressionRatio, setVideoThumbnailURL],
   )
 
   useEffect(() => {
