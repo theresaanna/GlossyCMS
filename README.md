@@ -1,3 +1,6 @@
+[![Tests](https://github.com/theresaanna/GlossyCMS/actions/workflows/test.yml/badge.svg)](https://github.com/theresaanna/GlossyCMS/actions/workflows/test.yml)
+[![Coverage](https://img.shields.io/badge/dynamic/json?url=https%3A%2F%2Fraw.githubusercontent.com%2Ftheresaanna%2FGlossyCMS%2Fmain%2Fcoverage-badge.json&query=%24.message&label=coverage&color=brightgreen)](https://github.com/theresaanna/GlossyCMS/actions)
+
 # Payload Website Template
 
 This is the official [Payload Website Template](https://github.com/payloadcms/payload/blob/main/templates/website). Use it to power websites, blogs, or portfolios from small to enterprise. This repo includes a fully-working backend, enterprise-grade admin panel, and a beautifully designed, production-ready website.
