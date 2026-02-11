@@ -214,6 +214,24 @@ export const Posts: CollectionConfig<'posts'> = {
         },
       ],
     },
+    {
+      name: 'enableComments',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Allow visitors to leave comments on this post',
+      },
+    },
+    {
+      name: 'moderateComments',
+      type: 'checkbox',
+      defaultValue: true,
+      admin: {
+        position: 'sidebar',
+        description: 'Require approval before comments are visible',
+      },
+    },
     slugField(),
   ],
   hooks: {
