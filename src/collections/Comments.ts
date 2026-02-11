@@ -18,14 +18,10 @@ export const Comments: CollectionConfig = {
     listSearchableFields: ['authorName', 'authorEmail', 'body'],
     useAsTitle: 'authorName',
     components: {
-      views: {
-        list: {
-          actions: [
-            '@/components/AdminComments/BulkApproveButton',
-            '@/components/AdminComments/BulkSpamButton',
-          ],
-        },
-      },
+      beforeListTable: [
+        '@/components/AdminComments/BulkApproveButton',
+        '@/components/AdminComments/BulkSpamButton',
+      ],
     },
   },
   fields: [
