@@ -18,7 +18,7 @@ export interface CompressionResult {
   compressionRatio: number
 }
 
-async function loadFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg> {
+export async function loadFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg> {
   if (ffmpegInstance?.loaded) {
     return ffmpegInstance
   }
@@ -157,7 +157,7 @@ export async function extractVideoThumbnail(
   return thumbnailFile
 }
 
-function formatBytes(bytes: number): string {
+export function formatBytes(bytes: number): string {
   if (bytes === 0) return '0 B'
   const k = 1024
   const sizes = ['B', 'KB', 'MB', 'GB']
