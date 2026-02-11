@@ -12,9 +12,21 @@ export const Comments: CollectionConfig = {
     update: authenticated,
     delete: authenticated,
   },
+  defaultSort: '-createdAt',
   admin: {
     defaultColumns: ['authorName', 'post', 'status', 'createdAt'],
+    listSearchableFields: ['authorName', 'authorEmail', 'body'],
     useAsTitle: 'authorName',
+    components: {
+      views: {
+        list: {
+          actions: [
+            '@/components/AdminComments/BulkApproveButton',
+            '@/components/AdminComments/BulkSpamButton',
+          ],
+        },
+      },
+    },
   },
   fields: [
     {
