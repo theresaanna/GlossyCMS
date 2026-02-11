@@ -1,8 +1,9 @@
 import type { CollectionConfig } from 'payload'
 
-import { anyone } from '../access/anyone'
-import { approvedOrAuthenticated } from '../access/approvedOrAuthenticated'
-import { authenticated } from '../access/authenticated'
+import { anyone } from '../../access/anyone'
+import { approvedOrAuthenticated } from '../../access/approvedOrAuthenticated'
+import { authenticated } from '../../access/authenticated'
+import { revalidateComment, revalidateCommentDelete } from './hooks/revalidateComment'
 
 export const Comments: CollectionConfig = {
   slug: 'comments',
@@ -129,6 +130,8 @@ export const Comments: CollectionConfig = {
         return data
       },
     ],
+    afterChange: [revalidateComment],
+    afterDelete: [revalidateCommentDelete],
   },
   timestamps: true,
 }
