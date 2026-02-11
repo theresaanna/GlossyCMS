@@ -5,6 +5,13 @@ import { toBlobURL, fetchFile } from '@ffmpeg/util'
 
 let ffmpegInstance: FFmpeg | null = null
 
+export function terminateFFmpeg(): void {
+  if (ffmpegInstance) {
+    ffmpegInstance.terminate()
+    ffmpegInstance = null
+  }
+}
+
 export interface CompressionProgress {
   phase: 'loading' | 'compressing' | 'done' | 'error'
   percent: number
@@ -65,47 +72,66 @@ export async function compressVideo(
   const inputName = `input${getExtension(file.name)}`
   const outputName = 'output.mp4'
 
-  await ffmpeg.writeFile(inputName, await fetchFile(file))
+  const runCompression = async (ff: FFmpeg): Promise<File> => {
+    await ff.writeFile(inputName, await fetchFile(file))
 
-  await ffmpeg.exec([
-    '-i',
-    inputName,
-    '-c:v',
-    'libx264',
-    '-preset',
-    'medium',
-    '-crf',
-    '28',
-    '-maxrate',
-    '1500k',
-    '-bufsize',
-    '2M',
-    '-vf',
-    "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease",
-    '-r',
-    '30',
-    '-c:a',
-    'aac',
-    '-b:a',
-    '128k',
-    '-movflags',
-    '+faststart',
-    outputName,
-  ])
+    await ff.exec([
+      '-i',
+      inputName,
+      '-c:v',
+      'libx264',
+      '-preset',
+      'medium',
+      '-crf',
+      '28',
+      '-maxrate',
+      '1500k',
+      '-bufsize',
+      '2M',
+      '-vf',
+      "scale='min(1920,iw)':'min(1080,ih)':force_original_aspect_ratio=decrease",
+      '-r',
+      '30',
+      '-c:a',
+      'aac',
+      '-b:a',
+      '128k',
+      '-movflags',
+      '+faststart',
+      outputName,
+    ])
 
-  const data = await ffmpeg.readFile(outputName)
-  const uint8 = data as Uint8Array
+    const data = await ff.readFile(outputName)
+    const uint8 = data as Uint8Array
 
-  const compressedFile = new File([uint8.slice()], file.name.replace(/\.[^.]+$/, '.mp4'), {
-    type: 'video/mp4',
-  })
+    const result = new File([uint8.slice()], file.name.replace(/\.[^.]+$/, '.mp4'), {
+      type: 'video/mp4',
+    })
+
+    await ff.deleteFile(inputName)
+    await ff.deleteFile(outputName)
+    return result
+  }
+
+  let compressedFile: File
+  try {
+    compressedFile = await runCompression(ffmpeg)
+  } catch (err) {
+    if (err instanceof WebAssembly.RuntimeError) {
+      terminateFFmpeg()
+      const freshFfmpeg = await loadFFmpeg()
+      freshFfmpeg.on('progress', ({ progress }) => {
+        const pct = Math.min(Math.round(progress * 100), 99)
+        onProgress?.({ phase: 'compressing', percent: pct, message: `Compressing: ${pct}%` })
+      })
+      compressedFile = await runCompression(freshFfmpeg)
+    } else {
+      throw err
+    }
+  }
 
   const compressedSize = compressedFile.size
   const compressionRatio = Number(((1 - compressedSize / originalSize) * 100).toFixed(2))
-
-  // Clean up virtual FS
-  await ffmpeg.deleteFile(inputName)
-  await ffmpeg.deleteFile(outputName)
 
   onProgress?.({
     phase: 'done',
@@ -127,34 +153,45 @@ export async function extractVideoThumbnail(
   const inputName = `thumb-input${getExtension(file.name)}`
   const outputName = 'thumbnail.jpg'
 
-  await ffmpeg.writeFile(inputName, await fetchFile(file))
+  const runThumbnail = async (ff: FFmpeg): Promise<File> => {
+    await ff.writeFile(inputName, await fetchFile(file))
 
-  await ffmpeg.exec([
-    '-ss',
-    String(timestamp),
-    '-i',
-    inputName,
-    '-vframes',
-    '1',
-    '-vf',
-    `scale=${width}:-1`,
-    '-q:v',
-    '2',
-    outputName,
-  ])
+    await ff.exec([
+      '-ss',
+      String(timestamp),
+      '-i',
+      inputName,
+      '-vframes',
+      '1',
+      '-vf',
+      `scale=${width}:-1`,
+      '-q:v',
+      '2',
+      outputName,
+    ])
 
-  const data = await ffmpeg.readFile(outputName)
-  const uint8 = data as Uint8Array
+    const data = await ff.readFile(outputName)
+    const uint8 = data as Uint8Array
 
-  const thumbnailFile = new File([uint8.slice()], 'thumbnail.jpg', {
-    type: 'image/jpeg',
-  })
+    const result = new File([uint8.slice()], 'thumbnail.jpg', {
+      type: 'image/jpeg',
+    })
 
-  // Clean up virtual FS
-  await ffmpeg.deleteFile(inputName)
-  await ffmpeg.deleteFile(outputName)
+    await ff.deleteFile(inputName)
+    await ff.deleteFile(outputName)
+    return result
+  }
 
-  return thumbnailFile
+  try {
+    return await runThumbnail(ffmpeg)
+  } catch (err) {
+    if (err instanceof WebAssembly.RuntimeError) {
+      terminateFFmpeg()
+      const freshFfmpeg = await loadFFmpeg()
+      return await runThumbnail(freshFfmpeg)
+    }
+    throw err
+  }
 }
 
 export function formatBytes(bytes: number): string {
