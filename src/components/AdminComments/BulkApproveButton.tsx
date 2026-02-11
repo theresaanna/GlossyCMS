@@ -1,12 +1,11 @@
 'use client'
 
 import React, { useCallback, useState } from 'react'
-import { useSelection, useListQuery, toast } from '@payloadcms/ui'
+import { useSelection, toast } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation.js'
 
 export const BulkApproveButton: React.FC = () => {
   const { count, getSelectedIds, toggleAll } = useSelection()
-  const { collectionSlug } = useListQuery()
   const router = useRouter()
   const [isLoading, setIsLoading] = useState(false)
 
@@ -17,7 +16,7 @@ export const BulkApproveButton: React.FC = () => {
 
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/${collectionSlug}`, {
+      const response = await fetch('/api/comments', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -43,7 +42,7 @@ export const BulkApproveButton: React.FC = () => {
     } finally {
       setIsLoading(false)
     }
-  }, [count, getSelectedIds, collectionSlug, toggleAll, router])
+  }, [count, getSelectedIds, toggleAll, router])
 
   if (count === 0) return null
 
