@@ -20,6 +20,8 @@ import { BlocksFeatureClient as BlocksFeatureClient_e70f5e05f09f93e00b997edb1ef0
 import { default as default_ec9cf697f1eccae2de34f08d71344633 } from '@/components/admin/VideoCompressionField'
 import { FolderTableCell as FolderTableCell_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
+import { default as default_cbb3a033cef03f2d66557d6d540c9218 } from '@/components/AdminComments/BulkApproveButton'
+import { default as default_808cf441303bea8098280780196273ed } from '@/components/AdminComments/BulkSpamButton'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
@@ -52,6 +54,8 @@ export const importMap = {
   "@/components/admin/VideoCompressionField#default": default_ec9cf697f1eccae2de34f08d71344633,
   "@payloadcms/ui/rsc#FolderTableCell": FolderTableCell_ab83ff7e88da8d3530831f296ec4756a,
   "@payloadcms/ui/rsc#FolderField": FolderField_ab83ff7e88da8d3530831f296ec4756a,
+  "@/components/AdminComments/BulkApproveButton#default": default_cbb3a033cef03f2d66557d6d540c9218,
+  "@/components/AdminComments/BulkSpamButton#default": default_808cf441303bea8098280780196273ed,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
