@@ -105,57 +105,78 @@ const VideoCompressionField: React.FC = () => {
     }
   }, [fileValue, handleCompression])
 
-  if (!progress && !error) return null
-
   return (
-    <div
-      style={{
-        padding: '12px 16px',
-        margin: '8px 0',
-        borderRadius: '4px',
-        backgroundColor: error ? '#fef2f2' : progress?.phase === 'done' ? '#f0fdf4' : '#eff6ff',
-        border: `1px solid ${error ? '#fecaca' : progress?.phase === 'done' ? '#bbf7d0' : '#bfdbfe'}`,
-      }}
-    >
-      <div style={{ fontSize: '14px', fontWeight: 500 }}>
-        {error ? 'Compression Error' : 'Video Compression'}
+    <>
+      <div
+        style={{
+          padding: '12px 16px',
+          margin: '8px 0',
+          borderRadius: '4px',
+          backgroundColor: '#f9fafb',
+          border: '1px solid #e5e7eb',
+          fontSize: '13px',
+          color: '#6b7280',
+        }}
+      >
+        Videos up to 250MB can be compressed in-browser. We recommend uploading on a laptop or
+        desktop machine for best performance.
       </div>
 
-      {error && (
-        <div style={{ color: '#dc2626', fontSize: '13px', marginTop: '4px' }}>{error}</div>
-      )}
-
-      {progress && !error && (
-        <>
-          <div style={{ fontSize: '13px', marginTop: '4px', color: '#374151' }}>
-            {progress.message}
+      {(progress || error) && (
+        <div
+          style={{
+            padding: '12px 16px',
+            margin: '8px 0',
+            borderRadius: '4px',
+            backgroundColor: error
+              ? '#fef2f2'
+              : progress?.phase === 'done'
+                ? '#f0fdf4'
+                : '#eff6ff',
+            border: `1px solid ${error ? '#fecaca' : progress?.phase === 'done' ? '#bbf7d0' : '#bfdbfe'}`,
+          }}
+        >
+          <div style={{ fontSize: '14px', fontWeight: 500 }}>
+            {error ? 'Compression Error' : 'Video Compression'}
           </div>
 
-          {progress.phase !== 'done' && (
-            <div
-              style={{
-                width: '100%',
-                height: '6px',
-                backgroundColor: '#dbeafe',
-                borderRadius: '3px',
-                marginTop: '8px',
-                overflow: 'hidden',
-              }}
-            >
-              <div
-                style={{
-                  width: `${progress.percent}%`,
-                  height: '100%',
-                  backgroundColor: '#3b82f6',
-                  borderRadius: '3px',
-                  transition: 'width 0.3s ease',
-                }}
-              />
-            </div>
+          {error && (
+            <div style={{ color: '#dc2626', fontSize: '13px', marginTop: '4px' }}>{error}</div>
           )}
-        </>
+
+          {progress && !error && (
+            <>
+              <div style={{ fontSize: '13px', marginTop: '4px', color: '#374151' }}>
+                {progress.message}
+              </div>
+
+              {progress.phase !== 'done' && (
+                <div
+                  style={{
+                    width: '100%',
+                    height: '6px',
+                    backgroundColor: '#dbeafe',
+                    borderRadius: '3px',
+                    marginTop: '8px',
+                    overflow: 'hidden',
+                  }}
+                >
+                  <div
+                    style={{
+                      width: `${progress.percent}%`,
+                      height: '100%',
+                      backgroundColor: '#3b82f6',
+                      borderRadius: '3px',
+                      transition: 'width 0.3s ease',
+                    }}
+                  />
+                </div>
+              )}
+            </>
+          )}
+        </div>
       )}
-    </div>
+    </>
   )
 }
 
