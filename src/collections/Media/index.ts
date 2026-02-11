@@ -24,7 +24,21 @@ export const Media: CollectionConfig = {
     read: anyone,
     update: authenticated,
   },
+  admin: {
+    components: {
+      beforeListTable: ['@/components/admin/MediaUploadStatusBanner'],
+    },
+  },
   fields: [
+    {
+      name: 'uploadProgress',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/UploadProgressField',
+        },
+      },
+    },
     {
       name: 'videoCompressor',
       type: 'ui',
