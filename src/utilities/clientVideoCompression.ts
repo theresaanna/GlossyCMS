@@ -48,7 +48,7 @@ export async function loadFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg>
   return ffmpeg
 }
 
-function getExtension(filename: string): string {
+export function getExtension(filename: string): string {
   const ext = filename.split('.').pop()
   return ext ? `.${ext}` : '.mp4'
 }
