@@ -5,6 +5,7 @@ import { useField } from '@payloadcms/ui'
 import {
   compressVideo,
   extractVideoThumbnail,
+  terminateFFmpeg,
   type CompressionProgress,
 } from '@/utilities/clientVideoCompression'
 
@@ -52,6 +53,9 @@ const VideoCompressionField: React.FC = () => {
           console.error('Thumbnail extraction failed:', thumbErr)
           // Non-fatal: video will still work without a thumbnail
         }
+
+        // Reset FFmpeg instance between operations to prevent WASM memory corruption
+        terminateFFmpeg()
 
         // Skip compression for small files
         if (file.size < 1 * 1024 * 1024) {
