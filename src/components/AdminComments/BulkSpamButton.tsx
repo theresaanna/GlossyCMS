@@ -16,17 +16,13 @@ export const BulkSpamButton: React.FC = () => {
 
     setIsLoading(true)
     try {
-      const response = await fetch('/api/comments', {
+      const params = new URLSearchParams()
+      ids.forEach((id, i) => params.append(`where[id][in][${i}]`, String(id)))
+
+      const response = await fetch(`/api/comments?${params.toString()}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          where: {
-            id: { in: ids },
-          },
-          data: {
-            status: 'spam',
-          },
-        }),
+        body: JSON.stringify({ status: 'spam' }),
       })
 
       if (response.ok) {
