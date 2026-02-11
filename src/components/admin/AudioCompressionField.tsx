@@ -5,6 +5,7 @@ import { useField } from '@payloadcms/ui'
 import { compressAudio, type CompressionProgress } from '@/utilities/clientAudioCompression'
 
 const COMPRESSION_THRESHOLD = 4.5 * 1024 * 1024 // 4.5MB
+const FILE_SIZE_CAP = 250 * 1024 * 1024 // 250MB
 
 const AudioCompressionField: React.FC = () => {
   const { value: fileValue, setValue: setFileValue } = useField<File | null>({ path: 'file' })
@@ -23,6 +24,14 @@ const AudioCompressionField: React.FC = () => {
       if (processedFilesRef.current.has(file)) return
 
       if (file.size < COMPRESSION_THRESHOLD) return
+
+      // Skip compression for files too large for in-browser WASM processing
+      if (file.size > FILE_SIZE_CAP) {
+        setError(
+          'This file is too large for in-browser compression. Max file size depends on your machine\'s capabilities, typically between 15–250MB. We recommend uploading on a laptop or desktop machine for best performance.',
+        )
+        return
+      }
 
       processingRef.current = true
       setError(null)
@@ -43,7 +52,7 @@ const AudioCompressionField: React.FC = () => {
       } catch (err) {
         console.error('Audio compression failed:', err)
         setError(
-          `Compression failed: ${err instanceof Error ? err.message : 'Unknown error'}. The original file will be uploaded.`,
+          `Compression failed: ${err instanceof Error ? err.message : 'Unknown error'}.`,
         )
         setProgress(null)
       } finally {
