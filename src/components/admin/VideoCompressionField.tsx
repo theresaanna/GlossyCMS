@@ -9,6 +9,8 @@ import {
   type CompressionProgress,
 } from '@/utilities/clientVideoCompression'
 
+const FILE_SIZE_CAP = 250 * 1024 * 1024 // 250MB
+
 const VideoCompressionField: React.FC = () => {
   const { value: fileValue, setValue: setFileValue } = useField<File | null>({ path: 'file' })
   const { setValue: setOriginalSize } = useField<number>({ path: 'originalSize' })
@@ -64,6 +66,15 @@ const VideoCompressionField: React.FC = () => {
           return
         }
 
+        // Skip compression for files too large for in-browser WASM processing
+        if (file.size > FILE_SIZE_CAP) {
+          setError(
+            'This file is too large for in-browser compression (max 250MB). We recommend uploading on a laptop or desktop machine for best performance.',
+          )
+          processingRef.current = false
+          return
+        }
+
         const result = await compressVideo(fileClone, setProgress)
 
         // Mark the compressed file so we don't re-process it
@@ -78,7 +89,7 @@ const VideoCompressionField: React.FC = () => {
       } catch (err) {
         console.error('Video compression failed:', err)
         setError(
-          `Compression failed: ${err instanceof Error ? err.message : 'Unknown error'}. The original file will be uploaded.`,
+          `Compression failed: ${err instanceof Error ? err.message : 'Unknown error'}.`,
         )
         setProgress(null)
       } finally {
