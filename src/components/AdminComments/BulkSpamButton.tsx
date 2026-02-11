@@ -17,7 +17,7 @@ export const BulkSpamButton: React.FC = () => {
     setIsLoading(true)
     try {
       const params = new URLSearchParams()
-      ids.forEach((id, i) => params.append(`where[id][in][${i}]`, String(id)))
+      ids.forEach((id) => params.append('where[id][in][]', String(id)))
 
       const response = await fetch(`/api/comments?${params.toString()}`, {
         method: 'PATCH',
