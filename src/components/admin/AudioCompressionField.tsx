@@ -28,7 +28,7 @@ const AudioCompressionField: React.FC = () => {
       // Skip compression for files too large for in-browser WASM processing
       if (file.size > FILE_SIZE_CAP) {
         setError(
-          'This file is too large for in-browser compression. Max file size depends on your machine\'s capabilities, typically between 15–250MB. We recommend uploading on a laptop or desktop machine for best performance.',
+          'This file is too large for in-browser compression (max 250MB). We recommend uploading on a laptop or desktop machine for best performance.',
         )
         return
       }
