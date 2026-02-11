@@ -35,6 +35,15 @@ export const Media: CollectionConfig = {
       },
     },
     {
+      name: 'audioCompressor',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/AudioCompressionField',
+        },
+      },
+    },
+    {
       name: 'alt',
       type: 'text',
     },
@@ -134,6 +143,16 @@ export const Media: CollectionConfig = {
         if (operation === 'create' && req.file && req.file.mimetype?.startsWith('video/')) {
           console.log(
             `Video upload received: ${req.file.name} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`,
+          )
+
+          if (!data.originalSize) {
+            data.originalSize = req.file.size
+          }
+        }
+
+        if (operation === 'create' && req.file && req.file.mimetype?.startsWith('audio/')) {
+          console.log(
+            `Audio upload received: ${req.file.name} (${(req.file.size / 1024 / 1024).toFixed(2)}MB)`,
           )
 
           if (!data.originalSize) {
