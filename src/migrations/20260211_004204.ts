@@ -2,8 +2,8 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-vercel-postg
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-   CREATE TYPE "public"."enum_comments_status" AS ENUM('pending', 'approved', 'spam');
-  CREATE TABLE "comments" (
+   DO $$ BEGIN CREATE TYPE "public"."enum_comments_status" AS ENUM('pending', 'approved', 'spam'); EXCEPTION WHEN duplicate_object THEN null; END $$;
+  CREATE TABLE IF NOT EXISTS "comments" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"author_name" varchar NOT NULL,
   	"author_email" varchar NOT NULL,
@@ -17,19 +17,19 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   	"created_at" timestamp(3) with time zone DEFAULT now() NOT NULL
   );
 
-  ALTER TABLE "posts" ADD COLUMN "enable_comments" boolean DEFAULT true;
-  ALTER TABLE "posts" ADD COLUMN "moderate_comments" boolean DEFAULT true;
-  ALTER TABLE "_posts_v" ADD COLUMN "version_enable_comments" boolean DEFAULT true;
-  ALTER TABLE "_posts_v" ADD COLUMN "version_moderate_comments" boolean DEFAULT true;
-  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN "comments_id" integer;
-  ALTER TABLE "comments" ADD CONSTRAINT "comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE set null ON UPDATE no action;
-  ALTER TABLE "comments" ADD CONSTRAINT "comments_parent_id_comments_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."comments"("id") ON DELETE set null ON UPDATE no action;
-  CREATE INDEX "comments_post_idx" ON "comments" USING btree ("post_id");
-  CREATE INDEX "comments_parent_idx" ON "comments" USING btree ("parent_id");
-  CREATE INDEX "comments_updated_at_idx" ON "comments" USING btree ("updated_at");
-  CREATE INDEX "comments_created_at_idx" ON "comments" USING btree ("created_at");
-  ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_comments_fk" FOREIGN KEY ("comments_id") REFERENCES "public"."comments"("id") ON DELETE cascade ON UPDATE no action;
-  CREATE INDEX "payload_locked_documents_rels_comments_id_idx" ON "payload_locked_documents_rels" USING btree ("comments_id");`)
+  ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "enable_comments" boolean DEFAULT true;
+  ALTER TABLE "posts" ADD COLUMN IF NOT EXISTS "moderate_comments" boolean DEFAULT true;
+  ALTER TABLE "_posts_v" ADD COLUMN IF NOT EXISTS "version_enable_comments" boolean DEFAULT true;
+  ALTER TABLE "_posts_v" ADD COLUMN IF NOT EXISTS "version_moderate_comments" boolean DEFAULT true;
+  ALTER TABLE "payload_locked_documents_rels" ADD COLUMN IF NOT EXISTS "comments_id" integer;
+  DO $$ BEGIN ALTER TABLE "comments" ADD CONSTRAINT "comments_post_id_posts_id_fk" FOREIGN KEY ("post_id") REFERENCES "public"."posts"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN null; END $$;
+  DO $$ BEGIN ALTER TABLE "comments" ADD CONSTRAINT "comments_parent_id_comments_id_fk" FOREIGN KEY ("parent_id") REFERENCES "public"."comments"("id") ON DELETE set null ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN null; END $$;
+  CREATE INDEX IF NOT EXISTS "comments_post_idx" ON "comments" USING btree ("post_id");
+  CREATE INDEX IF NOT EXISTS "comments_parent_idx" ON "comments" USING btree ("parent_id");
+  CREATE INDEX IF NOT EXISTS "comments_updated_at_idx" ON "comments" USING btree ("updated_at");
+  CREATE INDEX IF NOT EXISTS "comments_created_at_idx" ON "comments" USING btree ("created_at");
+  DO $$ BEGIN ALTER TABLE "payload_locked_documents_rels" ADD CONSTRAINT "payload_locked_documents_rels_comments_fk" FOREIGN KEY ("comments_id") REFERENCES "public"."comments"("id") ON DELETE cascade ON UPDATE no action; EXCEPTION WHEN duplicate_object THEN null; END $$;
+  CREATE INDEX IF NOT EXISTS "payload_locked_documents_rels_comments_id_idx" ON "payload_locked_documents_rels" USING btree ("comments_id");`)
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
