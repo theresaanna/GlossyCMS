@@ -2,6 +2,7 @@
 import { getPayload } from 'payload'
 import config from '@payload-config'
 import GalleryGrid from '@/components/GalleryGrid'
+import themeConfig from '@/theme.config'
 
 export default async function GalleryPage() {
   const payload = await getPayload({ config })
@@ -28,8 +29,10 @@ export default async function GalleryPage() {
       url: item.url || `/api/media/file/${item.filename}`,
     })) as (typeof media.docs[number] & { url: string })[]
 
+  const { GalleryLayout } = themeConfig.layouts
+
   return (
-    <div className="container mx-auto px-4 py-8">
+    <GalleryLayout>
       <h1 className="text-4xl font-bold mb-8">Gallery</h1>
 
       {validMedia.length === 0 ? (
@@ -40,6 +43,6 @@ export default async function GalleryPage() {
       ) : (
         <GalleryGrid items={validMedia} />
       )}
-    </div>
+    </GalleryLayout>
   )
 }

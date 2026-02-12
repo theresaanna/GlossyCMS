@@ -7,6 +7,7 @@ import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
+import themeConfig from '@/theme.config'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
@@ -27,8 +28,10 @@ export default async function Page() {
     },
   })
 
+  const { ArchiveLayout } = themeConfig.layouts
+
   return (
-    <div className="pt-24 pb-24">
+    <ArchiveLayout>
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
@@ -52,7 +55,7 @@ export default async function Page() {
           <Pagination page={posts.page} totalPages={posts.totalPages} />
         )}
       </div>
-    </div>
+    </ArchiveLayout>
   )
 }
 

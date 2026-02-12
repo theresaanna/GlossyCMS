@@ -7,11 +7,10 @@ import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
 import { homeStatic } from '@/endpoints/seed/home-static'
 
-import { RenderBlocks } from '@/blocks/RenderBlocks'
-import { RenderHero } from '@/heros/RenderHero'
 import { generateMeta } from '@/utilities/generateMeta'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
+import themeConfig from '@/theme.config'
 
 export async function generateStaticParams() {
   const payload = await getPayload({ config: configPromise })
@@ -65,18 +64,21 @@ export default async function Page({ params: paramsPromise }: Args) {
   }
 
   const { hero, layout } = page
+  const { PageLayout } = themeConfig.layouts
 
   return (
-    <article className="pt-16 pb-24">
-      <PageClient />
-      {/* Allows redirects for valid pages too */}
-      <PayloadRedirects disableNotFound url={url} />
-
-      {draft && <LivePreviewListener />}
-
-      <RenderHero {...hero} />
-      <RenderBlocks blocks={layout} />
-    </article>
+    <PageLayout
+      hero={hero}
+      blocks={layout}
+      auxiliaryContent={
+        <>
+          <PageClient />
+          {/* Allows redirects for valid pages too */}
+          <PayloadRedirects disableNotFound url={url} />
+          {draft && <LivePreviewListener />}
+        </>
+      }
+    />
   )
 }
 
