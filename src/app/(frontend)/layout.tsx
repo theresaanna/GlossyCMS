@@ -12,12 +12,14 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { draftMode } from 'next/headers'
+import themeConfig from '@/theme.config'
 
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const { isEnabled } = await draftMode()
+  const { SiteLayout } = themeConfig.layouts
 
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
@@ -28,15 +30,19 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Providers>
-          <AdminBar
-            adminBarProps={{
-              preview: isEnabled,
-            }}
-          />
-
-          <Header />
-          {children}
-          <Footer />
+          <SiteLayout
+            adminBar={
+              <AdminBar
+                adminBarProps={{
+                  preview: isEnabled,
+                }}
+              />
+            }
+            header={<Header />}
+            footer={<Footer />}
+          >
+            {children}
+          </SiteLayout>
         </Providers>
       </body>
     </html>

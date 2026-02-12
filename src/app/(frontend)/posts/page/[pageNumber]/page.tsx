@@ -8,6 +8,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
 import { notFound } from 'next/navigation'
+import themeConfig from '@/theme.config'
 
 export const revalidate = 600
 
@@ -33,8 +34,10 @@ export default async function Page({ params: paramsPromise }: Args) {
     overrideAccess: false,
   })
 
+  const { ArchiveLayout } = themeConfig.layouts
+
   return (
-    <div className="pt-24 pb-24">
+    <ArchiveLayout>
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none">
@@ -58,7 +61,7 @@ export default async function Page({ params: paramsPromise }: Args) {
           <Pagination page={posts.page} totalPages={posts.totalPages} />
         )}
       </div>
-    </div>
+    </ArchiveLayout>
   )
 }
 

@@ -7,6 +7,7 @@ import React from 'react'
 import { Search } from '@/search/Component'
 import PageClient from './page.client'
 import { CardPostData } from '@/components/Card'
+import themeConfig from '@/theme.config'
 
 type Args = {
   searchParams: Promise<{
@@ -59,8 +60,10 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
       : {}),
   })
 
+  const { ArchiveLayout } = themeConfig.layouts
+
   return (
-    <div className="pt-24 pb-24">
+    <ArchiveLayout>
       <PageClient />
       <div className="container mb-16">
         <div className="prose dark:prose-invert max-w-none text-center">
@@ -77,7 +80,7 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
       ) : (
         <div className="container">No results found.</div>
       )}
-    </div>
+    </ArchiveLayout>
   )
 }
 
