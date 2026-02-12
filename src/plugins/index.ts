@@ -12,8 +12,6 @@ import { beforeSyncWithSearch } from '@/search/beforeSync'
 import { Page, Post } from '@/payload-types'
 import { getServerSideURL } from '@/utilities/getURL'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
-import { payloadAiPlugin } from '@ai-stack/payloadcms'
-
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
   return doc?.title ? `${doc.title} | Payload Website Template` : 'Payload Website Template'
@@ -26,12 +24,6 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
 }
 
 export const plugins: Plugin[] = [
-  payloadAiPlugin({
-    collections: {
-      posts: true,
-    },
-    debugging: false,
-  }),
   redirectsPlugin({
     collections: ['pages', 'posts'],
     overrides: {
