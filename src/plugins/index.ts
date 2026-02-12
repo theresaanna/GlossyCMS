@@ -28,7 +28,7 @@ const generateURL: GenerateURL<Post | Page> = ({ doc }) => {
 export const plugins: Plugin[] = [
   payloadAiPlugin({
     collections: {
-      [Posts.slug]: true,
+      posts: true,
     },
     debugging: false,
   }),
