@@ -7,6 +7,22 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
-    include: ['tests/int/**/*.int.spec.ts'],
+    include: ['tests/int/**/*.int.spec.ts', 'src/**/*.test.ts', 'src/**/*.test.tsx'],
+    coverage: {
+      provider: 'v8',
+      reporter: ['text', 'json-summary', 'lcov'],
+      reportsDirectory: './coverage',
+      include: [
+        'src/utilities/clientVideoCompression.ts',
+        'src/utilities/clientAudioCompression.ts',
+        'src/utilities/getMediaUrl.ts',
+        'src/access/approvedOrAuthenticated.ts',
+        'src/collections/Comments/hooks/revalidateComment.ts',
+        'src/collections/Media/hooks/revalidateMedia.ts',
+        'src/app/(frontend)/posts/\\[slug\\]/actions.ts',
+        'src/components/Comments/**/*.{ts,tsx}',
+        'src/components/GalleryGrid/**/*.{ts,tsx}',
+      ],
+    },
   },
 })
