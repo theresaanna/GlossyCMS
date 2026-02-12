@@ -94,14 +94,17 @@
     "vitest": "3.2.3"
   },
   "engines": {
-    "node": "^18.20.2 || >=20.9.0 <23",
+    "node": "^18.20.2 || >=20.9.0",
     "pnpm": "^9 || ^10"
   },
   "pnpm": {
     "onlyBuiltDependencies": [
-      "sharp",
+      "bufferutil",
       "esbuild",
-      "unrs-resolver"
+      "protobufjs",
+      "sharp",
+      "unrs-resolver",
+      "utf-8-validate"
     ]
   },
   "packageManager": "pnpm@10.29.3+sha512.498e1fb4cca5aa06c1dcf2611e6fafc50972ffe7189998c409e90de74566444298ffe43e6cd2acdc775ba1aa7cc5e092a8b7054c811ba8c5770f84693d33d2dc"

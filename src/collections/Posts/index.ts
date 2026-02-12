@@ -68,19 +68,6 @@ export const Posts: CollectionConfig<'posts'> = {
   },
   fields: [
     {
-      name: 'content',
-      type: 'richText',
-      editor: lexicalEditor({
-        features: ({ rootFeatures }) => {
-          return [
-            HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
-            // Add this line:
-            PayloadAiPluginLexicalEditorFeature(),
-          ]
-        },
-      }),
-    },
-    {
       name: 'title',
       type: 'text',
       required: true,
@@ -107,6 +94,7 @@ export const Posts: CollectionConfig<'posts'> = {
                     FixedToolbarFeature(),
                     InlineToolbarFeature(),
                     HorizontalRuleFeature(),
+                    PayloadAiPluginLexicalEditorFeature(),
                   ]
                 },
               }),
