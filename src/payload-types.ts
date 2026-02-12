@@ -114,10 +114,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'social-media': SocialMedia;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'social-media': SocialMediaSelect<false> | SocialMediaSelect<true>;
   };
   locale: null;
   user: User & {
@@ -202,7 +204,15 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | GalleryBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | GalleryBlock
+    | TwitterFeedBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -834,6 +844,27 @@ export interface GalleryBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TwitterFeedBlock".
+ */
+export interface TwitterFeedBlock {
+  /**
+   * Optional heading displayed above the tweet feed.
+   */
+  title?: string | null;
+  /**
+   * The username (without @) whose tweets to display.
+   */
+  twitterUsername: string;
+  /**
+   * How many recent tweets to show (1–20).
+   */
+  numberOfTweets?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'twitterFeed';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments".
  */
 export interface Comment {
@@ -1162,6 +1193,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         gallery?: T | GalleryBlockSelect<T>;
+        twitterFeed?: T | TwitterFeedBlockSelect<T>;
       };
   meta?:
     | T
@@ -1271,6 +1303,17 @@ export interface GalleryBlockSelect<T extends boolean = true> {
   folder?: T;
   limit?: T;
   selectedMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TwitterFeedBlock_select".
+ */
+export interface TwitterFeedBlockSelect<T extends boolean = true> {
+  title?: T;
+  twitterUsername?: T;
+  numberOfTweets?: T;
   id?: T;
   blockName?: T;
 }
@@ -1800,6 +1843,23 @@ export interface Footer {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media".
+ */
+export interface SocialMedia {
+  id: number;
+  /**
+   * Your Twitter/X API v2 Bearer Token. Generate one at https://developer.x.com/en/portal/dashboard
+   */
+  twitterBearerToken?: string | null;
+  /**
+   * Default username (without @) to pre-fill when adding Twitter Feed blocks to pages.
+   */
+  twitterDefaultUsername?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -1840,6 +1900,17 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "social-media_select".
+ */
+export interface SocialMediaSelect<T extends boolean = true> {
+  twitterBearerToken?: T;
+  twitterDefaultUsername?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

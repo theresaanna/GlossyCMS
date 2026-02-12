@@ -8,6 +8,7 @@ import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { GalleryBlock } from '@/blocks/GalleryBlock/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { TwitterFeedBlock } from '@/blocks/TwitterFeedBlock/Component'
 
 const blockComponents = {
   archive: ArchiveBlock,
@@ -16,6 +17,7 @@ const blockComponents = {
   formBlock: FormBlock,
   gallery: GalleryBlock,
   mediaBlock: MediaBlock,
+  twitterFeed: TwitterFeedBlock,
 }
 
 export const RenderBlocks: React.FC<{

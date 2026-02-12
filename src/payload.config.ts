@@ -13,6 +13,7 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { Footer } from './Footer/config'
 import { Header } from './Header/config'
+import { SocialMedia } from './SocialMedia/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -76,7 +77,7 @@ export default buildConfig({
     defaultFromAddress: 'anna@goddessannaadore.com',
     defaultFromName: 'Anna Adore'
   }),
-  globals: [Header, Footer],
+  globals: [Header, Footer, SocialMedia],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
