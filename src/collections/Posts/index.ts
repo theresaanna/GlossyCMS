@@ -1,4 +1,5 @@
 import type { CollectionConfig } from 'payload'
+import { PayloadAiPluginLexicalEditorFeature } from '@ai-stack/payloadcms'
 
 import {
   BlocksFeature,
@@ -66,6 +67,19 @@ export const Posts: CollectionConfig<'posts'> = {
     useAsTitle: 'title',
   },
   fields: [
+    {
+      name: 'content',
+      type: 'richText',
+      editor: lexicalEditor({
+        features: ({ rootFeatures }) => {
+          return [
+            HeadingFeature({ enabledHeadingSizes: ['h1', 'h2', 'h3', 'h4'] }),
+            // Add this line:
+            PayloadAiPluginLexicalEditorFeature(),
+          ]
+        },
+      }),
+    },
     {
       name: 'title',
       type: 'text',
