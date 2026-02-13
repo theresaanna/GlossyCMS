@@ -21,10 +21,7 @@ import { getServerSideURL } from './utilities/getURL'
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
-const resendKey = process.env.RESEND_API_KEY;
-if (!resendKey) {
-  throw new Error('RESEND_API_KEY is not defined in environment variables');
-}
+const resendKey = process.env.RESEND_API_KEY
 
 export default buildConfig({
   admin: {
@@ -67,16 +64,20 @@ export default buildConfig({
   editor: defaultLexical,
   db: vercelPostgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL || '',
+      connectionString: process.env.DATABASE_URL || process.env.POSTGRES_URL || '',
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users, Comments],
   cors: [getServerSideURL()].filter(Boolean),
-  email: resendAdapter({
-    apiKey: resendKey,
-    defaultFromAddress: 'anna@goddessannaadore.com',
-    defaultFromName: 'Anna Adore'
-  }),
+  ...(resendKey
+    ? {
+        email: resendAdapter({
+          apiKey: resendKey,
+          defaultFromAddress: 'anna@goddessannaadore.com',
+          defaultFromName: 'Anna Adore',
+        }),
+      }
+    : {}),
   globals: [Header, Footer, SocialMedia],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
