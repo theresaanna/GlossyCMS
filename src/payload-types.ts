@@ -1848,10 +1848,6 @@ export interface Footer {
 export interface SocialMedia {
   id: number;
   /**
-   * Your Twitter/X API v2 Bearer Token. Generate one at https://developer.x.com/en/portal/dashboard
-   */
-  twitterBearerToken?: string | null;
-  /**
    * Default username (without @) to pre-fill when adding Twitter Feed blocks to pages.
    */
   twitterDefaultUsername?: string | null;
@@ -1909,7 +1905,6 @@ export interface FooterSelect<T extends boolean = true> {
  * via the `definition` "social-media_select".
  */
 export interface SocialMediaSelect<T extends boolean = true> {
-  twitterBearerToken?: T;
   twitterDefaultUsername?: T;
   updatedAt?: T;
   createdAt?: T;

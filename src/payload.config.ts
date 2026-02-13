@@ -1,4 +1,4 @@
-import { postgresAdapter } from '@payloadcms/db-postgres'
+import { vercelPostgresAdapter } from '@payloadcms/db-vercel-postgres'
 import sharp from 'sharp'
 import path from 'path'
 import { buildConfig, PayloadRequest } from 'payload'
@@ -65,10 +65,9 @@ export default buildConfig({
   },
   // This config helps us configure global or default features that the other editors can inherit
   editor: defaultLexical,
-  db: postgresAdapter({
+  db: vercelPostgresAdapter({
     pool: {
-      connectionString: process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL || '',
-      ssl: { rejectUnauthorized: false },
+      connectionString: process.env.POSTGRES_URL || '',
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users, Comments],
