@@ -68,6 +68,7 @@ export default buildConfig({
   db: postgresAdapter({
     pool: {
       connectionString: process.env.POSTGRES_URL_NON_POOLING || process.env.POSTGRES_URL || '',
+      ssl: { rejectUnauthorized: false },
     },
   }),
   collections: [Pages, Posts, Media, Categories, Users, Comments],
