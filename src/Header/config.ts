@@ -16,6 +16,7 @@ export const Header: GlobalConfig = {
         link({
           appearances: false,
           enableGalleryLink: true,
+          enablePostsLink: true,
         }),
       ],
       maxRows: 6,

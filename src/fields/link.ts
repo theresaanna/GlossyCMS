@@ -20,9 +20,10 @@ type LinkType = (options?: {
   disableLabel?: boolean
   overrides?: Partial<GroupField>
   enableGalleryLink?: boolean
+  enablePostsLink?: boolean
 }) => Field
 
-export const link: LinkType = ({ appearances, disableLabel = false, overrides = {}, enableGalleryLink = false } = {}) => {
+export const link: LinkType = ({ appearances, disableLabel = false, overrides = {}, enableGalleryLink = false, enablePostsLink = false } = {}) => {
   const typeOptions = [
     {
       label: 'Internal link',
@@ -38,6 +39,13 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
     typeOptions.push({
       label: 'Gallery',
       value: 'gallery',
+    })
+  }
+
+  if (enablePostsLink) {
+    typeOptions.push({
+      label: 'Posts',
+      value: 'posts',
     })
   }
 

@@ -46,6 +46,37 @@ describe('CMSLink', () => {
     })
   })
 
+  describe('posts type', () => {
+    it('renders a link to /posts when type is posts', () => {
+      render(<CMSLink type="posts" label="Posts" />)
+
+      const link = screen.getByText('Posts')
+      expect(link.closest('a')?.getAttribute('href')).toBe('/posts')
+    })
+
+    it('renders posts link regardless of url or reference props', () => {
+      render(
+        <CMSLink
+          type="posts"
+          label="Blog"
+          url="/some-other-url"
+          reference={{ relationTo: 'pages', value: { slug: 'test' } as any }}
+        />,
+      )
+
+      const link = screen.getByText('Blog')
+      expect(link.closest('a')?.getAttribute('href')).toBe('/posts')
+    })
+
+    it('renders posts link with newTab props when enabled', () => {
+      render(<CMSLink type="posts" label="Posts" newTab />)
+
+      const link = screen.getByText('Posts').closest('a')
+      expect(link?.getAttribute('target')).toBe('_blank')
+      expect(link?.getAttribute('rel')).toBe('noopener noreferrer')
+    })
+  })
+
   describe('reference type', () => {
     it('renders link to page slug', () => {
       render(
