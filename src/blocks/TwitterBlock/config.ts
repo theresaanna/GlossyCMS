@@ -13,7 +13,7 @@ export const TwitterBlock: Block = {
       type: 'text',
       required: true,
       label: 'Twitter Username',
-      validate: (value) => {
+      validate: (value: string | null | undefined) => {
         if (!value) return 'Username is required'
         if (!/^[A-Za-z0-9_]{1,15}$/.test(value)) {
           return 'Username must be 1-15 characters and contain only letters, numbers, and underscores'
