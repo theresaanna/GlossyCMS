@@ -939,6 +939,7 @@ export interface Newsletter {
     };
     [k: string]: unknown;
   };
+  recipients?: (number | NewsletterRecipient)[] | null;
   status?: ('draft' | 'sent') | null;
   sentAt?: string | null;
   recipientCount?: number | null;
@@ -1619,6 +1620,7 @@ export interface NewsletterRecipientsSelect<T extends boolean = true> {
 export interface NewslettersSelect<T extends boolean = true> {
   subject?: T;
   content?: T;
+  recipients?: T;
   status?: T;
   sentAt?: T;
   recipientCount?: T;

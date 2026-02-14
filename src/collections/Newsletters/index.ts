@@ -41,6 +41,16 @@ export const Newsletters: CollectionConfig = {
       }),
     },
     {
+      name: 'recipients',
+      type: 'relationship',
+      relationTo: 'newsletter-recipients',
+      hasMany: true,
+      admin: {
+        description:
+          'Select specific recipients. If none are selected, the newsletter will be sent to all subscribed recipients.',
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       defaultValue: 'draft',

@@ -11,6 +11,7 @@ import * as migration_20260214_060000_add_posts_link_type from './20260214_06000
 import * as migration_20260214_070000_remove_twitter_block from './20260214_070000_remove_twitter_block';
 import * as migration_20260214_080000_add_newsletter from './20260214_080000_add_newsletter';
 import * as migration_20260214_090000_fix_newsletter_locked_docs from './20260214_090000_fix_newsletter_locked_docs';
+import * as migration_20260214_100000_add_newsletter_recipients_rel from './20260214_100000_add_newsletter_recipients_rel';
 
 export const migrations = [
   {
@@ -77,5 +78,10 @@ export const migrations = [
     up: migration_20260214_090000_fix_newsletter_locked_docs.up,
     down: migration_20260214_090000_fix_newsletter_locked_docs.down,
     name: '20260214_090000_fix_newsletter_locked_docs',
+  },
+  {
+    up: migration_20260214_100000_add_newsletter_recipients_rel.up,
+    down: migration_20260214_100000_add_newsletter_recipients_rel.down,
+    name: '20260214_100000_add_newsletter_recipients_rel',
   },
 ];

@@ -31,6 +31,45 @@ function wrapInEmailTemplate(subject: string, bodyHtml: string): string {
 </html>`
 }
 
+export type RecipientDoc = {
+  id: number | string
+  email: string
+  name?: string | null
+  status?: string | null
+}
+
+export async function resolveRecipients(
+  payload: any,
+  req: any,
+  newsletterRecipients: (number | string | RecipientDoc)[] | null | undefined,
+): Promise<RecipientDoc[]> {
+  if (newsletterRecipients && newsletterRecipients.length > 0) {
+    // Resolve IDs to full docs if needed
+    const recipientIds = newsletterRecipients.map((r) =>
+      typeof r === 'object' && r !== null ? r.id : r,
+    )
+    const result = await payload.find({
+      collection: 'newsletter-recipients',
+      where: {
+        id: { in: recipientIds },
+        status: { equals: 'subscribed' },
+      },
+      limit: 0,
+      req,
+    })
+    return result.docs as RecipientDoc[]
+  }
+
+  // No specific recipients selected — send to all subscribed
+  const result = await payload.find({
+    collection: 'newsletter-recipients',
+    where: { status: { equals: 'subscribed' } },
+    limit: 0,
+    req,
+  })
+  return result.docs as RecipientDoc[]
+}
+
 export const sendNewsletterHandler: PayloadHandler = async (req) => {
   if (!req.user) {
     return Response.json({ error: 'Unauthorized' }, { status: 401 })
@@ -56,14 +95,13 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
       return Response.json({ error: 'Newsletter has no content' }, { status: 400 })
     }
 
-    const recipients = await req.payload.find({
-      collection: 'newsletter-recipients',
-      where: { status: { equals: 'subscribed' } },
-      limit: 0,
+    const recipients = await resolveRecipients(
+      req.payload,
       req,
-    })
+      newsletter.recipients as (number | string | RecipientDoc)[] | null | undefined,
+    )
 
-    if (recipients.totalDocs === 0) {
+    if (recipients.length === 0) {
       return Response.json({ error: 'No subscribed recipients found' }, { status: 400 })
     }
 
@@ -77,7 +115,7 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
     let sentCount = 0
     const errors: string[] = []
 
-    for (const recipient of recipients.docs) {
+    for (const recipient of recipients) {
       try {
         await req.payload.sendEmail({
           to: recipient.email,
@@ -104,7 +142,7 @@ export const sendNewsletterHandler: PayloadHandler = async (req) => {
     return Response.json({
       success: true,
       sentCount,
-      totalRecipients: recipients.totalDocs,
+      totalRecipients: recipients.length,
       errors: errors.length > 0 ? errors : undefined,
     })
   } catch (err) {

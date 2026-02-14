@@ -10,12 +10,18 @@ export const SendNewsletterButton: React.FC = () => {
   const [result, setResult] = useState<{ success?: boolean; sentCount?: number; error?: string } | null>(null)
 
   const isSent = initialData?.status === 'sent'
+  const recipients = initialData?.recipients as (number | { id: number; email?: string })[] | null | undefined
+  const recipientCount = Array.isArray(recipients) ? recipients.length : 0
 
   const handleSend = useCallback(async () => {
     if (!id) return
 
+    const targetDesc = recipientCount > 0
+      ? `${recipientCount} selected recipient${recipientCount !== 1 ? 's' : ''}`
+      : 'all subscribed recipients'
+
     const confirmed = window.confirm(
-      'Are you sure you want to send this newsletter to all subscribed recipients? This action cannot be undone.',
+      `Are you sure you want to send this newsletter to ${targetDesc}? This action cannot be undone.`,
     )
     if (!confirmed) return
 
@@ -39,7 +45,7 @@ export const SendNewsletterButton: React.FC = () => {
     } finally {
       setSending(false)
     }
-  }, [id])
+  }, [id, recipientCount])
 
   if (isSent) {
     return (
@@ -72,6 +78,35 @@ export const SendNewsletterButton: React.FC = () => {
 
   return (
     <div style={{ padding: '12px 0' }}>
+      {recipientCount > 0 && (
+        <div
+          style={{
+            marginBottom: '8px',
+            padding: '8px 12px',
+            backgroundColor: '#eff6ff',
+            color: '#1e40af',
+            borderRadius: '6px',
+            fontSize: '13px',
+          }}
+        >
+          Targeting {recipientCount} selected recipient{recipientCount !== 1 ? 's' : ''}
+        </div>
+      )}
+      {recipientCount === 0 && (
+        <div
+          style={{
+            marginBottom: '8px',
+            padding: '8px 12px',
+            backgroundColor: '#f5f5f4',
+            color: '#57534e',
+            borderRadius: '6px',
+            fontSize: '13px',
+          }}
+        >
+          Will send to all subscribed recipients
+        </div>
+      )}
+
       <button
         type="button"
         onClick={handleSend}

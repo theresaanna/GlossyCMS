@@ -24,6 +24,23 @@ describe('Newsletters collection config', () => {
     expect(field.required).toBe(true)
   })
 
+  it('has a recipients relationship field to newsletter-recipients', () => {
+    const field = Newsletters.fields.find(
+      (f) => 'name' in f && f.name === 'recipients',
+    ) as any
+    expect(field).toBeDefined()
+    expect(field.type).toBe('relationship')
+    expect(field.relationTo).toBe('newsletter-recipients')
+    expect(field.hasMany).toBe(true)
+  })
+
+  it('has a description on the recipients field explaining default behavior', () => {
+    const field = Newsletters.fields.find(
+      (f) => 'name' in f && f.name === 'recipients',
+    ) as any
+    expect(field.admin.description).toContain('all subscribed recipients')
+  })
+
   it('has a status select field with draft and sent options', () => {
     const field = Newsletters.fields.find(
       (f) => 'name' in f && f.name === 'status',
