@@ -15,6 +15,7 @@ export const Footer: GlobalConfig = {
       fields: [
         link({
           appearances: false,
+          enableGalleryLink: true,
         }),
       ],
       maxRows: 6,

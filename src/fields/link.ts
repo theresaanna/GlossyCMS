@@ -19,9 +19,28 @@ type LinkType = (options?: {
   appearances?: LinkAppearances[] | false
   disableLabel?: boolean
   overrides?: Partial<GroupField>
+  enableGalleryLink?: boolean
 }) => Field
 
-export const link: LinkType = ({ appearances, disableLabel = false, overrides = {} } = {}) => {
+export const link: LinkType = ({ appearances, disableLabel = false, overrides = {}, enableGalleryLink = false } = {}) => {
+  const typeOptions = [
+    {
+      label: 'Internal link',
+      value: 'reference',
+    },
+    {
+      label: 'Custom URL',
+      value: 'custom',
+    },
+  ]
+
+  if (enableGalleryLink) {
+    typeOptions.push({
+      label: 'Gallery',
+      value: 'gallery',
+    })
+  }
+
   const linkResult: GroupField = {
     name: 'link',
     type: 'group',
@@ -40,16 +59,7 @@ export const link: LinkType = ({ appearances, disableLabel = false, overrides = 
               width: '50%',
             },
             defaultValue: 'reference',
-            options: [
-              {
-                label: 'Internal link',
-                value: 'reference',
-              },
-              {
-                label: 'Custom URL',
-                value: 'custom',
-              },
-            ],
+            options: typeOptions,
           },
           {
             name: 'newTab',
