@@ -25,7 +25,7 @@ export default defineConfig({
         'src/components/Link/index.tsx',
         'src/Gallery/**/*.{ts,tsx}',
         'src/fields/link.ts',
-        'src/blocks/TwitterBlock/**/*.{ts,tsx}',
+
       ],
     },
   },
