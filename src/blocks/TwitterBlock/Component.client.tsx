@@ -6,7 +6,14 @@ declare global {
     twttr?: {
       widgets?: {
         load: (el?: HTMLElement) => void
+        createTimeline: (
+          source: { sourceType: string; screenName: string },
+          target: HTMLElement,
+          options?: Record<string, unknown>,
+        ) => Promise<HTMLElement>
       }
+      _e?: Array<() => void>
+      ready: (callback: (twttr: Window['twttr']) => void) => void
     }
   }
 }
@@ -16,41 +23,71 @@ type Props = {
   tweetLimit: number
 }
 
-export const TwitterTimeline: React.FC<Props> = ({ username, tweetLimit }) => {
-  const containerRef = useRef<HTMLDivElement>(null)
+function loadWidgetsScript(): Promise<void> {
+  return new Promise((resolve) => {
+    if (window.twttr?.widgets?.createTimeline) {
+      resolve()
+      return
+    }
 
-  useEffect(() => {
     const existingScript = document.querySelector(
       'script[src="https://platform.twitter.com/widgets.js"]',
     )
 
-    const loadWidget = () => {
-      if (window.twttr?.widgets?.load && containerRef.current) {
-        window.twttr.widgets.load(containerRef.current)
-      }
-    }
-
-    if (existingScript) {
-      loadWidget()
-    } else {
+    if (!existingScript) {
       const script = document.createElement('script')
       script.src = 'https://platform.twitter.com/widgets.js'
       script.async = true
       script.charset = 'utf-8'
-      script.onload = loadWidget
-      document.body.appendChild(script)
+      document.head.appendChild(script)
+    }
+
+    // Use Twitter's ready callback to know when the API is available
+    window.twttr = window.twttr || ({ _e: [] } as unknown as Window['twttr'])
+    window.twttr!.ready = window.twttr!.ready || function (cb) {
+      window.twttr!._e!.push(() => cb(window.twttr))
+    }
+    window.twttr!.ready(() => resolve())
+  })
+}
+
+export const TwitterTimeline: React.FC<Props> = ({ username, tweetLimit }) => {
+  const containerRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    let cancelled = false
+
+    async function renderTimeline() {
+      await loadWidgetsScript()
+
+      if (cancelled || !containerRef.current || !window.twttr?.widgets?.createTimeline) return
+
+      // Clear any previously rendered widget
+      containerRef.current.innerHTML = ''
+
+      try {
+        await window.twttr.widgets.createTimeline(
+          { sourceType: 'profile', screenName: username },
+          containerRef.current,
+          { tweetLimit },
+        )
+      } catch {
+        if (!cancelled && containerRef.current) {
+          containerRef.current.innerHTML = `<p>Unable to load timeline for @${username}.</p>`
+        }
+      }
+    }
+
+    renderTimeline()
+
+    return () => {
+      cancelled = true
     }
   }, [username, tweetLimit])
 
   return (
     <div ref={containerRef}>
-      <a
-        className="twitter-timeline"
-        data-tweet-limit={tweetLimit}
-        href={`https://twitter.com/${username}`}
-      >
-        Tweets by @{username}
-      </a>
+      <p>Loading tweets by @{username}…</p>
     </div>
   )
 }
