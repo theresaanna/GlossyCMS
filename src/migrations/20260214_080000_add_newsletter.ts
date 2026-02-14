@@ -2,13 +2,19 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-vercel-postg
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-  CREATE TYPE "public"."enum_newsletter_recipients_status" AS ENUM('subscribed', 'unsubscribed');`)
+  DO $$ BEGIN
+    CREATE TYPE "public"."enum_newsletter_recipients_status" AS ENUM('subscribed', 'unsubscribed');
+  EXCEPTION WHEN duplicate_object THEN null;
+  END $$;`)
 
   await db.execute(sql`
-  CREATE TYPE "public"."enum_newsletters_status" AS ENUM('draft', 'sent');`)
+  DO $$ BEGIN
+    CREATE TYPE "public"."enum_newsletters_status" AS ENUM('draft', 'sent');
+  EXCEPTION WHEN duplicate_object THEN null;
+  END $$;`)
 
   await db.execute(sql`
-  CREATE TABLE "newsletter_recipients" (
+  CREATE TABLE IF NOT EXISTS "newsletter_recipients" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"email" varchar NOT NULL,
   	"name" varchar,
@@ -20,7 +26,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   );`)
 
   await db.execute(sql`
-  CREATE TABLE "newsletters" (
+  CREATE TABLE IF NOT EXISTS "newsletters" (
   	"id" serial PRIMARY KEY NOT NULL,
   	"subject" varchar NOT NULL,
   	"content" jsonb,
@@ -32,7 +38,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   );`)
 
   await db.execute(sql`
-  CREATE TABLE "pages_blocks_newsletter_signup" (
+  CREATE TABLE IF NOT EXISTS "pages_blocks_newsletter_signup" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"_path" text NOT NULL,
@@ -44,7 +50,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   );`)
 
   await db.execute(sql`
-  CREATE TABLE "_pages_v_blocks_newsletter_signup" (
+  CREATE TABLE IF NOT EXISTS "_pages_v_blocks_newsletter_signup" (
   	"_order" integer NOT NULL,
   	"_parent_id" integer NOT NULL,
   	"_path" text NOT NULL,
@@ -57,40 +63,46 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   );`)
 
   await db.execute(sql`
-  CREATE UNIQUE INDEX "newsletter_recipients_email_idx" ON "newsletter_recipients" USING btree ("email");`)
+  CREATE UNIQUE INDEX IF NOT EXISTS "newsletter_recipients_email_idx" ON "newsletter_recipients" USING btree ("email");`)
   await db.execute(sql`
-  CREATE INDEX "newsletter_recipients_updated_at_idx" ON "newsletter_recipients" USING btree ("updated_at");`)
+  CREATE INDEX IF NOT EXISTS "newsletter_recipients_updated_at_idx" ON "newsletter_recipients" USING btree ("updated_at");`)
   await db.execute(sql`
-  CREATE INDEX "newsletter_recipients_created_at_idx" ON "newsletter_recipients" USING btree ("created_at");`)
+  CREATE INDEX IF NOT EXISTS "newsletter_recipients_created_at_idx" ON "newsletter_recipients" USING btree ("created_at");`)
   await db.execute(sql`
-  CREATE INDEX "newsletters_updated_at_idx" ON "newsletters" USING btree ("updated_at");`)
+  CREATE INDEX IF NOT EXISTS "newsletters_updated_at_idx" ON "newsletters" USING btree ("updated_at");`)
   await db.execute(sql`
-  CREATE INDEX "newsletters_created_at_idx" ON "newsletters" USING btree ("created_at");`)
+  CREATE INDEX IF NOT EXISTS "newsletters_created_at_idx" ON "newsletters" USING btree ("created_at");`)
 
   await db.execute(sql`
-  ALTER TABLE "pages_blocks_newsletter_signup" ADD CONSTRAINT "pages_blocks_newsletter_signup_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;`)
+  DO $$ BEGIN
+    ALTER TABLE "pages_blocks_newsletter_signup" ADD CONSTRAINT "pages_blocks_newsletter_signup_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."pages"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION WHEN duplicate_object THEN null;
+  END $$;`)
   await db.execute(sql`
-  ALTER TABLE "_pages_v_blocks_newsletter_signup" ADD CONSTRAINT "_pages_v_blocks_newsletter_signup_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v"("id") ON DELETE cascade ON UPDATE no action;`)
+  DO $$ BEGIN
+    ALTER TABLE "_pages_v_blocks_newsletter_signup" ADD CONSTRAINT "_pages_v_blocks_newsletter_signup_parent_id_fk" FOREIGN KEY ("_parent_id") REFERENCES "public"."_pages_v"("id") ON DELETE cascade ON UPDATE no action;
+  EXCEPTION WHEN duplicate_object THEN null;
+  END $$;`)
 
   await db.execute(sql`
-  CREATE INDEX "pages_blocks_newsletter_signup_order_idx" ON "pages_blocks_newsletter_signup" USING btree ("_order");`)
+  CREATE INDEX IF NOT EXISTS "pages_blocks_newsletter_signup_order_idx" ON "pages_blocks_newsletter_signup" USING btree ("_order");`)
   await db.execute(sql`
-  CREATE INDEX "pages_blocks_newsletter_signup_parent_id_idx" ON "pages_blocks_newsletter_signup" USING btree ("_parent_id");`)
+  CREATE INDEX IF NOT EXISTS "pages_blocks_newsletter_signup_parent_id_idx" ON "pages_blocks_newsletter_signup" USING btree ("_parent_id");`)
   await db.execute(sql`
-  CREATE INDEX "pages_blocks_newsletter_signup_path_idx" ON "pages_blocks_newsletter_signup" USING btree ("_path");`)
+  CREATE INDEX IF NOT EXISTS "pages_blocks_newsletter_signup_path_idx" ON "pages_blocks_newsletter_signup" USING btree ("_path");`)
   await db.execute(sql`
-  CREATE INDEX "_pages_v_blocks_newsletter_signup_order_idx" ON "_pages_v_blocks_newsletter_signup" USING btree ("_order");`)
+  CREATE INDEX IF NOT EXISTS "_pages_v_blocks_newsletter_signup_order_idx" ON "_pages_v_blocks_newsletter_signup" USING btree ("_order");`)
   await db.execute(sql`
-  CREATE INDEX "_pages_v_blocks_newsletter_signup_parent_id_idx" ON "_pages_v_blocks_newsletter_signup" USING btree ("_parent_id");`)
+  CREATE INDEX IF NOT EXISTS "_pages_v_blocks_newsletter_signup_parent_id_idx" ON "_pages_v_blocks_newsletter_signup" USING btree ("_parent_id");`)
   await db.execute(sql`
-  CREATE INDEX "_pages_v_blocks_newsletter_signup_path_idx" ON "_pages_v_blocks_newsletter_signup" USING btree ("_path");`)
+  CREATE INDEX IF NOT EXISTS "_pages_v_blocks_newsletter_signup_path_idx" ON "_pages_v_blocks_newsletter_signup" USING btree ("_path");`)
 
   await db.execute(sql`
-  ALTER TABLE "footer" ADD COLUMN "enable_newsletter" boolean DEFAULT false;`)
+  ALTER TABLE "footer" ADD COLUMN IF NOT EXISTS "enable_newsletter" boolean DEFAULT false;`)
   await db.execute(sql`
-  ALTER TABLE "footer" ADD COLUMN "newsletter_heading" varchar;`)
+  ALTER TABLE "footer" ADD COLUMN IF NOT EXISTS "newsletter_heading" varchar;`)
   await db.execute(sql`
-  ALTER TABLE "footer" ADD COLUMN "newsletter_description" varchar;`)
+  ALTER TABLE "footer" ADD COLUMN IF NOT EXISTS "newsletter_description" varchar;`)
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
