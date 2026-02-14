@@ -15,6 +15,7 @@ export const Header: GlobalConfig = {
       fields: [
         link({
           appearances: false,
+          enableGalleryLink: true,
         }),
       ],
       maxRows: 6,

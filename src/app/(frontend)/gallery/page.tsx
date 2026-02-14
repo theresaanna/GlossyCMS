@@ -1,21 +1,34 @@
-// src/app/(frontend)/gallery/page.tsx
-import { getPayload } from 'payload'
+import { getPayload, Where } from 'payload'
 import config from '@payload-config'
 import GalleryGrid from '@/components/GalleryGrid'
 import themeConfig from '@/theme.config'
+import { getCachedGlobal } from '@/utilities/getGlobals'
+import type { GallerySetting } from '@/payload-types'
 
 export default async function GalleryPage() {
   const payload = await getPayload({ config })
 
+  const gallerySettings = (await getCachedGlobal('gallery-settings', 1)()) as GallerySetting
+
+  const folderId = gallerySettings?.folder
+    ? typeof gallerySettings.folder === 'object'
+      ? gallerySettings.folder.id
+      : gallerySettings.folder
+    : null
+
+  const limit = gallerySettings?.limit || 100
+  const title = gallerySettings?.title || 'Gallery'
+
+  const where: Where = {}
+  if (folderId) {
+    where.folder = { equals: folderId }
+  }
+
   const media = await payload.find({
     collection: 'media',
-    limit: 100,
+    limit,
     sort: '-createdAt',
-  })
-
-  // Debug: log media items to understand URL population
-  media.docs.forEach((item) => {
-    console.log(`[Gallery] id=${item.id} mime=${item.mimeType} filename=${item.filename} url=${item.url}`)
+    where,
   })
 
   // Include items that have a url OR a filename (fallback for videos)
@@ -33,7 +46,7 @@ export default async function GalleryPage() {
 
   return (
     <GalleryLayout>
-      <h1 className="text-4xl font-bold mb-8">Gallery</h1>
+      <h1 className="text-4xl font-bold mb-8">{title}</h1>
 
       {validMedia.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 rounded-lg">

@@ -114,10 +114,12 @@ export interface Config {
   globals: {
     header: Header;
     footer: Footer;
+    'gallery-settings': GallerySetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
+    'gallery-settings': GallerySettingsSelect<false> | GallerySettingsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -1749,7 +1751,7 @@ export interface Header {
   navItems?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'custom' | 'gallery') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -1778,7 +1780,7 @@ export interface Footer {
   navItems?:
     | {
         link: {
-          type?: ('reference' | 'custom') | null;
+          type?: ('reference' | 'custom' | 'gallery') | null;
           newTab?: boolean | null;
           reference?:
             | ({
@@ -1795,6 +1797,27 @@ export interface Footer {
         id?: string | null;
       }[]
     | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-settings".
+ */
+export interface GallerySetting {
+  id: number;
+  /**
+   * The title displayed at the top of the gallery page
+   */
+  title?: string | null;
+  /**
+   * Select a media folder to populate the gallery page. If no folder is selected, all media will be shown.
+   */
+  folder?: (number | null) | FolderInterface;
+  /**
+   * Maximum number of media items to display
+   */
+  limit?: number | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -1840,6 +1863,18 @@ export interface FooterSelect<T extends boolean = true> {
             };
         id?: T;
       };
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "gallery-settings_select".
+ */
+export interface GallerySettingsSelect<T extends boolean = true> {
+  title?: T;
+  folder?: T;
+  limit?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
