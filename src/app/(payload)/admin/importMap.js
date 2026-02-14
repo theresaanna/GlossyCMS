@@ -25,6 +25,7 @@ import { FolderField as FolderField_ab83ff7e88da8d3530831f296ec4756a } from '@pa
 import { default as default_4592937588e0336c4f5232fdf0fbc087 } from '@/components/admin/MediaUploadStatusBanner'
 import { default as default_cbb3a033cef03f2d66557d6d540c9218 } from '@/components/AdminComments/BulkApproveButton'
 import { default as default_808cf441303bea8098280780196273ed } from '@/components/AdminComments/BulkSpamButton'
+import { default as default_bafe653ea061c6b109becebf90a34130 } from '@/collections/Newsletters/ui/SendNewsletterButton'
 import { LinkToDoc as LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from '@payloadcms/plugin-search/client'
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
@@ -62,6 +63,7 @@ export const importMap = {
   "@/components/admin/MediaUploadStatusBanner#default": default_4592937588e0336c4f5232fdf0fbc087,
   "@/components/AdminComments/BulkApproveButton#default": default_cbb3a033cef03f2d66557d6d540c9218,
   "@/components/AdminComments/BulkSpamButton#default": default_808cf441303bea8098280780196273ed,
+  "@/collections/Newsletters/ui/SendNewsletterButton#default": default_bafe653ea061c6b109becebf90a34130,
   "@payloadcms/plugin-search/client#LinkToDoc": LinkToDoc_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/plugin-search/client#ReindexButton": ReindexButton_aead06e4cbf6b2620c5c51c9ab283634,
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,

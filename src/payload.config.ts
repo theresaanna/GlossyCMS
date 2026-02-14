@@ -11,6 +11,8 @@ import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
+import { NewsletterRecipients } from './collections/NewsletterRecipients'
+import { Newsletters } from './collections/Newsletters'
 import { Footer } from './Footer/config'
 import { Gallery } from './Gallery/config'
 import { Header } from './Header/config'
@@ -70,7 +72,7 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users, Comments],
+  collections: [Pages, Posts, Media, Categories, Users, Comments, NewsletterRecipients, Newsletters],
   cors: [getServerSideURL()].filter(Boolean),
   email: resendAdapter({
     apiKey: resendKey,

@@ -73,6 +73,8 @@ export interface Config {
     categories: Category;
     users: User;
     comments: Comment;
+    'newsletter-recipients': NewsletterRecipient;
+    newsletters: Newsletter;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -96,6 +98,8 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
+    'newsletter-recipients': NewsletterRecipientsSelect<false> | NewsletterRecipientsSelect<true>;
+    newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -212,6 +216,7 @@ export interface Page {
     | FormBlock
     | GalleryBlock
     | SocialMediaBlock
+    | NewsletterSignupBlock
   )[];
   meta?: {
     title?: string | null;
@@ -871,6 +876,18 @@ export interface SocialMediaBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock".
+ */
+export interface NewsletterSignupBlock {
+  heading?: string | null;
+  description?: string | null;
+  successMessage?: string | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'newsletterSignup';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments".
  */
 export interface Comment {
@@ -883,6 +900,48 @@ export interface Comment {
   depth?: number | null;
   status?: ('pending' | 'approved' | 'spam') | null;
   ipAddress?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-recipients".
+ */
+export interface NewsletterRecipient {
+  id: number;
+  email: string;
+  name?: string | null;
+  status?: ('subscribed' | 'unsubscribed') | null;
+  subscribedAt?: string | null;
+  unsubscribedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters".
+ */
+export interface Newsletter {
+  id: number;
+  subject: string;
+  content: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  status?: ('draft' | 'sent') | null;
+  sentAt?: string | null;
+  recipientCount?: number | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -1101,6 +1160,14 @@ export interface PayloadLockedDocument {
         value: number | Comment;
       } | null)
     | ({
+        relationTo: 'newsletter-recipients';
+        value: number | NewsletterRecipient;
+      } | null)
+    | ({
+        relationTo: 'newsletters';
+        value: number | Newsletter;
+      } | null)
+    | ({
         relationTo: 'redirects';
         value: number | Redirect;
       } | null)
@@ -1200,6 +1267,7 @@ export interface PagesSelect<T extends boolean = true> {
         formBlock?: T | FormBlockSelect<T>;
         gallery?: T | GalleryBlockSelect<T>;
         socialMedia?: T | SocialMediaBlockSelect<T>;
+        newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
   meta?:
     | T
@@ -1326,6 +1394,17 @@ export interface SocialMediaBlockSelect<T extends boolean = true> {
         customUrl?: T;
         id?: T;
       };
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "NewsletterSignupBlock_select".
+ */
+export interface NewsletterSignupBlockSelect<T extends boolean = true> {
+  heading?: T;
+  description?: T;
+  successMessage?: T;
   id?: T;
   blockName?: T;
 }
@@ -1517,6 +1596,32 @@ export interface CommentsSelect<T extends boolean = true> {
   depth?: T;
   status?: T;
   ipAddress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletter-recipients_select".
+ */
+export interface NewsletterRecipientsSelect<T extends boolean = true> {
+  email?: T;
+  name?: T;
+  status?: T;
+  subscribedAt?: T;
+  unsubscribedAt?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "newsletters_select".
+ */
+export interface NewslettersSelect<T extends boolean = true> {
+  subject?: T;
+  content?: T;
+  status?: T;
+  sentAt?: T;
+  recipientCount?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -1830,6 +1935,9 @@ export interface Header {
  */
 export interface Footer {
   id: number;
+  enableNewsletter?: boolean | null;
+  newsletterHeading?: string | null;
+  newsletterDescription?: string | null;
   navItems?:
     | {
         link: {
@@ -1902,6 +2010,9 @@ export interface HeaderSelect<T extends boolean = true> {
  * via the `definition` "footer_select".
  */
 export interface FooterSelect<T extends boolean = true> {
+  enableNewsletter?: T;
+  newsletterHeading?: T;
+  newsletterDescription?: T;
   navItems?:
     | T
     | {
