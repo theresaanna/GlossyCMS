@@ -204,7 +204,7 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | GalleryBlock)[];
+  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | GalleryBlock | TwitterBlock)[];
   meta?: {
     title?: string | null;
     /**
@@ -836,6 +836,27 @@ export interface GalleryBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TwitterBlock".
+ */
+export interface TwitterBlock {
+  /**
+   * The Twitter/X username (without the @ symbol)
+   */
+  username: string;
+  /**
+   * Optional title displayed above the Twitter feed
+   */
+  title?: string | null;
+  /**
+   * Maximum number of tweets to display (1-20)
+   */
+  tweetLimit?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'twitter';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "comments".
  */
 export interface Comment {
@@ -1164,6 +1185,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         gallery?: T | GalleryBlockSelect<T>;
+        twitter?: T | TwitterBlockSelect<T>;
       };
   meta?:
     | T
@@ -1273,6 +1295,17 @@ export interface GalleryBlockSelect<T extends boolean = true> {
   folder?: T;
   limit?: T;
   selectedMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TwitterBlock_select".
+ */
+export interface TwitterBlockSelect<T extends boolean = true> {
+  username?: T;
+  title?: T;
+  tweetLimit?: T;
   id?: T;
   blockName?: T;
 }
