@@ -17,6 +17,11 @@ export const NewsletterRecipients: CollectionConfig = {
     defaultColumns: ['email', 'name', 'status', 'subscribedAt'],
     listSearchableFields: ['email', 'name'],
     useAsTitle: 'email',
+    components: {
+      beforeListTable: [
+        '@/collections/NewsletterRecipients/ui/ComposeNewsletterButton',
+      ],
+    },
   },
   fields: [
     {

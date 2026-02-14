@@ -71,6 +71,14 @@ describe('NewsletterRecipients collection config', () => {
     expect(NewsletterRecipients.admin?.useAsTitle).toBe('email')
   })
 
+  it('has a ComposeNewsletterButton in beforeListTable', () => {
+    const components = (NewsletterRecipients.admin as any)?.components
+    expect(components).toBeDefined()
+    expect(components.beforeListTable).toBeDefined()
+    expect(components.beforeListTable).toHaveLength(1)
+    expect(components.beforeListTable[0]).toContain('ComposeNewsletterButton')
+  })
+
   it('has timestamps enabled', () => {
     expect(NewsletterRecipients.timestamps).toBe(true)
   })
