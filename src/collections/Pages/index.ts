@@ -8,6 +8,7 @@ import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
 import { GalleryBlock } from '../../blocks/GalleryBlock/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
+import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
 import { SocialMedia } from '../../blocks/SocialMedia/config'
 
 import { hero } from '@/heros/config'
@@ -75,7 +76,7 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock, GalleryBlock, SocialMedia],
+              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock, GalleryBlock, SocialMedia, NewsletterSignup],
               required: true,
               admin: {
                 initCollapsed: true,

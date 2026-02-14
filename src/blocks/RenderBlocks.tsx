@@ -8,6 +8,7 @@ import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
 import { GalleryBlock } from '@/blocks/GalleryBlock/Component'
 import { MediaBlock } from '@/blocks/MediaBlock/Component'
+import { NewsletterSignupBlock } from '@/blocks/NewsletterSignup/Component'
 import { SocialMediaBlock } from '@/blocks/SocialMedia/Component'
 
 const blockComponents = {
@@ -17,6 +18,7 @@ const blockComponents = {
   formBlock: FormBlock,
   gallery: GalleryBlock,
   mediaBlock: MediaBlock,
+  newsletterSignup: NewsletterSignupBlock,
   socialMedia: SocialMediaBlock,
 }
 

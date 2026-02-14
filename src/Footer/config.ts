@@ -10,6 +10,27 @@ export const Footer: GlobalConfig = {
   },
   fields: [
     {
+      name: 'enableNewsletter',
+      type: 'checkbox',
+      label: 'Enable Newsletter Signup',
+      defaultValue: false,
+    },
+    {
+      name: 'newsletterHeading',
+      type: 'text',
+      defaultValue: 'Stay in the loop',
+      admin: {
+        condition: (data) => Boolean(data?.enableNewsletter),
+      },
+    },
+    {
+      name: 'newsletterDescription',
+      type: 'textarea',
+      admin: {
+        condition: (data) => Boolean(data?.enableNewsletter),
+      },
+    },
+    {
       name: 'navItems',
       type: 'array',
       fields: [
