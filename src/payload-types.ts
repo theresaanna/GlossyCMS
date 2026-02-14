@@ -204,7 +204,16 @@ export interface Page {
       | null;
     media?: (number | null) | Media;
   };
-  layout: (CallToActionBlock | ContentBlock | MediaBlock | ArchiveBlock | FormBlock | GalleryBlock | TwitterBlock)[];
+  layout: (
+    | CallToActionBlock
+    | ContentBlock
+    | MediaBlock
+    | ArchiveBlock
+    | FormBlock
+    | GalleryBlock
+    | SocialMediaBlock
+    | TwitterBlock
+  )[];
   meta?: {
     title?: string | null;
     /**
@@ -836,6 +845,33 @@ export interface GalleryBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SocialMediaBlock".
+ */
+export interface SocialMediaBlock {
+  platforms?:
+    | {
+        platform: 'x' | 'instagram' | 'facebook' | 'loyalfans' | 'throne' | 'youpay' | 'other';
+        /**
+         * Enter your username (without the @ symbol or full URL)
+         */
+        username?: string | null;
+        /**
+         * Display name for this link
+         */
+        customLabel?: string | null;
+        /**
+         * Full URL (e.g. https://example.com/username)
+         */
+        customUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'socialMedia';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "TwitterBlock".
  */
 export interface TwitterBlock {
@@ -1185,6 +1221,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         gallery?: T | GalleryBlockSelect<T>;
+        socialMedia?: T | SocialMediaBlockSelect<T>;
         twitter?: T | TwitterBlockSelect<T>;
       };
   meta?:
@@ -1295,6 +1332,23 @@ export interface GalleryBlockSelect<T extends boolean = true> {
   folder?: T;
   limit?: T;
   selectedMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "SocialMediaBlock_select".
+ */
+export interface SocialMediaBlockSelect<T extends boolean = true> {
+  platforms?:
+    | T
+    | {
+        platform?: T;
+        username?: T;
+        customLabel?: T;
+        customUrl?: T;
+        id?: T;
+      };
   id?: T;
   blockName?: T;
 }
