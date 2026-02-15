@@ -3,7 +3,6 @@
 import React, { useCallback, useState } from 'react'
 import { useSelection, toast } from '@payloadcms/ui'
 import { useRouter } from 'next/navigation.js'
-import { getClientSideURL } from '@/utilities/getURL'
 
 export const ComposeNewsletterButton: React.FC = () => {
   const { count, getSelectedIds } = useSelection()
@@ -17,10 +16,9 @@ export const ComposeNewsletterButton: React.FC = () => {
 
     setIsLoading(true)
     try {
-      const response = await fetch(`${getClientSideURL()}/api/newsletters`, {
+      const response = await fetch(`/api/newsletters`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           subject: 'Untitled Newsletter',
           content: {
