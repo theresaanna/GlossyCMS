@@ -3,6 +3,7 @@ import React, { Fragment } from 'react'
 import type { Page } from '@/payload-types'
 
 import { ArchiveBlock } from '@/blocks/ArchiveBlock/Component'
+import { CarouselGalleryBlock } from '@/blocks/CarouselGallery/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
 import { ContentBlock } from '@/blocks/Content/Component'
 import { FormBlock } from '@/blocks/Form/Component'
@@ -13,6 +14,7 @@ import { SocialMediaBlock } from '@/blocks/SocialMedia/Component'
 
 const blockComponents = {
   archive: ArchiveBlock,
+  carouselGallery: CarouselGalleryBlock,
   content: ContentBlock,
   cta: CallToActionBlock,
   formBlock: FormBlock,

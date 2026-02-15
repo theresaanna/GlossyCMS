@@ -6,6 +6,7 @@ import { Archive } from '../../blocks/ArchiveBlock/config'
 import { CallToAction } from '../../blocks/CallToAction/config'
 import { Content } from '../../blocks/Content/config'
 import { FormBlock } from '../../blocks/Form/config'
+import { CarouselGallery } from '../../blocks/CarouselGallery/config'
 import { GalleryBlock } from '../../blocks/GalleryBlock/config'
 import { MediaBlock } from '../../blocks/MediaBlock/config'
 import { NewsletterSignup } from '../../blocks/NewsletterSignup/config'
@@ -76,7 +77,7 @@ export const Pages: CollectionConfig<'pages'> = {
             {
               name: 'layout',
               type: 'blocks',
-              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock, GalleryBlock, SocialMedia, NewsletterSignup],
+              blocks: [CallToAction, Content, MediaBlock, Archive, FormBlock, GalleryBlock, CarouselGallery, SocialMedia, NewsletterSignup],
               required: true,
               admin: {
                 initCollapsed: true,

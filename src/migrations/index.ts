@@ -12,6 +12,7 @@ import * as migration_20260214_070000_remove_twitter_block from './20260214_0700
 import * as migration_20260214_080000_add_newsletter from './20260214_080000_add_newsletter';
 import * as migration_20260214_090000_fix_newsletter_locked_docs from './20260214_090000_fix_newsletter_locked_docs';
 import * as migration_20260214_100000_add_newsletter_recipients_rel from './20260214_100000_add_newsletter_recipients_rel';
+import * as migration_20260215_201432_add_carousel_gallery_block from './20260215_201432_add_carousel_gallery_block';
 
 export const migrations = [
   {
@@ -83,5 +84,10 @@ export const migrations = [
     up: migration_20260214_100000_add_newsletter_recipients_rel.up,
     down: migration_20260214_100000_add_newsletter_recipients_rel.down,
     name: '20260214_100000_add_newsletter_recipients_rel',
+  },
+  {
+    up: migration_20260215_201432_add_carousel_gallery_block.up,
+    down: migration_20260215_201432_add_carousel_gallery_block.down,
+    name: '20260215_201432_add_carousel_gallery_block'
   },
 ];
