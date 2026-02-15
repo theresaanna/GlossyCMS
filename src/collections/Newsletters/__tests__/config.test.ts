@@ -15,13 +15,13 @@ describe('Newsletters collection config', () => {
     expect(field.required).toBe(true)
   })
 
-  it('has a content richText field that is required', () => {
+  it('has a content richText field (not required, validated at send time)', () => {
     const field = Newsletters.fields.find(
       (f) => 'name' in f && f.name === 'content',
     ) as any
     expect(field).toBeDefined()
     expect(field.type).toBe('richText')
-    expect(field.required).toBe(true)
+    expect(field.required).toBeUndefined()
   })
 
   it('has a recipients relationship field to newsletter-recipients', () => {
