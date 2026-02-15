@@ -215,6 +215,7 @@ export interface Page {
     | ArchiveBlock
     | FormBlock
     | GalleryBlock
+    | CarouselGalleryBlock
     | SocialMediaBlock
     | NewsletterSignupBlock
   )[];
@@ -849,6 +850,45 @@ export interface GalleryBlock {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselGalleryBlock".
+ */
+export interface CarouselGalleryBlock {
+  /**
+   * Optional title displayed above the carousel
+   */
+  title?: string | null;
+  populateBy?: ('folder' | 'selection') | null;
+  /**
+   * Select a media folder. All images in this folder will be displayed.
+   */
+  folder?: (number | null) | FolderInterface;
+  limit?: number | null;
+  /**
+   * Choose individual media items for the carousel.
+   */
+  selectedMedia?: (number | Media)[] | null;
+  /**
+   * Automatically advance slides
+   */
+  autoplay?: boolean | null;
+  /**
+   * Time between slide transitions in milliseconds
+   */
+  autoplayDelay?: number | null;
+  /**
+   * Loop back to the first slide after the last
+   */
+  loop?: boolean | null;
+  /**
+   * Number of slides visible at once on large screens
+   */
+  slidesPerView?: number | null;
+  id?: string | null;
+  blockName?: string | null;
+  blockType: 'carouselGallery';
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "SocialMediaBlock".
  */
 export interface SocialMediaBlock {
@@ -939,6 +979,9 @@ export interface Newsletter {
     };
     [k: string]: unknown;
   } | null;
+  /**
+   * Select specific recipients. If none are selected, the newsletter will be sent to all subscribed recipients.
+   */
   recipients?: (number | NewsletterRecipient)[] | null;
   status?: ('draft' | 'sent') | null;
   sentAt?: string | null;
@@ -1267,6 +1310,7 @@ export interface PagesSelect<T extends boolean = true> {
         archive?: T | ArchiveBlockSelect<T>;
         formBlock?: T | FormBlockSelect<T>;
         gallery?: T | GalleryBlockSelect<T>;
+        carouselGallery?: T | CarouselGalleryBlockSelect<T>;
         socialMedia?: T | SocialMediaBlockSelect<T>;
         newsletterSignup?: T | NewsletterSignupBlockSelect<T>;
       };
@@ -1378,6 +1422,23 @@ export interface GalleryBlockSelect<T extends boolean = true> {
   folder?: T;
   limit?: T;
   selectedMedia?: T;
+  id?: T;
+  blockName?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "CarouselGalleryBlock_select".
+ */
+export interface CarouselGalleryBlockSelect<T extends boolean = true> {
+  title?: T;
+  populateBy?: T;
+  folder?: T;
+  limit?: T;
+  selectedMedia?: T;
+  autoplay?: T;
+  autoplayDelay?: T;
+  loop?: T;
+  slidesPerView?: T;
   id?: T;
   blockName?: T;
 }
