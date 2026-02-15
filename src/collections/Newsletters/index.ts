@@ -31,7 +31,6 @@ export const Newsletters: CollectionConfig = {
     {
       name: 'content',
       type: 'richText',
-      required: true,
       editor: lexicalEditor({
         features: ({ rootFeatures }) => [
           ...rootFeatures,

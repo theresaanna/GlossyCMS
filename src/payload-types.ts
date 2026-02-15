@@ -924,7 +924,7 @@ export interface NewsletterRecipient {
 export interface Newsletter {
   id: number;
   subject: string;
-  content: {
+  content?: {
     root: {
       type: string;
       children: {
@@ -938,7 +938,7 @@ export interface Newsletter {
       version: number;
     };
     [k: string]: unknown;
-  };
+  } | null;
   recipients?: (number | NewsletterRecipient)[] | null;
   status?: ('draft' | 'sent') | null;
   sentAt?: string | null;

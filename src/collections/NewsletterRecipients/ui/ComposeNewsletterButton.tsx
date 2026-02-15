@@ -21,27 +21,6 @@ export const ComposeNewsletterButton: React.FC = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           subject: 'Untitled Newsletter',
-          content: {
-            root: {
-              type: 'root',
-              children: [
-                {
-                  type: 'paragraph',
-                  version: 1,
-                  children: [],
-                  direction: null,
-                  format: '',
-                  indent: 0,
-                  textFormat: 0,
-                  textStyle: '',
-                },
-              ],
-              direction: null,
-              format: '',
-              indent: 0,
-              version: 1,
-            },
-          },
           recipients: ids.map((id) => (typeof id === 'string' ? parseInt(id, 10) : id)),
         }),
       })
