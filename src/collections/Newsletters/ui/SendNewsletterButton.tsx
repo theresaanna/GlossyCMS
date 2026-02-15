@@ -2,9 +2,8 @@
 
 import React, { useCallback, useState } from 'react'
 import { useDocumentInfo } from '@payloadcms/ui'
-import { getClientSideURL } from '@/utilities/getURL'
 
-export const SendNewsletterButton: React.FC = () => {
+const SendNewsletterButton: React.FC = () => {
   const { id, initialData } = useDocumentInfo()
   const [sending, setSending] = useState(false)
   const [result, setResult] = useState<{ success?: boolean; sentCount?: number; error?: string } | null>(null)
@@ -29,9 +28,8 @@ export const SendNewsletterButton: React.FC = () => {
     setResult(null)
 
     try {
-      const res = await fetch(`${getClientSideURL()}/api/newsletters/${id}/send`, {
+      const res = await fetch(`/api/newsletters/${id}/send`, {
         method: 'POST',
-        credentials: 'include',
       })
       const data = await res.json()
 
@@ -158,3 +156,5 @@ export const SendNewsletterButton: React.FC = () => {
     </div>
   )
 }
+
+export default SendNewsletterButton
