@@ -62,12 +62,12 @@ export function CarouselClient({
     >
       {items.map((item) => (
         <SwiperSlide key={item.id}>
-          <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100">
+          <div className="relative flex items-center justify-center overflow-hidden rounded-lg bg-gray-100" style={{ height: '60vh' }}>
             <Image
               src={item.url}
               alt={item.alt || item.filename || 'Carousel image'}
               fill
-              className="object-cover"
+              className="object-contain"
               sizes={
                 slidesPerView === 1
                   ? '100vw'
