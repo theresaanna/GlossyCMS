@@ -37,7 +37,7 @@ export const SocialMedia: Block = {
         {
           name: 'username',
           type: 'text',
-          validate: (value, { siblingData }) => {
+          validate: (value: string | null | undefined, { siblingData }: { siblingData: Record<string, unknown> }) => {
             if (Boolean(siblingData?.platform) && siblingData?.platform !== 'other' && !value) {
               return 'This field is required.'
             }
@@ -54,7 +54,7 @@ export const SocialMedia: Block = {
           name: 'customLabel',
           type: 'text',
           label: 'Label',
-          validate: (value, { siblingData }) => {
+          validate: (value: string | null | undefined, { siblingData }: { siblingData: Record<string, unknown> }) => {
             if (siblingData?.platform === 'other' && !value) {
               return 'This field is required.'
             }
@@ -69,7 +69,7 @@ export const SocialMedia: Block = {
           name: 'customUrl',
           type: 'text',
           label: 'URL',
-          validate: (value, { siblingData }) => {
+          validate: (value: string | null | undefined, { siblingData }: { siblingData: Record<string, unknown> }) => {
             if (siblingData?.platform === 'other' && !value) {
               return 'This field is required.'
             }
