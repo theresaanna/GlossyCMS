@@ -488,6 +488,7 @@ export interface User {
  * via the `definition` "CallToActionBlock".
  */
 export interface CallToActionBlock {
+  heading?: string | null;
   richText?: {
     root: {
       type: string;
@@ -1333,6 +1334,7 @@ export interface PagesSelect<T extends boolean = true> {
  * via the `definition` "CallToActionBlock_select".
  */
 export interface CallToActionBlockSelect<T extends boolean = true> {
+  heading?: T;
   richText?: T;
   links?:
     | T
