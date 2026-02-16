@@ -143,4 +143,63 @@ describe('SocialMedia block config', () => {
     expect(validate('https://example.com', { siblingData: { platform: 'other' } })).toBe(true)
     expect(validate('', { siblingData: { platform: 'instagram' } })).toBe(true)
   })
+
+  describe('header field', () => {
+    it('has an optional header text field', () => {
+      const headerField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'header',
+      ) as any
+      expect(headerField).toBeDefined()
+      expect(headerField.type).toBe('text')
+    })
+
+    it('header field is not required', () => {
+      const headerField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'header',
+      ) as any
+      expect(headerField.required).toBeUndefined()
+    })
+
+    it('header field has a description', () => {
+      const headerField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'header',
+      ) as any
+      expect(headerField.admin.description).toBeTruthy()
+    })
+  })
+
+  describe('customPlatforms field', () => {
+    it('has a customPlatforms array field', () => {
+      const customPlatformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'customPlatforms',
+      ) as any
+      expect(customPlatformsField).toBeDefined()
+      expect(customPlatformsField.type).toBe('array')
+    })
+
+    it('customPlatforms has label and url fields', () => {
+      const customPlatformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'customPlatforms',
+      ) as any
+      const labelField = customPlatformsField.fields.find(
+        (f: any) => f.name === 'label',
+      )
+      const urlField = customPlatformsField.fields.find(
+        (f: any) => f.name === 'url',
+      )
+      expect(labelField).toBeDefined()
+      expect(labelField.type).toBe('text')
+      expect(labelField.required).toBe(true)
+      expect(urlField).toBeDefined()
+      expect(urlField.type).toBe('text')
+      expect(urlField.required).toBe(true)
+    })
+
+    it('customPlatforms starts collapsed', () => {
+      const customPlatformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'customPlatforms',
+      ) as any
+      expect(customPlatformsField.admin.initCollapsed).toBe(true)
+    })
+  })
 })
