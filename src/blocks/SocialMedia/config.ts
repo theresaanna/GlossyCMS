@@ -19,6 +19,37 @@ export const SocialMedia: Block = {
       },
     },
     {
+      name: 'customPlatforms',
+      type: 'array',
+      label: 'Custom Platforms',
+      labels: {
+        singular: 'Custom Platform',
+        plural: 'Custom Platforms',
+      },
+      admin: {
+        initCollapsed: true,
+        description: 'Define your own platforms to appear alongside the built-in ones',
+      },
+      fields: [
+        {
+          name: 'label',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Display name for this platform',
+          },
+        },
+        {
+          name: 'url',
+          type: 'text',
+          required: true,
+          admin: {
+            description: 'Full URL (e.g. https://example.com/username)',
+          },
+        },
+      ],
+    },
+    {
       name: 'platforms',
       type: 'array',
       label: 'Social Media Links',
@@ -85,37 +116,6 @@ export const SocialMedia: Block = {
           },
           admin: {
             condition: (_data, siblingData) => siblingData?.platform === 'other',
-            description: 'Full URL (e.g. https://example.com/username)',
-          },
-        },
-      ],
-    },
-    {
-      name: 'customPlatforms',
-      type: 'array',
-      label: 'Custom Platforms',
-      labels: {
-        singular: 'Custom Platform',
-        plural: 'Custom Platforms',
-      },
-      admin: {
-        initCollapsed: true,
-        description: 'Define your own platforms to appear alongside the built-in ones',
-      },
-      fields: [
-        {
-          name: 'label',
-          type: 'text',
-          required: true,
-          admin: {
-            description: 'Display name for this platform',
-          },
-        },
-        {
-          name: 'url',
-          type: 'text',
-          required: true,
-          admin: {
             description: 'Full URL (e.g. https://example.com/username)',
           },
         },

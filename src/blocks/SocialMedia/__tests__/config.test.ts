@@ -168,6 +168,13 @@ describe('SocialMedia block config', () => {
     })
   })
 
+  it('orders fields as header, customPlatforms, platforms', () => {
+    const fieldNames = SocialMedia.fields
+      .filter((f) => 'name' in f)
+      .map((f) => ('name' in f ? f.name : ''))
+    expect(fieldNames).toEqual(['header', 'customPlatforms', 'platforms'])
+  })
+
   describe('customPlatforms field', () => {
     it('has a customPlatforms array field', () => {
       const customPlatformsField = SocialMedia.fields.find(
