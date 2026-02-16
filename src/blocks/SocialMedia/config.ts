@@ -37,7 +37,12 @@ export const SocialMedia: Block = {
         {
           name: 'username',
           type: 'text',
-          required: true,
+          validate: (value, { siblingData }) => {
+            if (Boolean(siblingData?.platform) && siblingData?.platform !== 'other' && !value) {
+              return 'This field is required.'
+            }
+            return true
+          },
           admin: {
             condition: (_data, siblingData) => {
               return Boolean(siblingData?.platform) && siblingData?.platform !== 'other'
@@ -49,7 +54,12 @@ export const SocialMedia: Block = {
           name: 'customLabel',
           type: 'text',
           label: 'Label',
-          required: true,
+          validate: (value, { siblingData }) => {
+            if (siblingData?.platform === 'other' && !value) {
+              return 'This field is required.'
+            }
+            return true
+          },
           admin: {
             condition: (_data, siblingData) => siblingData?.platform === 'other',
             description: 'Display name for this link',
@@ -59,7 +69,12 @@ export const SocialMedia: Block = {
           name: 'customUrl',
           type: 'text',
           label: 'URL',
-          required: true,
+          validate: (value, { siblingData }) => {
+            if (siblingData?.platform === 'other' && !value) {
+              return 'This field is required.'
+            }
+            return true
+          },
           admin: {
             condition: (_data, siblingData) => siblingData?.platform === 'other',
             description: 'Full URL (e.g. https://example.com/username)',

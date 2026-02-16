@@ -48,6 +48,21 @@ describe('SocialMedia block config', () => {
     expect(usernameField.type).toBe('text')
   })
 
+  it('username validates as required only when platform is not "other"', () => {
+    const platformsField = SocialMedia.fields.find(
+      (f) => 'name' in f && f.name === 'platforms',
+    ) as any
+    const usernameField = platformsField.fields.find(
+      (f: any) => f.name === 'username',
+    )
+    const validate = usernameField.validate
+    expect(validate('', { siblingData: { platform: 'x' } })).toBe('This field is required.')
+    expect(validate(null, { siblingData: { platform: 'instagram' } })).toBe('This field is required.')
+    expect(validate('myuser', { siblingData: { platform: 'x' } })).toBe(true)
+    expect(validate('', { siblingData: { platform: 'other' } })).toBe(true)
+    expect(validate('', { siblingData: {} })).toBe(true)
+  })
+
   it('hides username field when platform is "other"', () => {
     const platformsField = SocialMedia.fields.find(
       (f) => 'name' in f && f.name === 'platforms',
@@ -89,6 +104,20 @@ describe('SocialMedia block config', () => {
     expect(condition({}, { platform: 'x' })).toBe(false)
   })
 
+  it('customLabel validates as required only when platform is "other"', () => {
+    const platformsField = SocialMedia.fields.find(
+      (f) => 'name' in f && f.name === 'platforms',
+    ) as any
+    const customLabel = platformsField.fields.find(
+      (f: any) => f.name === 'customLabel',
+    )
+    const validate = customLabel.validate
+    expect(validate('', { siblingData: { platform: 'other' } })).toBe('This field is required.')
+    expect(validate(null, { siblingData: { platform: 'other' } })).toBe('This field is required.')
+    expect(validate('My Link', { siblingData: { platform: 'other' } })).toBe(true)
+    expect(validate('', { siblingData: { platform: 'x' } })).toBe(true)
+  })
+
   it('shows customUrl only when platform is "other"', () => {
     const platformsField = SocialMedia.fields.find(
       (f) => 'name' in f && f.name === 'platforms',
@@ -99,5 +128,19 @@ describe('SocialMedia block config', () => {
     const condition = customUrl.admin.condition
     expect(condition({}, { platform: 'other' })).toBe(true)
     expect(condition({}, { platform: 'instagram' })).toBe(false)
+  })
+
+  it('customUrl validates as required only when platform is "other"', () => {
+    const platformsField = SocialMedia.fields.find(
+      (f) => 'name' in f && f.name === 'platforms',
+    ) as any
+    const customUrl = platformsField.fields.find(
+      (f: any) => f.name === 'customUrl',
+    )
+    const validate = customUrl.validate
+    expect(validate('', { siblingData: { platform: 'other' } })).toBe('This field is required.')
+    expect(validate(null, { siblingData: { platform: 'other' } })).toBe('This field is required.')
+    expect(validate('https://example.com', { siblingData: { platform: 'other' } })).toBe(true)
+    expect(validate('', { siblingData: { platform: 'instagram' } })).toBe(true)
   })
 })
