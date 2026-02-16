@@ -2,8 +2,8 @@ import { MigrateUpArgs, MigrateDownArgs, sql } from '@payloadcms/db-vercel-postg
 
 export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
   await db.execute(sql`
-    ALTER TABLE "pages_blocks_social_media" ADD COLUMN "header" varchar;
-    ALTER TABLE "_pages_v_blocks_social_media" ADD COLUMN "header" varchar;
+    ALTER TABLE "pages_blocks_social_media" ADD COLUMN IF NOT EXISTS "header" varchar;
+    ALTER TABLE "_pages_v_blocks_social_media" ADD COLUMN IF NOT EXISTS "header" varchar;
   `)
 }
 

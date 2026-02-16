@@ -14,7 +14,7 @@ import * as migration_20260214_090000_fix_newsletter_locked_docs from './2026021
 import * as migration_20260214_100000_add_newsletter_recipients_rel from './20260214_100000_add_newsletter_recipients_rel';
 import * as migration_20260215_201432_add_carousel_gallery_block from './20260215_201432_add_carousel_gallery_block';
 import * as migration_20260215_210000_add_cta_heading from './20260215_210000_add_cta_heading';
-import * as migration_20260216_120000_add_social_media_header from './20260216_120000_add_social_media_header';
+import * as migration_20260216_120000_add_social_media_header_and_custom_platforms from './20260216_120000_add_social_media_header_and_custom_platforms';
 
 export const migrations = [
   {
@@ -98,8 +98,8 @@ export const migrations = [
     name: '20260215_210000_add_cta_heading',
   },
   {
-    up: migration_20260216_120000_add_social_media_header.up,
-    down: migration_20260216_120000_add_social_media_header.down,
-    name: '20260216_120000_add_social_media_header',
+    up: migration_20260216_120000_add_social_media_header_and_custom_platforms.up,
+    down: migration_20260216_120000_add_social_media_header_and_custom_platforms.down,
+    name: '20260216_120000_add_social_media_header_and_custom_platforms',
   },
 ];
