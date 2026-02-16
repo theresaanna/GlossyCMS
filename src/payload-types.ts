@@ -893,6 +893,10 @@ export interface CarouselGalleryBlock {
  * via the `definition` "SocialMediaBlock".
  */
 export interface SocialMediaBlock {
+  /**
+   * Optional heading displayed above the social media links
+   */
+  header?: string | null;
   platforms?:
     | {
         platform: 'x' | 'instagram' | 'facebook' | 'loyalfans' | 'throne' | 'youpay' | 'other';
@@ -908,6 +912,19 @@ export interface SocialMediaBlock {
          * Full URL (e.g. https://example.com/username)
          */
         customUrl?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  customPlatforms?:
+    | {
+        /**
+         * Display name for this platform
+         */
+        label: string;
+        /**
+         * Full URL (e.g. https://example.com/username)
+         */
+        url: string;
         id?: string | null;
       }[]
     | null;
@@ -1449,6 +1466,7 @@ export interface CarouselGalleryBlockSelect<T extends boolean = true> {
  * via the `definition` "SocialMediaBlock_select".
  */
 export interface SocialMediaBlockSelect<T extends boolean = true> {
+  header?: T;
   platforms?:
     | T
     | {
@@ -1456,6 +1474,13 @@ export interface SocialMediaBlockSelect<T extends boolean = true> {
         username?: T;
         customLabel?: T;
         customUrl?: T;
+        id?: T;
+      };
+  customPlatforms?:
+    | T
+    | {
+        label?: T;
+        url?: T;
         id?: T;
       };
   id?: T;

@@ -138,4 +138,157 @@ describe('SocialMediaBlock', () => {
 
     expect(container.querySelectorAll('a')).toHaveLength(0)
   })
+
+  describe('header', () => {
+    it('renders the header when provided', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            header: 'Follow Me',
+            platforms: [{ platform: 'x', username: 'user1', id: '1' }],
+          })}
+        />,
+      )
+
+      const heading = screen.getByText('Follow Me')
+      expect(heading).toBeDefined()
+      expect(heading.tagName).toBe('H2')
+    })
+
+    it('does not render header when not provided', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [{ platform: 'x', username: 'user1', id: '1' }],
+          })}
+        />,
+      )
+
+      expect(container.querySelector('h2')).toBeNull()
+    })
+
+    it('does not render header when set to empty string', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            header: '',
+            platforms: [{ platform: 'x', username: 'user1', id: '1' }],
+          })}
+        />,
+      )
+
+      expect(container.querySelector('h2')).toBeNull()
+    })
+  })
+
+  describe('customPlatforms', () => {
+    it('renders custom platforms with label and URL', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [],
+            customPlatforms: [
+              { label: 'My Blog', url: 'https://myblog.com', id: '1' },
+            ],
+          })}
+        />,
+      )
+
+      const link = screen.getByText('My Blog').closest('a')
+      expect(link?.getAttribute('href')).toBe('https://myblog.com')
+      expect(link?.getAttribute('target')).toBe('_blank')
+      expect(link?.getAttribute('rel')).toBe('noopener noreferrer')
+    })
+
+    it('renders ExternalLink icon for custom platforms', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [],
+            customPlatforms: [
+              { label: 'My Blog', url: 'https://myblog.com', id: '1' },
+            ],
+          })}
+        />,
+      )
+
+      expect(screen.getByTestId('external-link-icon')).toBeDefined()
+    })
+
+    it('renders multiple custom platforms', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [],
+            customPlatforms: [
+              { label: 'Blog', url: 'https://myblog.com', id: '1' },
+              { label: 'Portfolio', url: 'https://portfolio.dev', id: '2' },
+            ],
+          })}
+        />,
+      )
+
+      expect(screen.getByText('Blog')).toBeDefined()
+      expect(screen.getByText('Portfolio')).toBeDefined()
+    })
+
+    it('skips custom platforms with no URL', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [],
+            customPlatforms: [
+              { label: 'No URL', url: '', id: '1' },
+            ],
+          })}
+        />,
+      )
+
+      expect(container.querySelectorAll('a')).toHaveLength(0)
+    })
+
+    it('renders built-in and custom platforms together', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [{ platform: 'x', username: 'user1', id: '1' }],
+            customPlatforms: [
+              { label: 'My Blog', url: 'https://myblog.com', id: '2' },
+            ],
+          })}
+        />,
+      )
+
+      expect(screen.getByText('X (Twitter)')).toBeDefined()
+      expect(screen.getByText('My Blog')).toBeDefined()
+    })
+
+    it('returns null when both platforms and customPlatforms are empty', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [],
+            customPlatforms: [],
+          })}
+        />,
+      )
+
+      expect(container.innerHTML).toBe('')
+    })
+
+    it('renders when only customPlatforms has entries', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: null,
+            customPlatforms: [
+              { label: 'My Site', url: 'https://mysite.com', id: '1' },
+            ],
+          })}
+        />,
+      )
+
+      expect(screen.getByText('My Site')).toBeDefined()
+    })
+  })
 })
