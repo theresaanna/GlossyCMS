@@ -35,7 +35,7 @@ export const VideoMedia: React.FC<MediaProps> = (props) => {
     return (
       <video
         autoPlay
-        className={cn(videoClassName)}
+        className={cn('max-w-full max-h-[80vh]', videoClassName)}
         controls={false}
         loop
         muted
