@@ -59,6 +59,13 @@ export function CarouselClient({
       }
       breakpoints={Object.keys(breakpoints).length > 0 ? breakpoints : undefined}
       className="w-full"
+      style={
+        {
+          '--swiper-theme-color': '#6b7280',
+          '--swiper-navigation-color': '#6b7280',
+          '--swiper-pagination-color': '#6b7280',
+        } as React.CSSProperties
+      }
     >
       {items.map((item) => (
         <SwiperSlide key={item.id}>
