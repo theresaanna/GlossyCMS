@@ -915,19 +915,6 @@ export interface SocialMediaBlock {
         id?: string | null;
       }[]
     | null;
-  customPlatforms?:
-    | {
-        /**
-         * Display name for this platform
-         */
-        label: string;
-        /**
-         * Full URL (e.g. https://example.com/username)
-         */
-        url: string;
-        id?: string | null;
-      }[]
-    | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'socialMedia';
@@ -1474,13 +1461,6 @@ export interface SocialMediaBlockSelect<T extends boolean = true> {
         username?: T;
         customLabel?: T;
         customUrl?: T;
-        id?: T;
-      };
-  customPlatforms?:
-    | T
-    | {
-        label?: T;
-        url?: T;
         id?: T;
       };
   id?: T;
