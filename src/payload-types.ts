@@ -1049,10 +1049,15 @@ export interface Search {
   id: number;
   title?: string | null;
   priority?: number | null;
-  doc: {
-    relationTo: 'posts';
-    value: number | Post;
-  };
+  doc:
+    | {
+        relationTo: 'posts';
+        value: number | Post;
+      }
+    | {
+        relationTo: 'pages';
+        value: number | Page;
+      };
   slug?: string | null;
   meta?: {
     title?: string | null;
@@ -2055,6 +2060,29 @@ export interface GallerySetting {
   createdAt?: string | null;
 }
 /**
+ * Configure age verification for your site.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adult-content".
+ */
+export interface AdultContent {
+  id: number;
+  /**
+   * When enabled, visitors must confirm they are at least the required age before viewing the site. This check appears once per browser session.
+   */
+  enableAgeVerification?: boolean | null;
+  /**
+   * The minimum age a visitor must be to access the site.
+   */
+  minimumAge?: number | null;
+  /**
+   * If a visitor declines the age check, redirect them to this URL. Leave blank to keep the modal open.
+   */
+  redirectUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
  * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
@@ -2114,27 +2142,6 @@ export interface GallerySettingsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "adult-content".
- */
-export interface AdultContent {
-  id: number;
-  /**
-   * When enabled, visitors must confirm they are at least the required age before viewing the site.
-   */
-  enableAgeVerification?: boolean | null;
-  /**
-   * The minimum age a visitor must be to access the site.
-   */
-  minimumAge?: number | null;
-  /**
-   * If a visitor declines the age check, redirect them to this URL.
-   */
-  redirectUrl?: string | null;
-  updatedAt?: string | null;
-  createdAt?: string | null;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
