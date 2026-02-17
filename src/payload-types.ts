@@ -119,11 +119,13 @@ export interface Config {
     header: Header;
     footer: Footer;
     'gallery-settings': GallerySetting;
+    'adult-content': AdultContent;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'gallery-settings': GallerySettingsSelect<false> | GallerySettingsSelect<true>;
+    'adult-content': AdultContentSelect<false> | AdultContentSelect<true>;
   };
   locale: null;
   user: User & {
@@ -2109,6 +2111,39 @@ export interface GallerySettingsSelect<T extends boolean = true> {
   title?: T;
   folder?: T;
   limit?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adult-content".
+ */
+export interface AdultContent {
+  id: number;
+  /**
+   * When enabled, visitors must confirm they are at least the required age before viewing the site.
+   */
+  enableAgeVerification?: boolean | null;
+  /**
+   * The minimum age a visitor must be to access the site.
+   */
+  minimumAge?: number | null;
+  /**
+   * If a visitor declines the age check, redirect them to this URL.
+   */
+  redirectUrl?: string | null;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "adult-content_select".
+ */
+export interface AdultContentSelect<T extends boolean = true> {
+  enableAgeVerification?: T;
+  minimumAge?: T;
+  redirectUrl?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

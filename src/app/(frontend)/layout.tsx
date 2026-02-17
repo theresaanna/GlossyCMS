@@ -10,7 +10,10 @@ import { Footer } from '@/Footer/Component'
 import { Header } from '@/Header/Component'
 import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
+import { AgeGateProvider, AgeGateModal } from '@/plugins/ageGate'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+import { getCachedGlobal } from '@/utilities/getGlobals'
+import type { AdultContent as AdultContentType } from '@/payload-types'
 import { draftMode } from 'next/headers'
 import themeConfig from '@/theme.config'
 
@@ -21,6 +24,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { isEnabled } = await draftMode()
   const { SiteLayout } = themeConfig.layouts
 
+  const adultContent: AdultContentType = await getCachedGlobal('adult-content')()
+
+  const ageGateOptions = {
+    enabled: Boolean(adultContent?.enableAgeVerification),
+    minimumAge: adultContent?.minimumAge ?? 18,
+    redirectUrl: adultContent?.redirectUrl ?? '',
+  }
+
   return (
     <html className={cn(GeistSans.variable, GeistMono.variable)} lang="en" suppressHydrationWarning>
       <head>
@@ -30,19 +41,22 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body>
         <Providers>
-          <SiteLayout
-            adminBar={
-              <AdminBar
-                adminBarProps={{
-                  preview: isEnabled,
-                }}
-              />
-            }
-            header={<Header />}
-            footer={<Footer />}
-          >
-            {children}
-          </SiteLayout>
+          <AgeGateProvider options={ageGateOptions}>
+            <AgeGateModal />
+            <SiteLayout
+              adminBar={
+                <AdminBar
+                  adminBarProps={{
+                    preview: isEnabled,
+                  }}
+                />
+              }
+              header={<Header />}
+              footer={<Footer />}
+            >
+              {children}
+            </SiteLayout>
+          </AgeGateProvider>
         </Providers>
       </body>
     </html>

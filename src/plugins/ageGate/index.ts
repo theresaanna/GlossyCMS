@@ -1,0 +1,5 @@
+export { AgeGateProvider, useAgeGate } from './AgeGateProvider'
+export { AgeGateModal } from './AgeGateModal'
+export { resolveOptions } from './defaults'
+export { isAgeVerified, setAgeVerified, clearAgeVerified } from './storage'
+export type { AgeGatePluginOptions, AgeGateContextValue } from './types'
