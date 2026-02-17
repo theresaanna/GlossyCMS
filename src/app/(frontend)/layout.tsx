@@ -27,8 +27,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   const ageGateOptions = {
     enabled: Boolean(adultContent?.enableAgeVerification),
-    minimumAge: (adultContent?.minimumAge as number) ?? 18,
-    redirectUrl: (adultContent?.redirectUrl as string) ?? '',
+    minimumAge: adultContent?.minimumAge ?? 18,
+    redirectUrl: adultContent?.redirectUrl ?? '',
   }
 
   return (
