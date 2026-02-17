@@ -25,7 +25,7 @@ const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
 const resendKey = process.env.RESEND_API_KEY;
-if (!resendKey) {
+if (!resendKey && process.env.NODE_ENV === 'production') {
   throw new Error('RESEND_API_KEY is not defined in environment variables');
 }
 
@@ -75,11 +75,15 @@ export default buildConfig({
   }),
   collections: [Pages, Posts, Media, Categories, Users, Comments, NewsletterRecipients, Newsletters],
   cors: [getServerSideURL()].filter(Boolean),
-  email: resendAdapter({
-    apiKey: resendKey,
-    defaultFromAddress: 'anna@goddessannaadore.com',
-    defaultFromName: 'Anna Adore'
-  }),
+  ...(resendKey
+    ? {
+        email: resendAdapter({
+          apiKey: resendKey,
+          defaultFromAddress: process.env.FROM_EMAIL || 'hello@example.com',
+          defaultFromName: process.env.FROM_NAME || 'GlossyCMS',
+        }),
+      }
+    : {}),
   globals: [Header, Footer, Gallery, AdultContent],
   plugins,
   secret: process.env.PAYLOAD_SECRET,

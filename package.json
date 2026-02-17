@@ -21,7 +21,8 @@
     "test:unit": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts --exclude 'tests/int/**'",
     "test:coverage": "cross-env NODE_ENV=test NODE_OPTIONS=--no-deprecation vitest run --coverage --config ./vitest.config.mts --exclude 'tests/int/**'",
     "test:e2e": "cross-env NODE_OPTIONS=\"--no-deprecation --no-experimental-strip-types\" pnpm exec playwright test --config=playwright.config.ts",
-    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts --exclude 'src/**'"
+    "test:int": "cross-env NODE_OPTIONS=--no-deprecation vitest run --config ./vitest.config.mts --exclude 'src/**'",
+    "provision:client": "bash scripts/provision-client.sh"
   },
   "dependencies": {
     "@ffmpeg/core": "0.12.10",
