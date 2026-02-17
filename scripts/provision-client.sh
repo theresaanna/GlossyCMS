@@ -8,7 +8,7 @@ set -euo pipefail
 # environment variables, and database.
 #
 # Usage:
-#   ./scripts/provision-client.sh --client-name <name> --org <github-org> --team <vercel-team>
+#   ./scripts/provision-client.sh --client-name <name> --org <github-org> [--team <vercel-team>]
 #
 # Prerequisites:
 #   - gh CLI (authenticated)
@@ -50,12 +50,12 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     --help)
-      echo "Usage: $0 --client-name <name> --org <github-org> --team <vercel-team>"
+      echo "Usage: $0 --client-name <name> --org <github-org> [--team <vercel-team>]"
       echo ""
       echo "Options:"
       echo "  --client-name  Client identifier (used for repo and project names)"
       echo "  --org          GitHub organization for the new repo"
-      echo "  --team         Vercel team slug"
+      echo "  --team         Vercel team slug (optional, uses personal account if omitted)"
       echo "  --template     Template repo (default: theresaanna/GlossyCMS)"
       echo "  --help         Show this help message"
       exit 0
@@ -78,12 +78,10 @@ if [[ -z "${GITHUB_ORG}" ]]; then
   exit 1
 fi
 
-if [[ -z "${VERCEL_TEAM}" ]]; then
-  echo "Error: --team is required"
-  exit 1
+TEAM_FLAG=""
+if [[ -n "${VERCEL_TEAM}" ]]; then
+  TEAM_FLAG="--scope ${VERCEL_TEAM}"
 fi
-
-TEAM_FLAG="--scope ${VERCEL_TEAM}"
 REPO_NAME="${GITHUB_ORG}/${CLIENT_NAME}"
 
 # -----------------------------------------------------------------------------

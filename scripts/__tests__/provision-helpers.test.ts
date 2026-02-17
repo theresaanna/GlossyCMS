@@ -149,12 +149,11 @@ describe('provision-helpers.sh', () => {
       ).toThrow()
     })
 
-    it('fails when --team is missing', () => {
-      expect(() =>
-        execSync(`bash "${SCRIPT_PATH}" --client-name test --org test 2>&1`, {
-          encoding: 'utf-8',
-        }),
-      ).toThrow()
+    it('accepts --team as optional', () => {
+      const output = execSync(`bash "${SCRIPT_PATH}" --client-name test --org test --help 2>&1`, {
+        encoding: 'utf-8',
+      })
+      expect(output).toContain('optional')
     })
   })
 })
