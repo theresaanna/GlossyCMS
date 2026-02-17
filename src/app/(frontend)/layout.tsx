@@ -68,6 +68,6 @@ export const metadata: Metadata = {
   openGraph: mergeOpenGraph(),
   twitter: {
     card: 'summary_large_image',
-    creator: '@payloadcms',
+    creator: process.env.TWITTER_HANDLE || '',
   },
 }
