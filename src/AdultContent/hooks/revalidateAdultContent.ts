@@ -9,7 +9,7 @@ export const revalidateAdultContent: GlobalAfterChangeHook = ({
   if (!context.disableRevalidate) {
     payload.logger.info(`Revalidating adult content settings`)
 
-    revalidateTag('global_adult-content')
+    revalidateTag('global_adult-content', 'max')
   }
 
   return doc

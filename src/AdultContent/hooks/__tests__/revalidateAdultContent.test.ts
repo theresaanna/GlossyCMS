@@ -22,7 +22,7 @@ describe('revalidateAdultContent', () => {
   it('revalidates adult-content cache tag on change', () => {
     revalidateAdultContent({ doc: {}, req: makeReq() } as any)
 
-    expect(revalidateTag).toHaveBeenCalledWith('global_adult-content')
+    expect(revalidateTag).toHaveBeenCalledWith('global_adult-content', 'max')
   })
 
   it('logs a message when revalidating', () => {
