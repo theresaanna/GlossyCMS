@@ -13,6 +13,7 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { NewsletterRecipients } from './collections/NewsletterRecipients'
 import { Newsletters } from './collections/Newsletters'
+import { AdultContent } from './AdultContent/config'
 import { Footer } from './Footer/config'
 import { Gallery } from './Gallery/config'
 import { Header } from './Header/config'
@@ -79,7 +80,7 @@ export default buildConfig({
     defaultFromAddress: 'anna@goddessannaadore.com',
     defaultFromName: 'Anna Adore'
   }),
-  globals: [Header, Footer, Gallery],
+  globals: [Header, Footer, Gallery, AdultContent],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
