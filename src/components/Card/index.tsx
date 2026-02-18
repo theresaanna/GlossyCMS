@@ -7,8 +7,11 @@ import React, { Fragment } from 'react'
 import type { Post } from '@/payload-types'
 
 import { Media } from '@/components/Media'
+import { formatDateTime } from '@/utilities/formatDateTime'
 
-export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'>
+export type CardPostData = Pick<Post, 'slug' | 'categories' | 'meta' | 'title'> & {
+  publishedAt?: string | null
+}
 
 export const Card: React.FC<{
   alignItems?: 'center'
@@ -21,7 +24,7 @@ export const Card: React.FC<{
   const { card, link } = useClickableCard({})
   const { className, doc, relationTo, showCategories, title: titleFromProps } = props
 
-  const { slug, categories, meta, title } = doc || {}
+  const { slug, categories, meta, title, publishedAt } = doc || {}
   const { description, image: metaImage } = meta || {}
 
   const hasCategories = categories && Array.isArray(categories) && categories.length > 0
@@ -37,10 +40,11 @@ export const Card: React.FC<{
       )}
       ref={card.ref}
     >
-      <div className="relative w-full ">
-        {!metaImage && <div className="">No image</div>}
-        {metaImage && typeof metaImage !== 'string' && <Media resource={metaImage} size="33vw" />}
-      </div>
+      {metaImage && typeof metaImage !== 'string' && (
+        <div className="relative w-full">
+          <Media resource={metaImage} size="33vw" />
+        </div>
+      )}
       <div className="p-4">
         {showCategories && hasCategories && (
           <div className="uppercase text-sm mb-4">
@@ -69,7 +73,7 @@ export const Card: React.FC<{
           </div>
         )}
         {titleToUse && (
-          <div className="prose">
+          <div className="prose dark:prose-invert">
             <h3>
               <Link className="not-prose" href={href} ref={link.ref}>
                 {titleToUse}
@@ -77,7 +81,12 @@ export const Card: React.FC<{
             </h3>
           </div>
         )}
-        {description && <div className="mt-2">{description && <p>{sanitizedDescription}</p>}</div>}
+        {publishedAt && (
+          <time className="text-sm text-muted-foreground mt-1 block" dateTime={publishedAt}>
+            {formatDateTime(publishedAt)}
+          </time>
+        )}
+        {description && <p className="mt-2 text-sm text-muted-foreground line-clamp-2">{sanitizedDescription}</p>}
       </div>
     </article>
   )

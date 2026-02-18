@@ -39,14 +39,14 @@ export const PostHero: React.FC<{
 
         <h1 className="mb-4 text-3xl md:text-5xl lg:text-6xl">{title}</h1>
 
-        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground mb-8">
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {hasAuthors && <span>By {formatAuthors(populatedAuthors)}</span>}
           {hasAuthors && publishedAt && <span aria-hidden="true">&middot;</span>}
           {publishedAt && <time dateTime={publishedAt}>{formatDateTime(publishedAt)}</time>}
         </div>
 
         {heroImage && typeof heroImage !== 'string' && (
-          <div className="mb-8">
+          <div className="mt-8">
             <Media resource={heroImage} imgClassName="rounded-lg w-full" />
           </div>
         )}

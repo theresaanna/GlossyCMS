@@ -13,7 +13,7 @@ export function PostLayout({ post, auxiliaryContent }: PostLayoutProps) {
 
       <div className="flex flex-col items-center">
         <div className="container">
-          <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
+          <RichText className="max-w-[48rem] mx-auto [&>hr:first-child]:hidden" data={post.content} enableGutter={false} />
           {post.enableComments !== false && <CommentsSection postId={String(post.id)} />}
           {post.relatedPosts && post.relatedPosts.length > 0 && (
             <RelatedPosts
