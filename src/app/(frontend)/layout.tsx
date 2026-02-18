@@ -22,6 +22,11 @@ import type { AdultContent as AdultContentType } from '@/payload-types'
 import { draftMode } from 'next/headers'
 import themeConfig from '@/theme.config'
 
+import '@fontsource/sn-pro/400.css'
+import '@fontsource/sn-pro/400-italic.css'
+import '@fontsource/sn-pro/500.css'
+import '@fontsource/sn-pro/600.css'
+import '@fontsource/sn-pro/700.css'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 

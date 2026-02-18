@@ -17,6 +17,9 @@ importers:
       '@ffmpeg/util':
         specifier: ^0.12.2
         version: 0.12.2
+      '@fontsource/sn-pro':
+        specifier: ^5.2.6
+        version: 5.2.6
       '@payloadcms/admin-bar':
         specifier: 3.73.0
         version: 3.73.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -982,6 +985,9 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
+
+  '@fontsource/sn-pro@5.2.6':
+    resolution: {integrity: sha512-oBhp9tiPQdIoHqnREbbbIq7WzT9ZZZAIwBGMmT7RQ0Kb9AfIhjj4DE6Cdd1WI71QhBx1hhVR2g9fGZPWpYVP+g==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -6047,6 +6053,8 @@ snapshots:
       tabbable: 6.4.0
 
   '@floating-ui/utils@0.2.10': {}
+
+  '@fontsource/sn-pro@5.2.6': {}
 
   '@humanfs/core@0.19.1': {}
 
