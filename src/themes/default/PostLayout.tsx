@@ -11,7 +11,7 @@ export function PostLayout({ post, auxiliaryContent }: PostLayoutProps) {
 
       <PostHero post={post} />
 
-      <div className="flex flex-col items-center gap-4 pt-8">
+      <div className="flex flex-col items-center">
         <div className="container">
           <RichText className="max-w-[48rem] mx-auto" data={post.content} enableGutter={false} />
           {post.enableComments !== false && <CommentsSection postId={String(post.id)} />}
