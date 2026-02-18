@@ -2,7 +2,7 @@
 
 import React from 'react'
 
-export const AdminIcon = () => {
+const AdminIcon = () => {
   return (
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -10,9 +10,11 @@ export const AdminIcon = () => {
       height="25"
       viewBox="0 0 512 512"
     >
-      <clipPath id="admin-icon-clip">
-        <rect width="512" height="512" rx="80" ry="80" />
-      </clipPath>
+      <defs>
+        <clipPath id="admin-icon-clip">
+          <rect width="512" height="512" rx="80" ry="80" />
+        </clipPath>
+      </defs>
       <g clipPath="url(#admin-icon-clip)">
         <rect width="512" height="512" rx="80" ry="80" fill="#2a2335" />
         <path
@@ -24,3 +26,5 @@ export const AdminIcon = () => {
     </svg>
   )
 }
+
+export default AdminIcon
