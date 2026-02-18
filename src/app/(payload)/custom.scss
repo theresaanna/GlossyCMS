@@ -66,3 +66,17 @@
   --color-base-950: rgb(246, 231, 241);
   --color-base-1000: rgb(252, 246, 250);
 }
+
+// Ensure the admin icon in the breadcrumb isn't clipped at smaller viewports
+.step-nav__home {
+  width: 25px;
+  height: 25px;
+
+  span {
+    display: inline-flex;
+    width: 25px;
+    min-width: 25px;
+    height: 25px;
+    overflow: visible;
+  }
+}
