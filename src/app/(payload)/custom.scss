@@ -10,62 +10,64 @@
     Arial, sans-serif;
 
   // Light theme base colors (purple-mauve palette)
-  // #f6e7f1 -> rgb(246, 231, 241) — background
-  // #e8e3e9 -> rgb(232, 227, 233) — card/surface
-  // #7e6285 -> rgb(126, 98, 133) — muted text, ring
-  // #48324b -> rgb(72, 50, 75) — primary
-  // #1e1a24 -> rgb(30, 26, 36) — text
+  // Dark purple bg with light lavender text
+  // #1e1a24 -> rgb(30, 26, 36) — background
+  // #2e242d -> rgb(46, 36, 45) — card/surface
+  // #5f3f4e -> rgb(95, 63, 78) — muted/ring
+  // #7e6285 -> rgb(126, 98, 133) — primary
+  // #f6e7f1 -> rgb(246, 231, 241) — text
 
-  --color-base-0: rgb(246, 231, 241);
-  --color-base-50: rgb(241, 228, 237);
-  --color-base-100: rgb(236, 224, 233);
-  --color-base-150: rgb(232, 227, 233);
-  --color-base-200: rgb(218, 210, 220);
-  --color-base-250: rgb(199, 188, 202);
-  --color-base-300: rgb(180, 166, 184);
-  --color-base-350: rgb(162, 145, 166);
-  --color-base-400: rgb(143, 123, 148);
-  --color-base-450: rgb(126, 98, 133);
-  --color-base-500: rgb(107, 84, 113);
-  --color-base-550: rgb(94, 73, 99);
-  --color-base-600: rgb(83, 63, 87);
-  --color-base-650: rgb(72, 50, 75);
-  --color-base-700: rgb(62, 44, 66);
-  --color-base-750: rgb(52, 38, 56);
-  --color-base-800: rgb(46, 36, 45);
-  --color-base-850: rgb(38, 30, 39);
-  --color-base-900: rgb(30, 26, 36);
-  --color-base-950: rgb(22, 18, 28);
-  --color-base-1000: rgb(14, 10, 20);
+  --color-base-0: rgb(30, 26, 36);
+  --color-base-50: rgb(36, 30, 39);
+  --color-base-100: rgb(42, 34, 43);
+  --color-base-150: rgb(46, 36, 45);
+  --color-base-200: rgb(56, 42, 52);
+  --color-base-250: rgb(66, 48, 58);
+  --color-base-300: rgb(76, 54, 66);
+  --color-base-350: rgb(86, 58, 72);
+  --color-base-400: rgb(95, 63, 78);
+  --color-base-450: rgb(106, 72, 88);
+  --color-base-500: rgb(118, 84, 100);
+  --color-base-550: rgb(126, 98, 133);
+  --color-base-600: rgb(143, 114, 148);
+  --color-base-650: rgb(162, 135, 166);
+  --color-base-700: rgb(180, 156, 182);
+  --color-base-750: rgb(199, 178, 200);
+  --color-base-800: rgb(218, 200, 218);
+  --color-base-850: rgb(232, 220, 232);
+  --color-base-900: rgb(241, 232, 239);
+  --color-base-950: rgb(246, 231, 241);
+  --color-base-1000: rgb(252, 246, 250);
 }
 
 [data-theme='dark'] {
   // Dark theme base colors (purple-mauve palette — inverted)
-  // #0e0a14 -> rgb(14, 10, 20) — background
-  // #261e27 -> rgb(38, 30, 39) — card/surface
-  // #6b5471 -> rgb(107, 84, 113) — muted text, ring
-  // #8f72a4 -> rgb(143, 114, 148) — primary
-  // #f6e7f1 -> rgb(246, 231, 241) — text
+  // Light lavender bg with dark purple text
+  // #fcf6fa -> rgb(252, 246, 250) — background
+  // #e8dce8 -> rgb(232, 220, 232) — card/surface
+  // #7e6285 -> rgb(126, 98, 133) — muted/ring
+  // #5f3f4e -> rgb(95, 63, 78) — primary
+  // #1e1a24 -> rgb(30, 26, 36) — text
 
-  --color-base-0: rgb(14, 10, 20);
-  --color-base-50: rgb(22, 18, 28);
-  --color-base-100: rgb(30, 26, 36);
-  --color-base-150: rgb(38, 30, 39);
-  --color-base-200: rgb(46, 36, 45);
-  --color-base-250: rgb(52, 38, 56);
-  --color-base-300: rgb(62, 44, 66);
-  --color-base-350: rgb(72, 50, 75);
-  --color-base-400: rgb(83, 63, 87);
-  --color-base-450: rgb(94, 73, 99);
-  --color-base-500: rgb(107, 84, 113);
-  --color-base-550: rgb(126, 98, 133);
-  --color-base-600: rgb(143, 123, 148);
-  --color-base-650: rgb(162, 145, 166);
-  --color-base-700: rgb(180, 166, 184);
-  --color-base-750: rgb(199, 188, 202);
-  --color-base-800: rgb(218, 210, 220);
-  --color-base-850: rgb(232, 227, 233);
-  --color-base-900: rgb(236, 224, 233);
-  --color-base-950: rgb(241, 228, 237);
-  --color-base-1000: rgb(246, 231, 241);
+  --color-base-0: rgb(252, 246, 250);
+  --color-base-50: rgb(246, 231, 241);
+  --color-base-100: rgb(241, 232, 239);
+  --color-base-150: rgb(232, 220, 232);
+  --color-base-200: rgb(218, 200, 218);
+  --color-base-250: rgb(199, 178, 200);
+  --color-base-300: rgb(180, 156, 182);
+  --color-base-350: rgb(162, 135, 166);
+  --color-base-400: rgb(143, 114, 148);
+  --color-base-450: rgb(126, 98, 133);
+  --color-base-500: rgb(118, 84, 100);
+  --color-base-550: rgb(106, 72, 88);
+  --color-base-600: rgb(95, 63, 78);
+  --color-base-650: rgb(86, 58, 72);
+  --color-base-700: rgb(76, 54, 66);
+  --color-base-750: rgb(66, 48, 58);
+  --color-base-800: rgb(56, 42, 52);
+  --color-base-850: rgb(46, 36, 45);
+  --color-base-900: rgb(42, 34, 43);
+  --color-base-950: rgb(36, 30, 39);
+  --color-base-1000: rgb(30, 26, 36);
 }
