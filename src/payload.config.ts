@@ -32,7 +32,10 @@ if (!resendKey && process.env.NODE_ENV === 'production') {
 export default buildConfig({
   admin: {
     meta: {
-      favicon: '/favicon.svg',
+      icons: [
+        { type: 'image/svg+xml', rel: 'icon', url: '/favicon.svg' },
+        { type: 'image/x-icon', rel: 'icon', sizes: '32x32', url: '/favicon.ico' },
+      ],
       titleSuffix: '- Glossy',
     },
     components: {
