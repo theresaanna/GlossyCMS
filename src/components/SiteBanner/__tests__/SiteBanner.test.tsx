@@ -68,15 +68,8 @@ describe('SiteBanner', () => {
     expect(screen.getByText('?')).toBeDefined()
   })
 
-  it('renders the site title in an h1', () => {
+  it('does not render the site title (title is now in the header bar)', () => {
     render(<SiteBanner siteTitle="Hello World" />)
-    const heading = screen.getByRole('heading', { level: 1 })
-    expect(heading).toBeDefined()
-    expect(heading.textContent).toBe('Hello World')
-  })
-
-  it('does not render an h1 when siteTitle is not provided', () => {
-    render(<SiteBanner />)
     expect(screen.queryByRole('heading', { level: 1 })).toBeNull()
   })
 
@@ -144,6 +137,5 @@ describe('SiteBanner', () => {
     )
     const images = screen.getAllByRole('img')
     expect(images).toHaveLength(2)
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('My Blog')
   })
 })

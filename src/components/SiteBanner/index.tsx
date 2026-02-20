@@ -84,13 +84,6 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
             )}
           </div>
         </div>
-
-        {/* Site title */}
-        {siteTitle && (
-          <h1 className="mt-3 mb-0 text-2xl md:text-3xl lg:text-4xl font-bold text-foreground">
-            {siteTitle}
-          </h1>
-        )}
       </div>
     </div>
   )
