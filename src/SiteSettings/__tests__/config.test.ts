@@ -122,12 +122,17 @@ describe('SiteSettings global config', () => {
       expect(field.defaultValue).toBe('default')
     })
 
-    it('color scheme fields use options from colorSchemes registry', () => {
+    it('color scheme fields use filtered options from colorSchemes registry', () => {
       const lightField = allFields.find((f) => f.name === 'colorSchemeLight')
       const darkField = allFields.find((f) => f.name === 'colorSchemeDark')
-      const expectedOptions = colorSchemes.map(({ value, label }) => ({ value, label }))
-      expect(lightField.options).toEqual(expectedOptions)
-      expect(darkField.options).toEqual(expectedOptions)
+      const expectedLightOptions = colorSchemes
+        .filter(({ modes }) => modes.includes('light'))
+        .map(({ value, label }) => ({ value, label }))
+      const expectedDarkOptions = colorSchemes
+        .filter(({ modes }) => modes.includes('dark'))
+        .map(({ value, label }) => ({ value, label }))
+      expect(lightField.options).toEqual(expectedLightOptions)
+      expect(darkField.options).toEqual(expectedDarkOptions)
     })
 
     it('color scheme fields are inside a row field', () => {
