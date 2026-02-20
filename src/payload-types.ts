@@ -2107,11 +2107,11 @@ export interface SiteSetting {
   /**
    * The color scheme used when the site is in light mode.
    */
-  colorSchemeLight?: 'default' | null;
+  colorSchemeLight?: ('default' | 'eggplant') | null;
   /**
    * The color scheme used when the site is in dark mode.
    */
-  colorSchemeDark?: 'default' | null;
+  colorSchemeDark?: ('default' | 'eggplant') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }

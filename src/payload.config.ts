@@ -47,6 +47,7 @@ export default buildConfig({
         Logo: '@/components/AdminLogo',
         Icon: '@/components/AdminIcon',
       },
+      providers: ['@/components/AdminColorSchemeProvider'],
     },
     importMap: {
       baseDir: path.resolve(dirname),
