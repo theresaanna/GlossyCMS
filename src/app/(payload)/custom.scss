@@ -106,6 +106,106 @@
   --color-base-1000: rgb(246, 252, 254);
 }
 
+// Spring — light
+:root:not([data-theme='dark'])[data-color-scheme-light='spring'] {
+  --color-base-0: rgb(255, 243, 246);
+  --color-base-50: rgb(255, 231, 237);
+  --color-base-100: rgb(255, 213, 224);
+  --color-base-150: rgb(245, 204, 216);
+  --color-base-200: rgb(230, 190, 206);
+  --color-base-250: rgb(215, 180, 200);
+  --color-base-300: rgb(205, 188, 218);
+  --color-base-350: rgb(190, 168, 198);
+  --color-base-400: rgb(175, 148, 178);
+  --color-base-450: rgb(160, 128, 158);
+  --color-base-500: rgb(145, 110, 140);
+  --color-base-550: rgb(130, 95, 125);
+  --color-base-600: rgb(115, 80, 110);
+  --color-base-650: rgb(100, 68, 95);
+  --color-base-700: rgb(88, 58, 82);
+  --color-base-750: rgb(76, 50, 70);
+  --color-base-800: rgb(65, 42, 60);
+  --color-base-850: rgb(56, 36, 52);
+  --color-base-900: rgb(50, 32, 46);
+  --color-base-950: rgb(42, 28, 40);
+  --color-base-1000: rgb(35, 22, 32);
+}
+
+// Autumn — dark
+[data-theme='dark'][data-color-scheme-dark='autumn'] {
+  --color-base-0: rgb(38, 22, 26);
+  --color-base-50: rgb(47, 27, 32);
+  --color-base-100: rgb(55, 34, 38);
+  --color-base-150: rgb(62, 40, 42);
+  --color-base-200: rgb(74, 52, 48);
+  --color-base-250: rgb(84, 60, 55);
+  --color-base-300: rgb(94, 68, 64);
+  --color-base-350: rgb(100, 73, 72);
+  --color-base-400: rgb(112, 82, 80);
+  --color-base-450: rgb(126, 92, 90);
+  --color-base-500: rgb(142, 99, 113);
+  --color-base-550: rgb(158, 115, 128);
+  --color-base-600: rgb(174, 132, 144);
+  --color-base-650: rgb(190, 150, 160);
+  --color-base-700: rgb(205, 168, 176);
+  --color-base-750: rgb(218, 186, 192);
+  --color-base-800: rgb(228, 202, 208);
+  --color-base-850: rgb(234, 216, 220);
+  --color-base-900: rgb(234, 221, 222);
+  --color-base-950: rgb(242, 234, 236);
+  --color-base-1000: rgb(250, 245, 246);
+}
+
+// 80's — light
+:root:not([data-theme='dark'])[data-color-scheme-light='80s'] {
+  --color-base-0: rgb(248, 242, 252);
+  --color-base-50: rgb(240, 228, 248);
+  --color-base-100: rgb(228, 214, 240);
+  --color-base-150: rgb(214, 196, 232);
+  --color-base-200: rgb(196, 178, 222);
+  --color-base-250: rgb(182, 162, 214);
+  --color-base-300: rgb(174, 132, 215);
+  --color-base-350: rgb(158, 116, 200);
+  --color-base-400: rgb(142, 100, 185);
+  --color-base-450: rgb(126, 86, 170);
+  --color-base-500: rgb(112, 72, 156);
+  --color-base-550: rgb(100, 62, 142);
+  --color-base-600: rgb(88, 52, 128);
+  --color-base-650: rgb(78, 44, 116);
+  --color-base-700: rgb(68, 38, 104);
+  --color-base-750: rgb(58, 32, 92);
+  --color-base-800: rgb(50, 28, 80);
+  --color-base-850: rgb(44, 24, 70);
+  --color-base-900: rgb(38, 20, 62);
+  --color-base-950: rgb(32, 16, 54);
+  --color-base-1000: rgb(26, 12, 46);
+}
+
+// 80's — dark
+[data-theme='dark'][data-color-scheme-dark='80s'] {
+  --color-base-0: rgb(26, 12, 46);
+  --color-base-50: rgb(32, 16, 54);
+  --color-base-100: rgb(38, 20, 62);
+  --color-base-150: rgb(44, 24, 70);
+  --color-base-200: rgb(50, 28, 80);
+  --color-base-250: rgb(58, 32, 92);
+  --color-base-300: rgb(68, 38, 104);
+  --color-base-350: rgb(78, 44, 116);
+  --color-base-400: rgb(88, 52, 128);
+  --color-base-450: rgb(100, 62, 142);
+  --color-base-500: rgb(112, 72, 156);
+  --color-base-550: rgb(126, 86, 170);
+  --color-base-600: rgb(142, 100, 185);
+  --color-base-650: rgb(158, 116, 200);
+  --color-base-700: rgb(174, 132, 215);
+  --color-base-750: rgb(182, 162, 214);
+  --color-base-800: rgb(196, 178, 222);
+  --color-base-850: rgb(214, 196, 232);
+  --color-base-900: rgb(228, 214, 240);
+  --color-base-950: rgb(240, 228, 248);
+  --color-base-1000: rgb(248, 242, 252);
+}
+
 // Ensure the admin icon in the breadcrumb isn't clipped at smaller viewports
 .step-nav__home {
   width: 25px;

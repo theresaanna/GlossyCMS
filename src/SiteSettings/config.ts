@@ -1,10 +1,18 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
-import { colorSchemes } from '@/colorSchemes'
+import { type ColorSchemeMode, colorSchemes } from '@/colorSchemes'
 import { revalidateSiteSettings } from './hooks/revalidateSiteSettings'
 
-const colorSchemeOptions = colorSchemes.map(({ value, label }) => ({ value, label }))
+const hasMode = (modes: readonly ColorSchemeMode[], mode: ColorSchemeMode) => modes.includes(mode)
+
+const lightColorSchemeOptions = colorSchemes
+  .filter(({ modes }) => hasMode(modes, 'light'))
+  .map(({ value, label }) => ({ value, label }))
+
+const darkColorSchemeOptions = colorSchemes
+  .filter(({ modes }) => hasMode(modes, 'dark'))
+  .map(({ value, label }) => ({ value, label }))
 
 export const SiteSettings: GlobalConfig = {
   slug: 'site-settings',
@@ -46,7 +54,7 @@ export const SiteSettings: GlobalConfig = {
           type: 'select',
           label: 'Light Color Scheme',
           defaultValue: 'default',
-          options: colorSchemeOptions,
+          options: lightColorSchemeOptions,
           admin: {
             description: 'The color scheme used when the site is in light mode.',
             width: '50%',
@@ -57,7 +65,7 @@ export const SiteSettings: GlobalConfig = {
           type: 'select',
           label: 'Dark Color Scheme',
           defaultValue: 'default',
-          options: colorSchemeOptions,
+          options: darkColorSchemeOptions,
           admin: {
             description: 'The color scheme used when the site is in dark mode.',
             width: '50%',
