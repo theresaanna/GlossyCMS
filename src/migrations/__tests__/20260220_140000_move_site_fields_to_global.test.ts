@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { up, down } from '../20260220_130000_add_user_site_title'
+import { up, down } from '../20260220_140000_move_site_fields_to_global'
 
-describe('Migration: 20260220_130000_add_user_site_title', () => {
+describe('Migration: 20260220_140000_move_site_fields_to_global', () => {
   const createMockDb = () => {
     const executedStatements: string[] = []
     return {
@@ -21,10 +21,10 @@ describe('Migration: 20260220_130000_add_user_site_title', () => {
       ).resolves.not.toThrow()
     })
 
-    it('calls db.execute', async () => {
+    it('calls db.execute three times (create table, migrate data, drop columns)', async () => {
       const mockDb = createMockDb()
       await up({ db: mockDb, payload: {} as any, req: {} as any })
-      expect(mockDb.execute).toHaveBeenCalledTimes(1)
+      expect(mockDb.execute).toHaveBeenCalledTimes(3)
     })
   })
 
@@ -36,10 +36,10 @@ describe('Migration: 20260220_130000_add_user_site_title', () => {
       ).resolves.not.toThrow()
     })
 
-    it('calls db.execute', async () => {
+    it('calls db.execute three times (re-add columns, copy data, drop table)', async () => {
       const mockDb = createMockDb()
       await down({ db: mockDb, payload: {} as any, req: {} as any })
-      expect(mockDb.execute).toHaveBeenCalledTimes(1)
+      expect(mockDb.execute).toHaveBeenCalledTimes(3)
     })
   })
 
@@ -47,20 +47,17 @@ describe('Migration: 20260220_130000_add_user_site_title', () => {
     it('is included in the migrations array', async () => {
       const { migrations } = await import('../index')
       const migration = migrations.find(
-        (m) => m.name === '20260220_130000_add_user_site_title',
+        (m) => m.name === '20260220_140000_move_site_fields_to_global',
       )
       expect(migration).toBeDefined()
       expect(migration!.up).toBeDefined()
       expect(migration!.down).toBeDefined()
     })
 
-    it('is registered before the site-settings migration', async () => {
+    it('is the last migration in the list', async () => {
       const { migrations } = await import('../index')
-      const idx = migrations.findIndex(
-        (m) => m.name === '20260220_130000_add_user_site_title',
-      )
-      expect(idx).toBeGreaterThan(-1)
-      expect(idx).toBeLessThan(migrations.length - 1)
+      const lastMigration = migrations[migrations.length - 1]
+      expect(lastMigration.name).toBe('20260220_140000_move_site_fields_to_global')
     })
   })
 })
