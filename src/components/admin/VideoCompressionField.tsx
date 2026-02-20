@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
-import { useField } from '@payloadcms/ui'
+import { useField, useForm } from '@payloadcms/ui'
 import {
   compressVideo,
   extractVideoThumbnail,
@@ -16,6 +16,7 @@ const VideoCompressionField: React.FC = () => {
   const { setValue: setOriginalSize } = useField<number>({ path: 'originalSize' })
   const { setValue: setCompressionRatio } = useField<number>({ path: 'compressionRatio' })
   const { setValue: setVideoThumbnailURL } = useField<string>({ path: 'videoThumbnailURL' })
+  const { setProcessing } = useForm()
 
   const [progress, setProgress] = useState<CompressionProgress | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -29,6 +30,7 @@ const VideoCompressionField: React.FC = () => {
       if (processedFilesRef.current.has(file)) return // Already compressed
 
       processingRef.current = true
+      setProcessing(true)
       setError(null)
 
       try {
@@ -39,22 +41,18 @@ const VideoCompressionField: React.FC = () => {
         })
 
         // Extract thumbnail first (works even for small files that skip compression)
-        try {
-          setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
-          const thumbnailFile = await extractVideoThumbnail(fileClone, { timestamp: 1, width: 500 })
+        setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
+        const thumbnailFile = await extractVideoThumbnail(fileClone, { timestamp: 1, width: 500 })
 
-          // Upload thumbnail via API
-          const formData = new FormData()
-          formData.append('file', thumbnailFile)
-          const res = await fetch('/api/video-thumbnail', { method: 'POST', body: formData })
-          if (res.ok) {
-            const { url } = await res.json()
-            setVideoThumbnailURL(url)
-          }
-        } catch (thumbErr) {
-          console.error('Thumbnail extraction failed:', thumbErr)
-          // Non-fatal: video will still work without a thumbnail
+        // Upload thumbnail via API
+        const formData = new FormData()
+        formData.append('file', thumbnailFile)
+        const res = await fetch('/api/video-thumbnail', { method: 'POST', body: formData })
+        if (!res.ok) {
+          throw new Error('Failed to upload thumbnail')
         }
+        const { url } = await res.json()
+        setVideoThumbnailURL(url)
 
         // Reset FFmpeg instance between operations to prevent WASM memory corruption
         terminateFFmpeg()
@@ -62,6 +60,7 @@ const VideoCompressionField: React.FC = () => {
         // Skip compression for small files
         if (file.size < 1 * 1024 * 1024) {
           processingRef.current = false
+          setProcessing(false)
           setProgress(null)
           return
         }
@@ -72,6 +71,7 @@ const VideoCompressionField: React.FC = () => {
             'This file is too large for in-browser compression (max 250MB). We recommend uploading on a laptop or desktop machine for best performance.',
           )
           processingRef.current = false
+          setProcessing(false)
           return
         }
 
@@ -94,9 +94,10 @@ const VideoCompressionField: React.FC = () => {
         setProgress(null)
       } finally {
         processingRef.current = false
+        setProcessing(false)
       }
     },
-    [setFileValue, setOriginalSize, setCompressionRatio, setVideoThumbnailURL],
+    [setFileValue, setOriginalSize, setCompressionRatio, setVideoThumbnailURL, setProcessing],
   )
 
   useEffect(() => {
