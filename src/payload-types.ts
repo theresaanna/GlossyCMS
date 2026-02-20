@@ -467,6 +467,18 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * The title displayed on your site beneath the banner.
+   */
+  siteTitle?: string | null;
+  /**
+   * A header/banner image for your site.
+   */
+  headerImage?: (number | null) | Media;
+  /**
+   * Your profile picture. Displayed in the admin panel navigation and on the site banner.
+   */
+  userImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1059,6 +1071,7 @@ export interface Search {
         value: number | Page;
       };
   slug?: string | null;
+  publishedAt?: string | null;
   meta?: {
     title?: string | null;
     description?: string | null;
@@ -1642,6 +1655,9 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  siteTitle?: T;
+  headerImage?: T;
+  userImage?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -1876,6 +1892,7 @@ export interface SearchSelect<T extends boolean = true> {
   priority?: T;
   doc?: T;
   slug?: T;
+  publishedAt?: T;
   meta?:
     | T
     | {

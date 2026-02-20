@@ -1,6 +1,7 @@
 import type { CollectionConfig } from 'payload'
 
 import { authenticated } from '../../access/authenticated'
+import { revalidateUser } from './hooks/revalidateUser'
 
 export const Users: CollectionConfig = {
   slug: 'users',
@@ -22,11 +23,18 @@ export const Users: CollectionConfig = {
       type: 'text',
     },
     {
+      name: 'siteTitle',
+      type: 'text',
+      admin: {
+        description: 'The title displayed on your site beneath the banner.',
+      },
+    },
+    {
       name: 'headerImage',
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'A header/banner image for your profile.',
+        description: 'A header/banner image for your site.',
       },
     },
     {
@@ -34,9 +42,12 @@ export const Users: CollectionConfig = {
       type: 'upload',
       relationTo: 'media',
       admin: {
-        description: 'Your profile picture. Displayed in the admin panel navigation.',
+        description: 'Your profile picture. Displayed in the admin panel navigation and on the site banner.',
       },
     },
   ],
+  hooks: {
+    afterChange: [revalidateUser],
+  },
   timestamps: true,
 }

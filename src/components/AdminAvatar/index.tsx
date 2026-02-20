@@ -1,7 +1,51 @@
 'use client'
 
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { useAuth } from '@payloadcms/ui'
+
+/**
+ * Resolves the avatar image URL from the user's userImage field.
+ * The auth user from useAuth() is returned at depth 0, so userImage
+ * is typically just a numeric media ID. This hook fetches the media
+ * document to get the actual image URL.
+ */
+function useAvatarUrl(userImage: unknown): string | null {
+  const [url, setUrl] = useState<string | null>(null)
+
+  useEffect(() => {
+    // Already a populated object with a URL
+    if (userImage && typeof userImage === 'object') {
+      const media = userImage as {
+        url?: string
+        sizes?: { thumbnail?: { url?: string } }
+      }
+      setUrl(media.sizes?.thumbnail?.url || media.url || null)
+      return
+    }
+
+    // It's a numeric ID — fetch the media document
+    if (typeof userImage === 'number') {
+      fetch(`/api/media/${userImage}`)
+        .then((res) => {
+          if (!res.ok) return null
+          return res.json()
+        })
+        .then((media) => {
+          if (media) {
+            setUrl(media.sizes?.thumbnail?.url || media.url || null)
+          }
+        })
+        .catch(() => {
+          // Silently fail — will show initial fallback
+        })
+      return
+    }
+
+    setUrl(null)
+  }, [userImage])
+
+  return url
+}
 
 /**
  * Custom admin avatar component that displays the user's uploaded profile image
@@ -10,12 +54,7 @@ import { useAuth } from '@payloadcms/ui'
  */
 const AdminAvatar: React.FC = () => {
   const { user } = useAuth()
-
-  const userImage = user?.userImage as
-    | { url?: string; sizes?: { thumbnail?: { url?: string } } }
-    | undefined
-
-  const imageUrl = userImage?.sizes?.thumbnail?.url || userImage?.url
+  const imageUrl = useAvatarUrl(user?.userImage)
 
   if (imageUrl) {
     return (

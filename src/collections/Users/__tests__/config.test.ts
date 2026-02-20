@@ -30,6 +30,22 @@ describe('Users collection config', () => {
     expect(field.type).toBe('text')
   })
 
+  it('has a siteTitle text field', () => {
+    const field = Users.fields.find(
+      (f) => 'name' in f && f.name === 'siteTitle',
+    ) as any
+    expect(field).toBeDefined()
+    expect(field.type).toBe('text')
+  })
+
+  it('has a description on the siteTitle field', () => {
+    const field = Users.fields.find(
+      (f) => 'name' in f && f.name === 'siteTitle',
+    ) as any
+    expect(field.admin.description).toBeDefined()
+    expect(field.admin.description).toContain('title')
+  })
+
   it('has a headerImage upload field related to media', () => {
     const field = Users.fields.find(
       (f) => 'name' in f && f.name === 'headerImage',
@@ -69,9 +85,10 @@ describe('Users collection config', () => {
       .filter((f) => 'name' in f)
       .map((f) => ('name' in f ? f.name : ''))
     expect(fieldNames).toContain('name')
+    expect(fieldNames).toContain('siteTitle')
     expect(fieldNames).toContain('headerImage')
     expect(fieldNames).toContain('userImage')
-    expect(fieldNames).toHaveLength(3)
+    expect(fieldNames).toHaveLength(4)
   })
 
   it('has authenticated access control on all operations', () => {
@@ -81,5 +98,11 @@ describe('Users collection config', () => {
     expect(Users.access!.delete).toBeDefined()
     expect(Users.access!.read).toBeDefined()
     expect(Users.access!.update).toBeDefined()
+  })
+
+  it('has an afterChange hook for revalidation', () => {
+    expect(Users.hooks).toBeDefined()
+    expect(Users.hooks!.afterChange).toBeDefined()
+    expect(Users.hooks!.afterChange).toHaveLength(1)
   })
 })
