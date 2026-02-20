@@ -1,15 +1,17 @@
 import type { GlobalConfig } from 'payload'
 
 import { authenticated } from '@/access/authenticated'
-import { colorSchemes } from '@/colorSchemes'
+import { type ColorSchemeMode, colorSchemes } from '@/colorSchemes'
 import { revalidateSiteSettings } from './hooks/revalidateSiteSettings'
 
+const hasMode = (modes: readonly ColorSchemeMode[], mode: ColorSchemeMode) => modes.includes(mode)
+
 const lightColorSchemeOptions = colorSchemes
-  .filter(({ modes }) => modes.includes('light'))
+  .filter(({ modes }) => hasMode(modes, 'light'))
   .map(({ value, label }) => ({ value, label }))
 
 const darkColorSchemeOptions = colorSchemes
-  .filter(({ modes }) => modes.includes('dark'))
+  .filter(({ modes }) => hasMode(modes, 'dark'))
   .map(({ value, label }) => ({ value, label }))
 
 export const SiteSettings: GlobalConfig = {

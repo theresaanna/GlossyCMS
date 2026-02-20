@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { SiteSettings } from '../config'
-import { colorSchemes } from '@/colorSchemes'
+import { type ColorSchemeMode, colorSchemes } from '@/colorSchemes'
 
 /** Recursively collect all named fields, including those inside row/group fields */
 function getAllNamedFields(fields: any[]): any[] {
@@ -125,11 +125,13 @@ describe('SiteSettings global config', () => {
     it('color scheme fields use filtered options from colorSchemes registry', () => {
       const lightField = allFields.find((f) => f.name === 'colorSchemeLight')
       const darkField = allFields.find((f) => f.name === 'colorSchemeDark')
+      const hasMode = (modes: readonly ColorSchemeMode[], mode: ColorSchemeMode) =>
+        modes.includes(mode)
       const expectedLightOptions = colorSchemes
-        .filter(({ modes }) => modes.includes('light'))
+        .filter(({ modes }) => hasMode(modes, 'light'))
         .map(({ value, label }) => ({ value, label }))
       const expectedDarkOptions = colorSchemes
-        .filter(({ modes }) => modes.includes('dark'))
+        .filter(({ modes }) => hasMode(modes, 'dark'))
         .map(({ value, label }) => ({ value, label }))
       expect(lightField.options).toEqual(expectedLightOptions)
       expect(darkField.options).toEqual(expectedDarkOptions)
