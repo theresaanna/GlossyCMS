@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { up, down } from '../20260220_120000_add_user_images'
+import { up, down } from '../20260220_130000_add_user_site_title'
 
-describe('Migration: 20260220_120000_add_user_images', () => {
+describe('Migration: 20260220_130000_add_user_site_title', () => {
   const createMockDb = () => {
     const executedStatements: string[] = []
     return {
@@ -47,20 +47,17 @@ describe('Migration: 20260220_120000_add_user_images', () => {
     it('is included in the migrations array', async () => {
       const { migrations } = await import('../index')
       const migration = migrations.find(
-        (m) => m.name === '20260220_120000_add_user_images',
+        (m) => m.name === '20260220_130000_add_user_site_title',
       )
       expect(migration).toBeDefined()
       expect(migration!.up).toBeDefined()
       expect(migration!.down).toBeDefined()
     })
 
-    it('is registered before the site title migration', async () => {
+    it('is the last migration in the list', async () => {
       const { migrations } = await import('../index')
-      const idx = migrations.findIndex(
-        (m) => m.name === '20260220_120000_add_user_images',
-      )
-      expect(idx).toBeGreaterThan(-1)
-      expect(idx).toBeLessThan(migrations.length - 1)
+      const lastMigration = migrations[migrations.length - 1]
+      expect(lastMigration.name).toBe('20260220_130000_add_user_site_title')
     })
   })
 })
