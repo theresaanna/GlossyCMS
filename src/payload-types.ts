@@ -2104,6 +2104,14 @@ export interface SiteSetting {
    * Your profile picture. Displayed in the admin panel navigation and on the site banner.
    */
   userImage?: (number | null) | Media;
+  /**
+   * The color scheme used when the site is in light mode.
+   */
+  colorSchemeLight?: 'default' | null;
+  /**
+   * The color scheme used when the site is in dark mode.
+   */
+  colorSchemeDark?: 'default' | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
@@ -2188,6 +2196,8 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   siteTitle?: T;
   headerImage?: T;
   userImage?: T;
+  colorSchemeLight?: T;
+  colorSchemeDark?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

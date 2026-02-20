@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { up, down } from '../20260220_140000_move_site_fields_to_global'
+import { up, down } from '../20260220_150000_add_color_scheme_settings'
 
-describe('Migration: 20260220_140000_move_site_fields_to_global', () => {
+describe('Migration: 20260220_150000_add_color_scheme_settings', () => {
   const createMockDb = () => {
     const executedStatements: string[] = []
     return {
@@ -21,10 +21,10 @@ describe('Migration: 20260220_140000_move_site_fields_to_global', () => {
       ).resolves.not.toThrow()
     })
 
-    it('calls db.execute three times (create table, migrate data, drop columns)', async () => {
+    it('calls db.execute once', async () => {
       const mockDb = createMockDb()
       await up({ db: mockDb, payload: {} as any, req: {} as any })
-      expect(mockDb.execute).toHaveBeenCalledTimes(3)
+      expect(mockDb.execute).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -36,10 +36,10 @@ describe('Migration: 20260220_140000_move_site_fields_to_global', () => {
       ).resolves.not.toThrow()
     })
 
-    it('calls db.execute three times (re-add columns, copy data, drop table)', async () => {
+    it('calls db.execute once', async () => {
       const mockDb = createMockDb()
       await down({ db: mockDb, payload: {} as any, req: {} as any })
-      expect(mockDb.execute).toHaveBeenCalledTimes(3)
+      expect(mockDb.execute).toHaveBeenCalledTimes(1)
     })
   })
 
@@ -47,22 +47,17 @@ describe('Migration: 20260220_140000_move_site_fields_to_global', () => {
     it('is included in the migrations array', async () => {
       const { migrations } = await import('../index')
       const migration = migrations.find(
-        (m) => m.name === '20260220_140000_move_site_fields_to_global',
+        (m) => m.name === '20260220_150000_add_color_scheme_settings',
       )
       expect(migration).toBeDefined()
       expect(migration!.up).toBeDefined()
       expect(migration!.down).toBeDefined()
     })
 
-    it('appears before the color scheme migration in the list', async () => {
+    it('is the last migration in the list', async () => {
       const { migrations } = await import('../index')
-      const thisIndex = migrations.findIndex(
-        (m) => m.name === '20260220_140000_move_site_fields_to_global',
-      )
-      const nextIndex = migrations.findIndex(
-        (m) => m.name === '20260220_150000_add_color_scheme_settings',
-      )
-      expect(thisIndex).toBeLessThan(nextIndex)
+      const lastMigration = migrations[migrations.length - 1]
+      expect(lastMigration.name).toBe('20260220_150000_add_color_scheme_settings')
     })
   })
 })

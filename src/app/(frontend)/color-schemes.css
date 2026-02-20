@@ -1,0 +1,28 @@
+/*
+ * Color Schemes
+ *
+ * Each scheme defines overrides for the CSS custom properties in globals.css.
+ * The "default" scheme uses the base variables — no overrides needed.
+ *
+ * To add a new color scheme called "ocean":
+ *
+ * 1. Define light-mode overrides:
+ *
+ *    :root[data-color-scheme-light="ocean"]:not([data-theme="dark"]) {
+ *      --background: oklch(...);
+ *      --foreground: oklch(...);
+ *      --primary: oklch(...);
+ *      ...override any variables from globals.css
+ *    }
+ *
+ * 2. Define dark-mode overrides:
+ *
+ *    [data-theme="dark"][data-color-scheme-dark="ocean"] {
+ *      --background: oklch(...);
+ *      --foreground: oklch(...);
+ *      --primary: oklch(...);
+ *      ...override any variables from globals.css
+ *    }
+ *
+ * 3. Register the scheme in src/colorSchemes.ts
+ */
