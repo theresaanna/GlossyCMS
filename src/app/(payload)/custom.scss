@@ -1,13 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Playwrite+AT:ital@1&display=swap');
-@import '@fontsource/sn-pro/400.css';
-@import '@fontsource/sn-pro/400-italic.css';
-@import '@fontsource/sn-pro/500.css';
-@import '@fontsource/sn-pro/600.css';
-@import '@fontsource/sn-pro/700.css';
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;600;700&family=Lexend:wght@400;500;600;700&display=swap');
 
 :root {
   // Font
-  --font-body: 'SN Pro', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
+  --font-body: 'Google Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue',
     Arial, sans-serif;
 
   // Light theme base colors (purple-mauve palette)

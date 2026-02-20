@@ -6,8 +6,8 @@ const AdminLogo = () => {
   return (
     <span
       style={{
-        fontFamily: "'Playwrite AT', cursive",
-        fontStyle: 'italic',
+        fontFamily: "'Lexend', sans-serif",
+        fontWeight: 600,
         fontSize: '2.25rem',
         lineHeight: '2.5rem',
         color: 'var(--theme-text)',
