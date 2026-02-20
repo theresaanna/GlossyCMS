@@ -4,7 +4,7 @@ import { RenderBlocks } from '@/blocks/RenderBlocks'
 
 export function PageLayout({ hero, blocks, auxiliaryContent }: PageLayoutProps) {
   return (
-    <article className="pt-16 pb-24">
+    <article className="pt-4 pb-24">
       {auxiliaryContent}
       <RenderHero {...hero} />
       <RenderBlocks blocks={blocks} />
