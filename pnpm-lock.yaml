@@ -17,9 +17,6 @@ importers:
       '@ffmpeg/util':
         specifier: ^0.12.2
         version: 0.12.2
-      '@fontsource/sn-pro':
-        specifier: ^5.2.6
-        version: 5.2.6
       '@payloadcms/admin-bar':
         specifier: 3.73.0
         version: 3.73.0(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
@@ -89,9 +86,6 @@ importers:
       dotenv:
         specifier: 16.4.7
         version: 16.4.7
-      geist:
-        specifier: ^1.5.1
-        version: 1.7.0(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4))
       graphql:
         specifier: ^16.12.0
         version: 16.12.0
@@ -988,9 +982,6 @@ packages:
 
   '@floating-ui/utils@0.2.10':
     resolution: {integrity: sha512-aGTxbpbg8/b5JfU1HXSrbH3wXZuLPJcNEcZQFMxLs3oSzgtVu6nFPkbbGGUvBcUjKV2YyB9Wxxabo+HEH9tcRQ==}
-
-  '@fontsource/sn-pro@5.2.6':
-    resolution: {integrity: sha512-oBhp9tiPQdIoHqnREbbbIq7WzT9ZZZAIwBGMmT7RQ0Kb9AfIhjj4DE6Cdd1WI71QhBx1hhVR2g9fGZPWpYVP+g==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -3405,11 +3396,6 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
-
-  geist@1.7.0:
-    resolution: {integrity: sha512-ZaoiZwkSf0DwwB1ncdLKp+ggAldqxl5L1+SXaNIBGkPAqcu+xjVJLxlf3/S8vLt9UHx1xu5fz3lbzKCj5iOVdQ==}
-    peerDependencies:
-      next: '>=13.2.0'
 
   generator-function@2.0.1:
     resolution: {integrity: sha512-SFdFmIJi+ybC0vjlHN0ZGVGHc3lgE0DxPAT0djjVg+kjOnSqclqmj0KQ7ykTOLP6YxoqOvuAODGdcHJn+43q3g==}
@@ -6057,8 +6043,6 @@ snapshots:
 
   '@floating-ui/utils@0.2.10': {}
 
-  '@fontsource/sn-pro@5.2.6': {}
-
   '@humanfs/core@0.19.1': {}
 
   '@humanfs/node@0.16.7':
@@ -8701,10 +8685,6 @@ snapshots:
       is-callable: 1.2.7
 
   functions-have-names@1.2.3: {}
-
-  geist@1.7.0(next@16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4)):
-    dependencies:
-      next: 16.1.6(@babel/core@7.29.0)(@opentelemetry/api@1.9.0)(@playwright/test@1.56.1)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)(sass@1.77.4)
 
   generator-function@2.0.1: {}
 

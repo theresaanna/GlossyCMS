@@ -17,6 +17,7 @@
   h4,
   h5,
   h6 {
+    font-family: var(--font-heading);
     font-weight: unset;
     font-size: unset;
   }
@@ -43,9 +44,8 @@
   --breakpoint-lg: 64rem;
   --breakpoint-xl: 80rem;
   --breakpoint-2xl: 86rem;
-  --font-mono: var(--font-geist-mono);
-  --font-sans: 'SN Pro', var(--font-geist-sans);
-  --font-playwrite: var(--font-playwrite-at);
+  --font-sans: var(--font-google-sans), sans-serif;
+  --font-heading: var(--font-lexend), sans-serif;
 }
 
 @layer utilities {
@@ -88,7 +88,7 @@
 }
 
 :root {
-  --background: oklch(87.5% 0.014 226.8deg);
+  --background: oklch(100% 0 0deg);
   --foreground: oklch(25% 0.02 230deg);
   --card: oklch(86.8% 0.046 184.4deg);
   --card-foreground: oklch(25% 0.02 230deg);
@@ -133,8 +133,8 @@
   --card-foreground: oklch(89.6% 0.019 176.6deg);
   --popover: oklch(23.1% 0.039 180.5deg);
   --popover-foreground: oklch(89.6% 0.019 176.6deg);
-  --primary: oklch(58.0% 0.066 164.1deg);
-  --primary-foreground: oklch(89.6% 0.019 176.6deg);
+  --primary: oklch(89.6% 0.019 176.6deg);
+  --primary-foreground: oklch(23.1% 0.039 180.5deg);
   --secondary: oklch(26.6% 0.022 171.9deg);
   --secondary-foreground: oklch(89.6% 0.019 176.6deg);
   --muted: oklch(26.6% 0.022 171.9deg);
@@ -153,8 +153,8 @@
   --chart-5: oklch(40.9% 0.047 197.6deg);
   --sidebar: oklch(23.1% 0.039 180.5deg);
   --sidebar-foreground: oklch(89.6% 0.019 176.6deg);
-  --sidebar-primary: oklch(58.0% 0.066 164.1deg);
-  --sidebar-primary-foreground: oklch(89.6% 0.019 176.6deg);
+  --sidebar-primary: oklch(89.6% 0.019 176.6deg);
+  --sidebar-primary-foreground: oklch(23.1% 0.039 180.5deg);
   --sidebar-accent: oklch(26.6% 0.022 171.9deg);
   --sidebar-accent-foreground: oklch(89.6% 0.019 176.6deg);
   --sidebar-border: oklch(40.9% 0.047 197.6deg);
