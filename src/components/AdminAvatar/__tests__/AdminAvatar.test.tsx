@@ -1,5 +1,5 @@
-import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
+import { render, screen, waitFor } from '@testing-library/react'
 
 const mockUseAuth = vi.fn()
 
@@ -7,10 +7,18 @@ vi.mock('@payloadcms/ui', () => ({
   useAuth: () => mockUseAuth(),
 }))
 
+const mockFetch = vi.fn()
+global.fetch = mockFetch
+
 import AdminAvatar from '../index'
 
 describe('AdminAvatar', () => {
-  it('renders user image when userImage has a thumbnail URL', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+    mockFetch.mockReset()
+  })
+
+  it('renders user image when userImage is a populated object with thumbnail', () => {
     mockUseAuth.mockReturnValue({
       user: {
         name: 'Jane',
@@ -32,7 +40,7 @@ describe('AdminAvatar', () => {
     expect(img.getAttribute('alt')).toBe('Jane')
   })
 
-  it('falls back to full URL when thumbnail is not available', () => {
+  it('falls back to full URL when thumbnail is not available on populated object', () => {
     mockUseAuth.mockReturnValue({
       user: {
         name: 'Jane',
@@ -47,6 +55,97 @@ describe('AdminAvatar', () => {
 
     const img = screen.getByRole('img')
     expect(img.getAttribute('src')).toBe('/media/full.jpg')
+  })
+
+  it('fetches media by ID when userImage is a number', async () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: 'Jane',
+        email: 'jane@example.com',
+        userImage: 42,
+      },
+    })
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        url: '/media/fetched.jpg',
+        sizes: { thumbnail: { url: '/media/fetched-thumb.jpg' } },
+      }),
+    })
+
+    render(<AdminAvatar />)
+
+    await waitFor(() => {
+      expect(mockFetch).toHaveBeenCalledWith('/api/media/42')
+    })
+
+    await waitFor(() => {
+      const img = screen.getByRole('img')
+      expect(img.getAttribute('src')).toBe('/media/fetched-thumb.jpg')
+    })
+  })
+
+  it('falls back to full URL from fetched media when thumbnail is missing', async () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: 'Jane',
+        email: 'jane@example.com',
+        userImage: 42,
+      },
+    })
+
+    mockFetch.mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        url: '/media/fetched-full.jpg',
+      }),
+    })
+
+    render(<AdminAvatar />)
+
+    await waitFor(() => {
+      const img = screen.getByRole('img')
+      expect(img.getAttribute('src')).toBe('/media/fetched-full.jpg')
+    })
+  })
+
+  it('shows initial fallback when fetch fails for numeric ID', async () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: 'Jane',
+        email: 'jane@example.com',
+        userImage: 42,
+      },
+    })
+
+    mockFetch.mockRejectedValueOnce(new Error('Network error'))
+
+    render(<AdminAvatar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('J')).toBeDefined()
+    })
+  })
+
+  it('shows initial fallback when fetch returns non-ok response', async () => {
+    mockUseAuth.mockReturnValue({
+      user: {
+        name: 'Jane',
+        email: 'jane@example.com',
+        userImage: 42,
+      },
+    })
+
+    mockFetch.mockResolvedValueOnce({
+      ok: false,
+    })
+
+    render(<AdminAvatar />)
+
+    await waitFor(() => {
+      expect(screen.getByText('J')).toBeDefined()
+    })
   })
 
   it('renders initial fallback when no userImage is set', () => {
@@ -152,7 +251,7 @@ describe('AdminAvatar', () => {
     expect(img.style.objectFit).toBe('cover')
   })
 
-  it('prefers thumbnail size over full URL', () => {
+  it('prefers thumbnail size over full URL on populated object', () => {
     mockUseAuth.mockReturnValue({
       user: {
         name: 'Jane',
