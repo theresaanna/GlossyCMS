@@ -120,12 +120,14 @@ export interface Config {
     footer: Footer;
     'gallery-settings': GallerySetting;
     'adult-content': AdultContent;
+    'site-settings': SiteSetting;
   };
   globalsSelect: {
     header: HeaderSelect<false> | HeaderSelect<true>;
     footer: FooterSelect<false> | FooterSelect<true>;
     'gallery-settings': GallerySettingsSelect<false> | GallerySettingsSelect<true>;
     'adult-content': AdultContentSelect<false> | AdultContentSelect<true>;
+    'site-settings': SiteSettingsSelect<false> | SiteSettingsSelect<true>;
   };
   locale: null;
   user: User & {
@@ -467,18 +469,6 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
-  /**
-   * The title displayed on your site beneath the banner.
-   */
-  siteTitle?: string | null;
-  /**
-   * A header/banner image for your site.
-   */
-  headerImage?: (number | null) | Media;
-  /**
-   * Your profile picture. Displayed in the admin panel navigation and on the site banner.
-   */
-  userImage?: (number | null) | Media;
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1655,9 +1645,6 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
-  siteTitle?: T;
-  headerImage?: T;
-  userImage?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2101,6 +2088,27 @@ export interface AdultContent {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings".
+ */
+export interface SiteSetting {
+  id: number;
+  /**
+   * The title displayed on your site beneath the banner.
+   */
+  siteTitle?: string | null;
+  /**
+   * A header/banner image for your site.
+   */
+  headerImage?: (number | null) | Media;
+  /**
+   * Your profile picture. Displayed in the admin panel navigation and on the site banner.
+   */
+  userImage?: (number | null) | Media;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "header_select".
  */
 export interface HeaderSelect<T extends boolean = true> {
@@ -2168,6 +2176,18 @@ export interface AdultContentSelect<T extends boolean = true> {
   enableAgeVerification?: T;
   minimumAge?: T;
   redirectUrl?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "site-settings_select".
+ */
+export interface SiteSettingsSelect<T extends boolean = true> {
+  siteTitle?: T;
+  headerImage?: T;
+  userImage?: T;
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;

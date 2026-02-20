@@ -6,7 +6,6 @@ interface AdminAvatarProps {
   user?: {
     name?: string | null
     email?: string | null
-    userImage?: number | { url?: string; sizes?: { thumbnail?: { url?: string } } } | null
   } | null
   [key: string]: unknown
 }
@@ -14,38 +13,26 @@ interface AdminAvatarProps {
 /**
  * Custom admin avatar component (server component).
  *
- * Payload passes `user` via serverProps when rendering the avatar through
- * RenderServerComponent in the DefaultTemplate. The user object is at depth 0,
- * so `userImage` is a numeric media ID. We fetch the media document server-side
- * to resolve the image URL.
+ * Fetches the userImage from the site-settings global, since the profile
+ * picture is a site-level setting rather than per-user.
  */
 const AdminAvatar: React.FC<AdminAvatarProps> = async ({ user }) => {
   let imageUrl: string | null = null
 
-  if (user?.userImage) {
-    if (typeof user.userImage === 'object') {
-      // Already populated
-      imageUrl =
-        user.userImage.sizes?.thumbnail?.url || user.userImage.url || null
-    } else if (typeof user.userImage === 'number') {
-      // Numeric ID — fetch server-side
-      try {
-        const payload = await getPayload({ config: configPromise })
-        const media = await payload.findByID({
-          collection: 'media',
-          id: user.userImage,
-          depth: 0,
-        })
-        if (media) {
-          const sizes = media.sizes as
-            | { thumbnail?: { url?: string } }
-            | undefined
-          imageUrl = sizes?.thumbnail?.url || media.url || null
-        }
-      } catch {
-        // Silently fail — will show initial fallback
-      }
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const siteSettings = await payload.findGlobal({
+      slug: 'site-settings',
+      depth: 1,
+    })
+
+    const userImage = siteSettings?.userImage
+    if (userImage && typeof userImage === 'object') {
+      const sizes = userImage.sizes as { thumbnail?: { url?: string } } | undefined
+      imageUrl = sizes?.thumbnail?.url || userImage.url || null
     }
+  } catch {
+    // Silently fail — will show initial fallback
   }
 
   if (imageUrl) {
