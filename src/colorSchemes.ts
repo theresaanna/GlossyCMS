@@ -11,6 +11,9 @@ export const colorSchemes = [
   { value: 'default', label: 'Default' },
   { value: 'eggplant', label: 'Eggplant' },
   { value: 'ocean', label: 'Ocean' },
+  { value: 'spring', label: 'Spring' },
+  { value: 'autumn', label: 'Autumn' },
+  { value: '80s', label: "80's" },
 ] as const
 
 export type ColorScheme = (typeof colorSchemes)[number]['value']
