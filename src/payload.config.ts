@@ -38,6 +38,9 @@ export default buildConfig({
       ],
       titleSuffix: '- Glossy',
     },
+    avatar: {
+      Component: '@/components/AdminAvatar',
+    },
     components: {
       graphics: {
         Logo: '@/components/AdminLogo',

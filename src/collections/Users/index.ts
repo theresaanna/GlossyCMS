@@ -21,6 +21,22 @@ export const Users: CollectionConfig = {
       name: 'name',
       type: 'text',
     },
+    {
+      name: 'headerImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'A header/banner image for your profile.',
+      },
+    },
+    {
+      name: 'userImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description: 'Your profile picture. Displayed in the admin panel navigation.',
+      },
+    },
   ],
   timestamps: true,
 }
