@@ -32,6 +32,12 @@ describe('colorSchemes', () => {
     }
   })
 
+  it('includes an "eggplant" scheme', () => {
+    const eggplantScheme = colorSchemes.find((s) => s.value === 'eggplant')
+    expect(eggplantScheme).toBeDefined()
+    expect(eggplantScheme!.label).toBe('Eggplant')
+  })
+
   it('exports ColorScheme type that includes "default"', () => {
     const scheme: ColorScheme = 'default'
     expect(scheme).toBe('default')

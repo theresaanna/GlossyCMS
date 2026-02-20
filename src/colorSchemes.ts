@@ -9,9 +9,7 @@
  */
 export const colorSchemes = [
   { value: 'default', label: 'Default' },
-  // Add new schemes here, e.g.:
-  // { value: 'ocean', label: 'Ocean' },
-  // { value: 'forest', label: 'Forest' },
+  { value: 'eggplant', label: 'Eggplant' },
 ] as const
 
 export type ColorScheme = (typeof colorSchemes)[number]['value']
