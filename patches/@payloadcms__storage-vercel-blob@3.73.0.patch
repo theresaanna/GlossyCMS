@@ -1,0 +1,17 @@
+diff --git a/dist/handleUpload.js b/dist/handleUpload.js
+index db797445156822d2a2a0024b303df940b446e4c2..26ef67408ee00e90b14c96bce37c172c5b2b3fb5 100644
+--- a/dist/handleUpload.js
++++ b/dist/handleUpload.js
+@@ -1,7 +1,11 @@
+ import { put } from '@vercel/blob';
+ import path from 'path';
+ export const getHandleUpload = ({ access = 'public', addRandomSuffix, baseUrl, cacheControlMaxAge, prefix = '', token })=>{
+-    return async ({ data, file: { buffer, filename, mimeType } })=>{
++    return async ({ clientUploadContext, data, file: { buffer, filename, mimeType } })=>{
++        // Skip server-side upload when the file was already uploaded by the client
++        if (clientUploadContext) {
++            return data;
++        }
+         const fileKey = path.posix.join(data.prefix || prefix, filename);
+         const result = await put(fileKey, buffer, {
+             access,
