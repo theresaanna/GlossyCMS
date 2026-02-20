@@ -22,7 +22,7 @@ import { InitTheme } from '@/providers/Theme/InitTheme'
 import { AgeGateProvider, AgeGateModal } from '@/plugins/ageGate'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getCachedGlobal } from '@/utilities/getGlobals'
-import type { AdultContent as AdultContentType } from '@/payload-types'
+import type { AdultContent as AdultContentType, SiteSetting } from '@/payload-types'
 import { draftMode } from 'next/headers'
 import themeConfig from '@/theme.config'
 
@@ -34,6 +34,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const { SiteLayout } = themeConfig.layouts
 
   const adultContent: AdultContentType = await getCachedGlobal('adult-content')()
+  const siteSettings: SiteSetting = await getCachedGlobal('site-settings')()
+
+  const colorSchemeLight = siteSettings?.colorSchemeLight ?? 'default'
+  const colorSchemeDark = siteSettings?.colorSchemeDark ?? 'default'
 
   const ageGateOptions = {
     enabled: Boolean(adultContent?.enableAgeVerification),
@@ -42,7 +46,13 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html className={cn(googleSans.variable, lexend.variable)} lang="en" suppressHydrationWarning>
+    <html
+      className={cn(googleSans.variable, lexend.variable)}
+      data-color-scheme-light={colorSchemeLight}
+      data-color-scheme-dark={colorSchemeDark}
+      lang="en"
+      suppressHydrationWarning
+    >
       <head>
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />

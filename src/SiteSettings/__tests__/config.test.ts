@@ -1,5 +1,20 @@
 import { describe, it, expect } from 'vitest'
 import { SiteSettings } from '../config'
+import { colorSchemes } from '@/colorSchemes'
+
+/** Recursively collect all named fields, including those inside row/group fields */
+function getAllNamedFields(fields: any[]): any[] {
+  const result: any[] = []
+  for (const f of fields) {
+    if ('name' in f) {
+      result.push(f)
+    }
+    if ('fields' in f && Array.isArray(f.fields)) {
+      result.push(...getAllNamedFields(f.fields))
+    }
+  }
+  return result
+}
 
 describe('SiteSettings global config', () => {
   it('has the correct slug', () => {
@@ -66,18 +81,68 @@ describe('SiteSettings global config', () => {
   })
 
   it('has all expected fields', () => {
-    const fieldNames = SiteSettings.fields
-      .filter((f) => 'name' in f)
-      .map((f) => ('name' in f ? f.name : ''))
+    const allFields = getAllNamedFields(SiteSettings.fields)
+    const fieldNames = allFields.map((f) => f.name)
     expect(fieldNames).toContain('siteTitle')
     expect(fieldNames).toContain('headerImage')
     expect(fieldNames).toContain('userImage')
-    expect(fieldNames).toHaveLength(3)
+    expect(fieldNames).toContain('colorSchemeLight')
+    expect(fieldNames).toContain('colorSchemeDark')
+    expect(fieldNames).toHaveLength(5)
   })
 
   it('has an afterChange hook for revalidation', () => {
     expect(SiteSettings.hooks).toBeDefined()
     expect(SiteSettings.hooks!.afterChange).toBeDefined()
     expect(SiteSettings.hooks!.afterChange).toHaveLength(1)
+  })
+
+  describe('color scheme fields', () => {
+    const allFields = getAllNamedFields(SiteSettings.fields)
+
+    it('has a colorSchemeLight select field', () => {
+      const field = allFields.find((f) => f.name === 'colorSchemeLight')
+      expect(field).toBeDefined()
+      expect(field.type).toBe('select')
+    })
+
+    it('has a colorSchemeDark select field', () => {
+      const field = allFields.find((f) => f.name === 'colorSchemeDark')
+      expect(field).toBeDefined()
+      expect(field.type).toBe('select')
+    })
+
+    it('colorSchemeLight defaults to "default"', () => {
+      const field = allFields.find((f) => f.name === 'colorSchemeLight')
+      expect(field.defaultValue).toBe('default')
+    })
+
+    it('colorSchemeDark defaults to "default"', () => {
+      const field = allFields.find((f) => f.name === 'colorSchemeDark')
+      expect(field.defaultValue).toBe('default')
+    })
+
+    it('color scheme fields use options from colorSchemes registry', () => {
+      const lightField = allFields.find((f) => f.name === 'colorSchemeLight')
+      const darkField = allFields.find((f) => f.name === 'colorSchemeDark')
+      const expectedOptions = colorSchemes.map(({ value, label }) => ({ value, label }))
+      expect(lightField.options).toEqual(expectedOptions)
+      expect(darkField.options).toEqual(expectedOptions)
+    })
+
+    it('color scheme fields are inside a row field', () => {
+      const rowField = SiteSettings.fields.find((f) => 'type' in f && f.type === 'row') as any
+      expect(rowField).toBeDefined()
+      const rowFieldNames = rowField.fields.map((f: any) => f.name)
+      expect(rowFieldNames).toContain('colorSchemeLight')
+      expect(rowFieldNames).toContain('colorSchemeDark')
+    })
+
+    it('color scheme fields have descriptions', () => {
+      const lightField = allFields.find((f) => f.name === 'colorSchemeLight')
+      const darkField = allFields.find((f) => f.name === 'colorSchemeDark')
+      expect(lightField.admin.description).toContain('light')
+      expect(darkField.admin.description).toContain('dark')
+    })
   })
 })

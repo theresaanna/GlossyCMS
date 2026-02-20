@@ -1,5 +1,6 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
+@import './color-schemes.css';
 
 @config '../../../tailwind.config.mjs';
 
