@@ -56,6 +56,56 @@
   --color-base-1000: rgb(252, 246, 250);
 }
 
+// Ocean — light
+:root:not([data-theme='dark'])[data-color-scheme-light='ocean'] {
+  --color-base-0: rgb(246, 252, 254);
+  --color-base-50: rgb(235, 248, 252);
+  --color-base-100: rgb(220, 240, 246);
+  --color-base-150: rgb(205, 232, 240);
+  --color-base-200: rgb(171, 224, 235);
+  --color-base-250: rgb(142, 205, 217);
+  --color-base-300: rgb(114, 186, 199);
+  --color-base-350: rgb(84, 167, 181);
+  --color-base-400: rgb(56, 152, 170);
+  --color-base-450: rgb(29, 138, 160);
+  --color-base-500: rgb(0, 123, 149);
+  --color-base-550: rgb(0, 112, 139);
+  --color-base-600: rgb(0, 103, 132);
+  --color-base-650: rgb(0, 95, 125);
+  --color-base-700: rgb(0, 87, 117);
+  --color-base-750: rgb(0, 81, 112);
+  --color-base-800: rgb(0, 73, 108);
+  --color-base-850: rgb(0, 64, 99);
+  --color-base-900: rgb(0, 60, 98);
+  --color-base-950: rgb(0, 43, 69);
+  --color-base-1000: rgb(0, 20, 35);
+}
+
+// Ocean — dark
+[data-theme='dark'][data-color-scheme-dark='ocean'] {
+  --color-base-0: rgb(0, 20, 35);
+  --color-base-50: rgb(0, 43, 69);
+  --color-base-100: rgb(0, 60, 98);
+  --color-base-150: rgb(0, 64, 99);
+  --color-base-200: rgb(0, 73, 108);
+  --color-base-250: rgb(0, 81, 112);
+  --color-base-300: rgb(0, 87, 117);
+  --color-base-350: rgb(0, 95, 125);
+  --color-base-400: rgb(0, 103, 132);
+  --color-base-450: rgb(0, 112, 139);
+  --color-base-500: rgb(0, 123, 149);
+  --color-base-550: rgb(29, 138, 160);
+  --color-base-600: rgb(56, 152, 170);
+  --color-base-650: rgb(84, 167, 181);
+  --color-base-700: rgb(114, 186, 199);
+  --color-base-750: rgb(142, 205, 217);
+  --color-base-800: rgb(171, 224, 235);
+  --color-base-850: rgb(205, 232, 240);
+  --color-base-900: rgb(220, 240, 246);
+  --color-base-950: rgb(235, 248, 252);
+  --color-base-1000: rgb(246, 252, 254);
+}
+
 // Ensure the admin icon in the breadcrumb isn't clipped at smaller viewports
 .step-nav__home {
   width: 25px;

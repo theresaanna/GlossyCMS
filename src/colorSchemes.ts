@@ -10,6 +10,7 @@
 export const colorSchemes = [
   { value: 'default', label: 'Default' },
   { value: 'eggplant', label: 'Eggplant' },
+  { value: 'ocean', label: 'Ocean' },
 ] as const
 
 export type ColorScheme = (typeof colorSchemes)[number]['value']
