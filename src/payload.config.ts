@@ -17,6 +17,7 @@ import { AdultContent } from './AdultContent/config'
 import { Footer } from './Footer/config'
 import { Gallery } from './Gallery/config'
 import { Header } from './Header/config'
+import { SiteSettings } from './SiteSettings/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -92,7 +93,7 @@ export default buildConfig({
         }),
       }
     : {}),
-  globals: [Header, Footer, Gallery, AdultContent],
+  globals: [Header, Footer, Gallery, AdultContent, SiteSettings],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,

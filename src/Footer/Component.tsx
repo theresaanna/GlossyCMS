@@ -1,37 +1,19 @@
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import Link from 'next/link'
 import React from 'react'
-import configPromise from '@payload-config'
-import { getPayload } from 'payload'
-import { unstable_cache } from 'next/cache'
 
-import type { Footer } from '@/payload-types'
+import type { Footer, SiteSetting } from '@/payload-types'
 
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 import { CMSLink } from '@/components/Link'
 import { NewsletterForm } from './NewsletterForm'
 
-async function getSiteOwnerName() {
-  const payload = await getPayload({ config: configPromise })
-  const users = await payload.find({
-    collection: 'users',
-    limit: 1,
-    sort: 'createdAt',
-    depth: 0,
-  })
-  return users.docs[0]?.siteTitle || null
-}
-
-const getCachedSiteOwnerName = () =>
-  unstable_cache(async () => getSiteOwnerName(), ['site-owner-name'], {
-    tags: ['site-owner'],
-  })
-
 export async function Footer() {
   const footerData: Footer = await getCachedGlobal('footer', 1)()
-  const siteTitle = await getCachedSiteOwnerName()()
+  const siteSettings: SiteSetting = await getCachedGlobal('site-settings', 0)()
 
   const navItems = footerData?.navItems || []
+  const siteTitle = siteSettings?.siteTitle || null
 
   return (
     <footer className="mt-auto border-t border-border bg-primary dark:bg-card text-white">
