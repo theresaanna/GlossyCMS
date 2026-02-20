@@ -34,15 +34,15 @@ const VideoCompressionField: React.FC = () => {
       setError(null)
 
       try {
-        // Clone the file so FFmpeg processing doesn't consume the original
-        // File object that Payload's Blob client upload needs
-        const fileClone = new File([await file.arrayBuffer()], file.name, {
-          type: file.type,
-        })
+        // Read the file bytes once so we can create independent clones.
+        // Each FFmpeg operation consumes the File via fetchFile(), so we
+        // need a fresh File object per operation to avoid stalling.
+        const fileBytes = await file.arrayBuffer()
 
         // Extract thumbnail first (works even for small files that skip compression)
         setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
-        const thumbnailFile = await extractVideoThumbnail(fileClone, { timestamp: 1, width: 500 })
+        const thumbClone = new File([fileBytes.slice(0)], file.name, { type: file.type })
+        const thumbnailFile = await extractVideoThumbnail(thumbClone, { timestamp: 1, width: 500 })
 
         // Upload thumbnail via API
         const formData = new FormData()
@@ -75,7 +75,8 @@ const VideoCompressionField: React.FC = () => {
           return
         }
 
-        const result = await compressVideo(fileClone, setProgress)
+        const compressClone = new File([fileBytes.slice(0)], file.name, { type: file.type })
+        const result = await compressVideo(compressClone, setProgress)
 
         // Mark the compressed file so we don't re-process it
         processedFilesRef.current.add(result.compressedFile)
