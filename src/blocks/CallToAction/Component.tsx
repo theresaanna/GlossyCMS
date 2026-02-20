@@ -15,7 +15,14 @@ export const CallToActionBlock: React.FC<CTABlockProps> = ({ heading, links, ric
         </div>
         <div className="flex flex-col gap-8">
           {(links || []).map(({ link }, i) => {
-            return <CMSLink key={i} size="lg" {...link} />
+            return (
+              <CMSLink
+                key={i}
+                size="lg"
+                {...link}
+                className="bg-primary text-primary-foreground hover:bg-primary/90"
+              />
+            )
           })}
         </div>
       </div>

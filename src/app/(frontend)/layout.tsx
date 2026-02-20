@@ -1,13 +1,17 @@
 import type { Metadata } from 'next'
 
 import { cn } from '@/utilities/ui'
-import { GeistMono } from 'geist/font/mono'
-import { GeistSans } from 'geist/font/sans'
-import { Playwrite_AT } from 'next/font/google'
+import { Google_Sans, Lexend } from 'next/font/google'
 import React from 'react'
 
-const playwriteAT = Playwrite_AT({
-  variable: '--font-playwrite-at',
+const googleSans = Google_Sans({
+  subsets: ['latin'],
+  variable: '--font-google-sans',
+})
+
+const lexend = Lexend({
+  subsets: ['latin'],
+  variable: '--font-lexend',
 })
 
 import { AdminBar } from '@/components/AdminBar'
@@ -22,11 +26,6 @@ import type { AdultContent as AdultContentType } from '@/payload-types'
 import { draftMode } from 'next/headers'
 import themeConfig from '@/theme.config'
 
-import '@fontsource/sn-pro/400.css'
-import '@fontsource/sn-pro/400-italic.css'
-import '@fontsource/sn-pro/500.css'
-import '@fontsource/sn-pro/600.css'
-import '@fontsource/sn-pro/700.css'
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
 
@@ -43,7 +42,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   }
 
   return (
-    <html className={cn(GeistSans.variable, GeistMono.variable, playwriteAT.variable)} lang="en" suppressHydrationWarning>
+    <html className={cn(googleSans.variable, lexend.variable)} lang="en" suppressHydrationWarning>
       <head>
         <InitTheme />
         <link href="/favicon.ico" rel="icon" sizes="32x32" />
