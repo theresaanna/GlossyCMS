@@ -68,9 +68,9 @@ export const notifyCommentRecipients: CollectionAfterChangeHook<Comment> = async
       id: postId,
       overrideAccess: true,
       depth: 0,
-      select: { slug: true, title: true, authors: true },
     })
-  } catch {
+  } catch (err) {
+    payload.logger.error(`[comment-notify] Failed to fetch post ${postId}: ${err}`)
     return doc
   }
 
@@ -84,23 +84,26 @@ export const notifyCommentRecipients: CollectionAfterChangeHook<Comment> = async
   // Collect post author emails
   const postAuthorEmails = new Set<string>()
   if (post.authors && Array.isArray(post.authors)) {
-    const authorIds = post.authors.map((a) => (typeof a === 'object' ? a.id : a))
-    for (const authorId of authorIds) {
+    for (const author of post.authors) {
+      const authorId = typeof author === 'object' ? author.id : author
       try {
         const user = await payload.findByID({
           collection: 'users',
           id: authorId,
           overrideAccess: true,
-          select: { email: true },
         })
         if (user?.email) {
           postAuthorEmails.add(user.email.toLowerCase())
         }
-      } catch {
-        // skip if user not found
+      } catch (err) {
+        payload.logger.error(`[comment-notify] Failed to fetch user ${authorId}: ${err}`)
       }
     }
   }
+
+  payload.logger.info(
+    `[comment-notify] Comment ${doc.id} on post "${postTitle}": found ${postAuthorEmails.size} post author(s)`,
+  )
 
   // Collect parent comment author email (for replies)
   let parentAuthorEmail: string | undefined
@@ -111,13 +114,12 @@ export const notifyCommentRecipients: CollectionAfterChangeHook<Comment> = async
         collection: 'comments',
         id: parentId,
         overrideAccess: true,
-        select: { authorEmail: true },
       })
       if (parentComment?.authorEmail) {
         parentAuthorEmail = parentComment.authorEmail.toLowerCase()
       }
-    } catch {
-      // skip if parent not found
+    } catch (err) {
+      payload.logger.error(`[comment-notify] Failed to fetch parent comment ${parentId}: ${err}`)
     }
   }
 
@@ -136,13 +138,18 @@ export const notifyCommentRecipients: CollectionAfterChangeHook<Comment> = async
           isReply: false,
         }),
       })
+      payload.logger.info(`[comment-notify] Sent notification to post author ${email}`)
     } catch (err) {
-      payload.logger.error(`Failed to send comment notification to ${email}: ${err}`)
+      payload.logger.error(`[comment-notify] Failed to send to ${email}: ${err}`)
     }
   }
 
   // Send to parent comment author (if it's a reply and not already notified as post author)
-  if (parentAuthorEmail && parentAuthorEmail !== commentAuthorEmail && !postAuthorEmails.has(parentAuthorEmail)) {
+  if (
+    parentAuthorEmail &&
+    parentAuthorEmail !== commentAuthorEmail &&
+    !postAuthorEmails.has(parentAuthorEmail)
+  ) {
     try {
       await payload.sendEmail({
         to: parentAuthorEmail,
@@ -155,8 +162,9 @@ export const notifyCommentRecipients: CollectionAfterChangeHook<Comment> = async
           isReply: true,
         }),
       })
+      payload.logger.info(`[comment-notify] Sent reply notification to ${parentAuthorEmail}`)
     } catch (err) {
-      payload.logger.error(`Failed to send reply notification to ${parentAuthorEmail}: ${err}`)
+      payload.logger.error(`[comment-notify] Failed to send reply notification to ${parentAuthorEmail}: ${err}`)
     }
   }
 
