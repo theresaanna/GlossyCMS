@@ -108,10 +108,16 @@ async function getIntegrationProductSlug(
   return product.id || product.slug
 }
 
+interface VercelProject {
+  id: string
+  name: string
+  link?: { repoId: string | number }
+}
+
 export async function createVercelProject(
   name: string,
   gitRepo?: string,
-): Promise<{ id: string; name: string }> {
+): Promise<VercelProject> {
   const body: Record<string, unknown> = {
     name,
     framework: 'nextjs',
@@ -142,7 +148,7 @@ export async function createVercelProject(
   return response.json()
 }
 
-export async function getVercelProject(name: string): Promise<{ id: string; name: string }> {
+export async function getVercelProject(name: string): Promise<VercelProject> {
   const response = await vercelFetch(`/v9/projects/${encodeURIComponent(name)}`)
   if (!response.ok) {
     throw new Error(`Failed to get Vercel project: ${response.statusText}`)
@@ -253,19 +259,27 @@ export async function addVercelDomain(projectId: string, domain: string): Promis
   }
 }
 
-export async function triggerVercelDeploy(projectId: string): Promise<{ id: string }> {
+export async function triggerVercelDeploy(
+  projectId: string,
+  repoId?: string | number,
+): Promise<{ id: string }> {
+  const body: Record<string, unknown> = {
+    name: projectId,
+    project: projectId,
+    target: 'production',
+  }
+
+  if (repoId) {
+    body.gitSource = {
+      type: 'github',
+      ref: 'main',
+      repoId: String(repoId),
+    }
+  }
+
   const response = await vercelFetch('/v13/deployments', {
     method: 'POST',
-    body: JSON.stringify({
-      name: projectId,
-      project: projectId,
-      target: 'production',
-      gitSource: {
-        type: 'github',
-        ref: 'main',
-        repoId: '', // Will use the connected repo
-      },
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
