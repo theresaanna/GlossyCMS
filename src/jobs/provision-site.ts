@@ -53,6 +53,14 @@ export const provisionSiteTask: TaskConfig<{
     const domain = `${subdomain}.glossysites.live`
     const projectName = `glossy-${subdomain}`
 
+    // Fail early if required env vars are missing on the primary instance
+    if (!process.env.RESEND_API_KEY) {
+      throw new Error(
+        'RESEND_API_KEY is not set on the primary instance. ' +
+          'Add it in Vercel project settings before provisioning new sites.',
+      )
+    }
+
     // Update status to provisioning
     await req.payload.update({
       collection: 'provisioned-sites',
