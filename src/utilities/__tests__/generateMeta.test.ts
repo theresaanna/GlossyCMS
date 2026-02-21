@@ -4,28 +4,39 @@ vi.mock('@/utilities/getURL', () => ({
   getServerSideURL: () => 'http://localhost:3000',
 }))
 
-describe('generateMeta', () => {
-  const originalEnv = { ...process.env }
+const mockGetSiteMetaDefaults = vi.fn()
 
+vi.mock('@/utilities/getSiteMetaDefaults', () => ({
+  getSiteMetaDefaults: (...args: any[]) => mockGetSiteMetaDefaults(...args),
+}))
+
+describe('generateMeta', () => {
   beforeEach(() => {
     vi.resetModules()
+    mockGetSiteMetaDefaults.mockResolvedValue({
+      siteName: 'Glossy',
+      siteDescription: 'A website powered by Glossy.',
+      ogImageUrl: 'http://localhost:3000/website-template-OG.webp',
+    })
   })
 
   afterEach(() => {
-    process.env = { ...originalEnv }
+    vi.restoreAllMocks()
   })
 
-  it('uses default site name when SITE_NAME is not set', async () => {
-    delete process.env.SITE_NAME
-
+  it('uses default site name from getSiteMetaDefaults', async () => {
     const { generateMeta } = await import('../generateMeta')
     const result = await generateMeta({ doc: null })
 
-    expect(result.title).toBe('GlossyCMS')
+    expect(result.title).toBe('Glossy')
   })
 
-  it('uses SITE_NAME env var when set', async () => {
-    process.env.SITE_NAME = 'My Custom Site'
+  it('uses custom site name from getSiteMetaDefaults', async () => {
+    mockGetSiteMetaDefaults.mockResolvedValue({
+      siteName: 'My Custom Site',
+      siteDescription: 'Custom description',
+      ogImageUrl: 'http://localhost:3000/custom-og.png',
+    })
 
     const { generateMeta } = await import('../generateMeta')
     const result = await generateMeta({ doc: null })
@@ -34,7 +45,11 @@ describe('generateMeta', () => {
   })
 
   it('appends site name to doc meta title', async () => {
-    process.env.SITE_NAME = 'My Site'
+    mockGetSiteMetaDefaults.mockResolvedValue({
+      siteName: 'My Site',
+      siteDescription: 'A website powered by Glossy.',
+      ogImageUrl: 'http://localhost:3000/website-template-OG.webp',
+    })
 
     const { generateMeta } = await import('../generateMeta')
     const result = await generateMeta({
@@ -44,15 +59,13 @@ describe('generateMeta', () => {
     expect(result.title).toBe('About Us | My Site')
   })
 
-  it('appends default site name to doc meta title when env var not set', async () => {
-    delete process.env.SITE_NAME
-
+  it('appends default site name to doc meta title', async () => {
     const { generateMeta } = await import('../generateMeta')
     const result = await generateMeta({
       doc: { meta: { title: 'About Us' } } as any,
     })
 
-    expect(result.title).toBe('About Us | GlossyCMS')
+    expect(result.title).toBe('About Us | Glossy')
   })
 
   it('includes doc meta description', async () => {

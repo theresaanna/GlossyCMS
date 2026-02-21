@@ -1,6 +1,7 @@
 import type { Metadata } from 'next/types'
 
 import { CollectionArchive } from '@/components/CollectionArchive'
+import { getSiteMetaDefaults } from '@/utilities/getSiteMetaDefaults'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -91,8 +92,9 @@ export default async function Page({ searchParams: searchParamsPromise }: Args) 
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSiteMetaDefaults()
   return {
-    title: `${process.env.SITE_NAME || 'GlossyCMS'} Search`,
+    title: `${siteName} Search`,
   }
 }

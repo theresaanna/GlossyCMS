@@ -14,7 +14,7 @@ import { getServerSideURL } from '@/utilities/getURL'
 import { vercelBlobStorage } from '@payloadcms/storage-vercel-blob'
 
 const generateTitle: GenerateTitle<Post | Page> = ({ doc }) => {
-  const siteName = process.env.SITE_NAME || 'GlossyCMS'
+  const siteName = process.env.SITE_NAME || 'Glossy'
   return doc?.title ? `${doc.title} | ${siteName}` : siteName
 }
 

@@ -4,6 +4,7 @@ import type { Media, Page, Post, Config } from '../payload-types'
 
 import { mergeOpenGraph } from './mergeOpenGraph'
 import { getServerSideURL } from './getURL'
+import { getSiteMetaDefaults } from './getSiteMetaDefaults'
 
 const getImageURL = (image?: Media | Config['db']['defaultIDType'] | null) => {
   const serverUrl = getServerSideURL()
@@ -23,28 +24,31 @@ export const generateMeta = async (args: {
   doc: Partial<Page> | Partial<Post> | null
 }): Promise<Metadata> => {
   const { doc } = args
+  const defaults = await getSiteMetaDefaults()
 
   const ogImage = getImageURL(doc?.meta?.image)
 
-  const siteName = process.env.SITE_NAME || 'GlossyCMS'
   const title = doc?.meta?.title
-    ? doc?.meta?.title + ' | ' + siteName
-    : siteName
+    ? doc?.meta?.title + ' | ' + defaults.siteName
+    : defaults.siteName
 
   return {
     description: doc?.meta?.description,
-    openGraph: mergeOpenGraph({
-      description: doc?.meta?.description || '',
-      images: ogImage
-        ? [
-            {
-              url: ogImage,
-            },
-          ]
-        : undefined,
-      title,
-      url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
-    }),
+    openGraph: mergeOpenGraph(
+      {
+        description: doc?.meta?.description || '',
+        images: ogImage
+          ? [
+              {
+                url: ogImage,
+              },
+            ]
+          : undefined,
+        title,
+        url: Array.isArray(doc?.slug) ? doc?.slug.join('/') : '/',
+      },
+      defaults,
+    ),
     title,
   }
 }

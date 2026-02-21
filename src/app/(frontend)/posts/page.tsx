@@ -3,6 +3,7 @@ import type { Metadata } from 'next/types'
 import { CollectionArchive } from '@/components/CollectionArchive'
 import { PageRange } from '@/components/PageRange'
 import { Pagination } from '@/components/Pagination'
+import { getSiteMetaDefaults } from '@/utilities/getSiteMetaDefaults'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import React from 'react'
@@ -60,8 +61,9 @@ export default async function Page() {
   )
 }
 
-export function generateMetadata(): Metadata {
+export async function generateMetadata(): Promise<Metadata> {
+  const { siteName } = await getSiteMetaDefaults()
   return {
-    title: `${process.env.SITE_NAME || 'GlossyCMS'} Posts`,
+    title: `${siteName} Posts`,
   }
 }

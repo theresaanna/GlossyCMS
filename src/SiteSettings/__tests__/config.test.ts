@@ -80,16 +80,51 @@ describe('SiteSettings global config', () => {
     expect(field.admin.description).toContain('profile picture')
   })
 
+  it('has a siteDescription textarea field', () => {
+    const field = SiteSettings.fields.find(
+      (f) => 'name' in f && f.name === 'siteDescription',
+    ) as any
+    expect(field).toBeDefined()
+    expect(field.type).toBe('textarea')
+  })
+
+  it('has a description on the siteDescription field', () => {
+    const field = SiteSettings.fields.find(
+      (f) => 'name' in f && f.name === 'siteDescription',
+    ) as any
+    expect(field.admin.description).toBeDefined()
+    expect(field.admin.description).toContain('description')
+  })
+
+  it('has an ogImage upload field related to media', () => {
+    const field = SiteSettings.fields.find(
+      (f) => 'name' in f && f.name === 'ogImage',
+    ) as any
+    expect(field).toBeDefined()
+    expect(field.type).toBe('upload')
+    expect(field.relationTo).toBe('media')
+  })
+
+  it('has a description on the ogImage field', () => {
+    const field = SiteSettings.fields.find(
+      (f) => 'name' in f && f.name === 'ogImage',
+    ) as any
+    expect(field.admin.description).toBeDefined()
+    expect(field.admin.description).toContain('social media previews')
+  })
+
   it('has all expected fields', () => {
     const allFields = getAllNamedFields(SiteSettings.fields)
     const fieldNames = allFields.map((f) => f.name)
     expect(fieldNames).toContain('siteTitle')
+    expect(fieldNames).toContain('siteDescription')
+    expect(fieldNames).toContain('ogImage')
     expect(fieldNames).toContain('headerImage')
     expect(fieldNames).toContain('userImage')
     expect(fieldNames).toContain('colorSchemeLight')
     expect(fieldNames).toContain('colorSchemeDark')
     expect(fieldNames).toContain('colorSchemeReloader')
-    expect(fieldNames).toHaveLength(6)
+    expect(fieldNames).toHaveLength(8)
   })
 
   it('has an afterChange hook for revalidation', () => {

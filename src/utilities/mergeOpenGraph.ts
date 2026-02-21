@@ -1,21 +1,27 @@
 import type { Metadata } from 'next'
 import { getServerSideURL } from './getURL'
+import type { SiteMetaDefaults } from './getSiteMetaDefaults'
 
-const siteName = process.env.SITE_NAME || 'GlossyCMS'
+const DEFAULT_SITE_NAME = 'Glossy'
+const DEFAULT_DESCRIPTION = 'A website powered by Glossy.'
 
-const defaultOpenGraph: Metadata['openGraph'] = {
+const getDefaultOpenGraph = (defaults?: SiteMetaDefaults): Metadata['openGraph'] => ({
   type: 'website',
-  description: process.env.SITE_DESCRIPTION || 'A website powered by GlossyCMS.',
+  description: defaults?.siteDescription || process.env.SITE_DESCRIPTION || DEFAULT_DESCRIPTION,
   images: [
     {
-      url: `${getServerSideURL()}/website-template-OG.webp`,
+      url: defaults?.ogImageUrl || `${getServerSideURL()}/website-template-OG.webp`,
     },
   ],
-  siteName,
-  title: siteName,
-}
+  siteName: defaults?.siteName || process.env.SITE_NAME || DEFAULT_SITE_NAME,
+  title: defaults?.siteName || process.env.SITE_NAME || DEFAULT_SITE_NAME,
+})
 
-export const mergeOpenGraph = (og?: Metadata['openGraph']): Metadata['openGraph'] => {
+export const mergeOpenGraph = (
+  og?: Metadata['openGraph'],
+  defaults?: SiteMetaDefaults,
+): Metadata['openGraph'] => {
+  const defaultOpenGraph = getDefaultOpenGraph(defaults)
   return {
     ...defaultOpenGraph,
     ...og,
