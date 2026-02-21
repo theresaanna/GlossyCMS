@@ -41,7 +41,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
         userImage={userImage}
         siteTitle={siteTitle}
       />
-      <div className="container py-4 flex items-center justify-between">
+      <div className="container py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
         {siteTitle && (
           <Link href="/" className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground font-heading hover:no-underline">
             {siteTitle}
