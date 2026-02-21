@@ -167,30 +167,36 @@ export async function createVercelStorage(
     }
   }
 
-  // Discover the integration configuration and product for this storage type
-  const integrationSlug = INTEGRATION_SLUGS[type]
-  if (!integrationSlug) {
-    throw new Error(`Unsupported storage type: ${type}`)
-  }
-
-  const configId = await getIntegrationConfigId(integrationSlug)
-  const productSlug = await getIntegrationProductSlug(configId, type)
-
-  // Build metadata required by certain integrations (e.g. Neon requires a region)
-  const metadata: Record<string, string> = {}
   if (type === 'postgres') {
-    metadata.region = process.env.NEON_REGION || 'aws-us-east-1'
+    // Postgres uses the Marketplace integration endpoint (Neon)
+    const integrationSlug = INTEGRATION_SLUGS[type]
+    const configId = await getIntegrationConfigId(integrationSlug)
+    const productSlug = await getIntegrationProductSlug(configId, type)
+
+    const response = await vercelFetch('/v1/storage/stores/integration/direct', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        integrationConfigurationId: configId,
+        integrationProductIdOrSlug: productSlug,
+        metadata: { region: process.env.NEON_REGION || 'aws-us-east-1' },
+      }),
+    })
+
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(`Failed to create ${type} storage "${name}": ${JSON.stringify(error)}`)
+    }
+
+    const result = await response.json()
+    // The integration endpoint wraps the store in a `store` property
+    return result.store || result
   }
 
-  // Create new store via the Marketplace integration endpoint
-  const response = await vercelFetch('/v1/storage/stores/integration/direct', {
+  // Blob uses the Vercel-native storage endpoint (still a first-party product)
+  const response = await vercelFetch('/v1/storage/stores', {
     method: 'POST',
-    body: JSON.stringify({
-      name,
-      integrationConfigurationId: configId,
-      integrationProductIdOrSlug: productSlug,
-      ...(Object.keys(metadata).length > 0 && { metadata }),
-    }),
+    body: JSON.stringify({ type, name }),
   })
 
   if (!response.ok) {
@@ -198,9 +204,7 @@ export async function createVercelStorage(
     throw new Error(`Failed to create ${type} storage "${name}": ${JSON.stringify(error)}`)
   }
 
-  const result = await response.json()
-  // The integration endpoint wraps the store in a `store` property
-  return result.store || result
+  return response.json()
 }
 
 export async function linkStorageToProject(storeId: string, projectId: string): Promise<void> {
