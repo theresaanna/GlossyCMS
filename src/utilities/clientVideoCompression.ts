@@ -5,7 +5,7 @@ import { toBlobURL, fetchFile } from '@ffmpeg/util'
 
 let ffmpegInstance: FFmpeg | null = null
 
-export function terminateFFmpeg(): void {
+function terminateFFmpeg(): void {
   if (ffmpegInstance) {
     ffmpegInstance.terminate()
     ffmpegInstance = null
@@ -146,58 +146,6 @@ export async function compressVideo(
   })
 
   return { compressedFile, originalSize, compressedSize, compressionRatio }
-}
-
-export async function extractVideoThumbnail(
-  file: File,
-  options: { timestamp?: number; width?: number } = {},
-): Promise<File> {
-  const { timestamp = 1, width = 500 } = options
-
-  const ffmpeg = await loadFFmpeg()
-
-  const inputName = `thumb-input${getExtension(file.name)}`
-  const outputName = 'thumbnail.jpg'
-
-  const runThumbnail = async (ff: FFmpeg): Promise<File> => {
-    await ff.writeFile(inputName, await fetchFile(file))
-
-    await ff.exec([
-      '-ss',
-      String(timestamp),
-      '-i',
-      inputName,
-      '-vframes',
-      '1',
-      '-vf',
-      `scale=${width}:-1`,
-      '-q:v',
-      '2',
-      outputName,
-    ])
-
-    const data = await ff.readFile(outputName)
-    const uint8 = data as Uint8Array
-
-    const result = new File([uint8.slice()], 'thumbnail.jpg', {
-      type: 'image/jpeg',
-    })
-
-    await ff.deleteFile(inputName)
-    await ff.deleteFile(outputName)
-    return result
-  }
-
-  try {
-    return await runThumbnail(ffmpeg)
-  } catch (err) {
-    if (err instanceof WebAssembly.RuntimeError) {
-      terminateFFmpeg()
-      const freshFfmpeg = await loadFFmpeg()
-      return await runThumbnail(freshFfmpeg)
-    }
-    throw err
-  }
 }
 
 export function formatBytes(bytes: number): string {
