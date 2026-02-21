@@ -93,7 +93,7 @@ async function getIntegrationProductSlug(
   // Find a product matching the storage type
   const product = products.find((p) => {
     const lower = (p.slug || p.name || '').toLowerCase()
-    if (type === 'postgres') return lower.includes('postgres')
+    if (type === 'postgres') return lower.includes('postgres') || lower.includes('neon')
     if (type === 'blob') return lower.includes('blob')
     return false
   })
