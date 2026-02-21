@@ -32,14 +32,17 @@ describe('provision-helpers.sh', () => {
 
   describe('check_prerequisites', () => {
     it('succeeds when all tools are available', () => {
-      // Skip in CI where vercel/gh may not be installed
+      // Skip in CI where vercel may not be installed
       try {
-        execSync('command -v vercel && command -v gh', { stdio: 'ignore' })
+        execSync('command -v vercel', { stdio: 'ignore' })
       } catch {
         return
       }
 
-      expect(() => runHelper('check_prerequisites')).not.toThrow()
+      // check_prerequisites also requires VERCEL_TOKEN
+      expect(() =>
+        runHelper('VERCEL_TOKEN=test-token check_prerequisites'),
+      ).not.toThrow()
     })
   })
 
@@ -129,21 +132,13 @@ describe('provision-helpers.sh', () => {
       })
       expect(output).toContain('Usage:')
       expect(output).toContain('--client-name')
-      expect(output).toContain('--org')
       expect(output).toContain('--team')
+      expect(output).not.toContain('--org')
     })
 
     it('fails when --client-name is missing', () => {
       expect(() =>
-        execSync(`bash "${SCRIPT_PATH}" --org test --team test 2>&1`, {
-          encoding: 'utf-8',
-        }),
-      ).toThrow()
-    })
-
-    it('fails when --org is missing', () => {
-      expect(() =>
-        execSync(`bash "${SCRIPT_PATH}" --client-name test --team test 2>&1`, {
+        execSync(`bash "${SCRIPT_PATH}" --team test 2>&1`, {
           encoding: 'utf-8',
         }),
       ).toThrow()
@@ -151,7 +146,7 @@ describe('provision-helpers.sh', () => {
 
     it('fails when --team is missing', () => {
       expect(() =>
-        execSync(`bash "${SCRIPT_PATH}" --client-name test --org test 2>&1`, {
+        execSync(`bash "${SCRIPT_PATH}" --client-name test 2>&1`, {
           encoding: 'utf-8',
         }),
       ).toThrow()

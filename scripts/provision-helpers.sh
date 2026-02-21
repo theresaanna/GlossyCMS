@@ -14,7 +14,7 @@ generate_secret() {
 check_prerequisites() {
   local missing=()
 
-  for cmd in gh vercel openssl pnpm; do
+  for cmd in vercel openssl pnpm curl python3; do
     if ! command -v "${cmd}" &>/dev/null; then
       missing+=("${cmd}")
     fi
@@ -24,10 +24,17 @@ check_prerequisites() {
     echo "Error: Missing required tools: ${missing[*]}"
     echo ""
     echo "Install them:"
-    echo "  gh:      https://cli.github.com/"
     echo "  vercel:  npm i -g vercel"
     echo "  openssl: Usually pre-installed on macOS"
     echo "  pnpm:    npm i -g pnpm"
+    echo "  curl:    Usually pre-installed on macOS"
+    echo "  python3: Usually pre-installed on macOS"
+    exit 1
+  fi
+
+  if [[ -z "${VERCEL_TOKEN:-}" ]]; then
+    echo "Error: VERCEL_TOKEN environment variable is required."
+    echo "Generate one at: https://vercel.com/account/tokens"
     exit 1
   fi
 }
@@ -69,4 +76,96 @@ substitute_template() {
   done
 
   rm -f "${output_file}.bak"
+}
+
+# Create a Vercel storage store (postgres or blob) via REST API
+# Usage: create_vercel_storage TYPE NAME VERCEL_TEAM
+# TYPE: "postgres" or "blob"
+# Outputs JSON response from the API
+create_vercel_storage() {
+  local store_type="$1"
+  local store_name="$2"
+  local team="$3"
+
+  local team_param=""
+  if [[ -n "${team}" ]]; then
+    team_param="?teamId=${team}"
+  fi
+
+  # Check if store already exists
+  local existing_id
+  existing_id=$(curl -s \
+    -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+    "https://api.vercel.com/v1/storage/stores${team_param}" \
+    | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+for store in data.get('stores', []):
+    if store.get('name') == '${store_name}' and store.get('type') == '${store_type}':
+        print(store['id'])
+        break
+" 2>/dev/null)
+
+  if [[ -n "${existing_id}" ]]; then
+    echo "Storage '${store_name}' already exists (ID: ${existing_id}), reusing." >&2
+    echo "${existing_id}"
+    return 0
+  fi
+
+  # Create new store
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST \
+    "https://api.vercel.com/v1/storage/stores${team_param}" \
+    -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"type\":\"${store_type}\",\"name\":\"${store_name}\"}")
+
+  local http_code
+  http_code=$(echo "${response}" | tail -1)
+  local body
+  body=$(echo "${response}" | sed '$d')
+
+  if [[ "${http_code}" -lt 200 || "${http_code}" -ge 300 ]]; then
+    echo "Error: Failed to create ${store_type} store '${store_name}' (HTTP ${http_code}): ${body}" >&2
+    return 1
+  fi
+
+  local store_id
+  store_id=$(echo "${body}" | python3 -c "import sys,json; print(json.load(sys.stdin)['id'])")
+  echo "${store_id}"
+}
+
+# Link a storage store to a Vercel project via REST API
+# Usage: link_storage_to_project STORE_ID PROJECT_NAME VERCEL_TEAM
+link_storage_to_project() {
+  local store_id="$1"
+  local project_name="$2"
+  local team="$3"
+
+  local team_param=""
+  if [[ -n "${team}" ]]; then
+    team_param="?teamId=${team}"
+  fi
+
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST \
+    "https://api.vercel.com/v1/storage/stores/${store_id}/connections${team_param}" \
+    -H "Authorization: Bearer ${VERCEL_TOKEN}" \
+    -H "Content-Type: application/json" \
+    -d "{\"projectId\":\"${project_name}\"}")
+
+  local http_code
+  http_code=$(echo "${response}" | tail -1)
+
+  if [[ "${http_code}" -lt 200 || "${http_code}" -ge 300 ]]; then
+    local body
+    body=$(echo "${response}" | sed '$d')
+    # Already connected is OK
+    if echo "${body}" | python3 -c "import sys,json; d=json.load(sys.stdin); exit(0 if d.get('error',{}).get('code')=='already_connected' else 1)" 2>/dev/null; then
+      echo "Storage already linked to project." >&2
+      return 0
+    fi
+    echo "Error: Failed to link storage to project (HTTP ${http_code}): ${body}" >&2
+    return 1
+  fi
 }
