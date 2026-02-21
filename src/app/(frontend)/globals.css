@@ -77,13 +77,13 @@
 
   @variant xl {
     .container {
-      max-width: var(--breakpoint-xl);
+      max-width: 70%;
     }
   }
 
   @variant 2xl {
     .container {
-      max-width: var(--breakpoint-2xl);
+      max-width: 70%;
     }
   }
 }
