@@ -18,6 +18,13 @@ type Props = MediaBlockProps & {
   disableInnerContainer?: boolean
 }
 
+const sizeClasses: Record<string, string> = {
+  small: 'max-w-xs',
+  medium: 'max-w-md',
+  large: 'max-w-[48rem]',
+  full: '',
+}
+
 export const MediaBlock: React.FC<Props> = (props) => {
   const {
     captionClassName,
@@ -25,12 +32,15 @@ export const MediaBlock: React.FC<Props> = (props) => {
     enableGutter = true,
     imgClassName,
     media,
+    size,
     staticImage,
     disableInnerContainer,
   } = props
 
   let caption
   if (media && typeof media === 'object') caption = media.caption
+
+  const sizeClass = sizeClasses[size || 'full'] || ''
 
   return (
     <div
@@ -43,12 +53,14 @@ export const MediaBlock: React.FC<Props> = (props) => {
       )}
     >
       {(media || staticImage) && (
-        <Media
-          imgClassName={cn('border border-border rounded-[0.8rem]', imgClassName)}
-          videoClassName="border border-border rounded-[0.8rem] max-w-full max-h-[80vh]"
-          resource={media}
-          src={staticImage}
-        />
+        <div className={cn(sizeClass, { 'mx-auto': size && size !== 'full' })}>
+          <Media
+            imgClassName={cn('border border-border rounded-[0.8rem]', imgClassName)}
+            videoClassName="border border-border rounded-[0.8rem] max-w-full max-h-[80vh]"
+            resource={media}
+            src={staticImage}
+          />
+        </div>
       )}
       {caption && (
         <div
