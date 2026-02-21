@@ -2,10 +2,11 @@ import crypto from 'crypto'
 
 const VERCEL_API_BASE = 'https://api.vercel.com'
 
-// Maps our storage type names to Vercel Marketplace integration slugs
-const INTEGRATION_SLUGS: Record<string, string> = {
-  postgres: 'neon',
-  blob: 'blob',
+// Maps our storage type names to Vercel Marketplace integration slugs.
+// Each entry lists candidate slugs to try (first match wins).
+const INTEGRATION_SLUG_CANDIDATES: Record<string, string[]> = {
+  postgres: ['neon'],
+  blob: ['vercel-blob', 'blob', 'vercel-blob-store'],
 }
 
 function getVercelHeaders(): Record<string, string> {
@@ -59,16 +60,18 @@ async function getIntegrationConfigurations(): Promise<
   return data
 }
 
-async function getIntegrationConfigId(integrationSlug: string): Promise<string> {
+async function getIntegrationConfigId(candidateSlugs: string[]): Promise<string> {
   const configurations = await getIntegrationConfigurations()
-  const config = configurations.find((c) => c.slug === integrationSlug)
-  if (!config) {
-    throw new Error(
-      `No "${integrationSlug}" integration found on your Vercel account. ` +
-        `Install it from the Vercel Marketplace before provisioning.`,
-    )
+  for (const slug of candidateSlugs) {
+    const config = configurations.find((c) => c.slug === slug)
+    if (config) return config.id
   }
-  return config.id
+  const available = configurations.map((c) => c.slug).join(', ')
+  throw new Error(
+    `No integration found matching [${candidateSlugs.join(', ')}] on your Vercel account. ` +
+      `Available integrations: [${available}]. ` +
+      `Install it from the Vercel Marketplace before provisioning.`,
+  )
 }
 
 // Cache for integration products keyed by configuration ID
@@ -167,36 +170,29 @@ export async function createVercelStorage(
     }
   }
 
-  if (type === 'postgres') {
-    // Postgres uses the Marketplace integration endpoint (Neon)
-    const integrationSlug = INTEGRATION_SLUGS[type]
-    const configId = await getIntegrationConfigId(integrationSlug)
-    const productSlug = await getIntegrationProductSlug(configId, type)
-
-    const response = await vercelFetch('/v1/storage/stores/integration/direct', {
-      method: 'POST',
-      body: JSON.stringify({
-        name,
-        integrationConfigurationId: configId,
-        integrationProductIdOrSlug: productSlug,
-        metadata: { region: process.env.NEON_REGION || 'aws-us-east-1' },
-      }),
-    })
-
-    if (!response.ok) {
-      const error = await response.json()
-      throw new Error(`Failed to create ${type} storage "${name}": ${JSON.stringify(error)}`)
-    }
-
-    const result = await response.json()
-    // The integration endpoint wraps the store in a `store` property
-    return result.store || result
+  // All storage types use the Marketplace integration endpoint
+  const candidateSlugs = INTEGRATION_SLUG_CANDIDATES[type]
+  if (!candidateSlugs) {
+    throw new Error(`Unsupported storage type: ${type}`)
   }
 
-  // Blob uses the Vercel-native storage endpoint (still a first-party product)
-  const response = await vercelFetch('/v1/storage/stores', {
+  const configId = await getIntegrationConfigId(candidateSlugs)
+  const productSlug = await getIntegrationProductSlug(configId, type)
+
+  // Build metadata (e.g. Neon requires a region)
+  const metadata: Record<string, string> = {}
+  if (type === 'postgres') {
+    metadata.region = process.env.NEON_REGION || 'aws-us-east-1'
+  }
+
+  const response = await vercelFetch('/v1/storage/stores/integration/direct', {
     method: 'POST',
-    body: JSON.stringify({ type, name }),
+    body: JSON.stringify({
+      name,
+      integrationConfigurationId: configId,
+      integrationProductIdOrSlug: productSlug,
+      ...(Object.keys(metadata).length > 0 && { metadata }),
+    }),
   })
 
   if (!response.ok) {
@@ -204,7 +200,9 @@ export async function createVercelStorage(
     throw new Error(`Failed to create ${type} storage "${name}": ${JSON.stringify(error)}`)
   }
 
-  return response.json()
+  const result = await response.json()
+  // The integration endpoint wraps the store in a `store` property
+  return result.store || result
 }
 
 export async function linkStorageToProject(storeId: string, projectId: string): Promise<void> {
