@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
 import { approvedOrAuthenticated } from '../../access/approvedOrAuthenticated'
 import { authenticated } from '../../access/authenticated'
+import { notifyCommentRecipients } from './hooks/notifyCommentRecipients'
 import { revalidateComment, revalidateCommentDelete } from './hooks/revalidateComment'
 
 export const Comments: CollectionConfig = {
@@ -130,7 +131,7 @@ export const Comments: CollectionConfig = {
         return data
       },
     ],
-    afterChange: [revalidateComment],
+    afterChange: [revalidateComment, notifyCommentRecipients],
     afterDelete: [revalidateCommentDelete],
   },
   timestamps: true,
