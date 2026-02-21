@@ -1,8 +1,24 @@
-'use client'
-
 import React from 'react'
+import configPromise from '@payload-config'
+import { getPayload } from 'payload'
 
-const AdminLogo = () => {
+const AdminLogo: React.FC = async () => {
+  let siteTitle = 'Glossy'
+
+  try {
+    const payload = await getPayload({ config: configPromise })
+    const siteSettings = await payload.findGlobal({
+      slug: 'site-settings',
+      depth: 0,
+    })
+
+    if (siteSettings?.siteTitle) {
+      siteTitle = siteSettings.siteTitle
+    }
+  } catch {
+    // Fall back to default
+  }
+
   return (
     <span
       style={{
@@ -13,7 +29,7 @@ const AdminLogo = () => {
         color: 'var(--theme-text)',
       }}
     >
-      Glossy
+      {siteTitle}
     </span>
   )
 }
