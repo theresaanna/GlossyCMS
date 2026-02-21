@@ -98,6 +98,7 @@ export default buildConfig({
     ...(isPrimaryInstance ? [ProvisionedSites] : []),
   ],
   cors: [getServerSideURL()].filter(Boolean),
+  serverURL: getServerSideURL(),
   ...(resendKey
     ? {
         email: resendAdapter({
