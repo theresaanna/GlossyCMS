@@ -66,6 +66,15 @@ export const SignupForm: React.FC = () => {
     }
   }, [subdomain, checkAvailability])
 
+  useEffect(() => {
+    if (isSubmitting) {
+      document.body.style.cursor = 'wait'
+      return () => {
+        document.body.style.cursor = ''
+      }
+    }
+  }, [isSubmitting])
+
   const handleSubmit = async (formData: FormData) => {
     setError('')
     setIsSubmitting(true)

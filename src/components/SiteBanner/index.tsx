@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { Settings } from 'lucide-react'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 
 export interface SiteBannerMedia {
@@ -22,6 +23,7 @@ export interface SiteBannerProps {
   headerImage?: SiteBannerMedia | number | null
   userImage?: SiteBannerMedia | number | null
   siteTitle?: string | null
+  isAdmin?: boolean
 }
 
 /**
@@ -32,6 +34,7 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
   headerImage,
   userImage,
   siteTitle,
+  isAdmin,
 }) => {
   const headerMedia = typeof headerImage === 'object' ? headerImage : null
   const avatarMedia = typeof userImage === 'object' ? userImage : null
@@ -69,7 +72,7 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
       <div className="container relative">
         <div className="flex items-end gap-4 -mt-12 md:-mt-16">
           {/* Avatar circle */}
-          <Link href="/" className="relative shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-background bg-muted overflow-hidden shadow-lg block">
+          <Link href={isAdmin ? '/admin/globals/site-settings' : '/'} className="relative shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-background bg-muted overflow-hidden shadow-lg block group">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -82,6 +85,11 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
                   {siteTitle?.[0]?.toUpperCase() || '?'}
                 </span>
               </div>
+            )}
+            {isAdmin && (
+              <span className="absolute bottom-1 right-1 flex items-center justify-center w-6 h-6 md:w-7 md:h-7 rounded-full bg-background shadow border border-border" data-testid="admin-settings-icon">
+                <Settings className="w-3.5 h-3.5 md:w-4 md:h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+              </span>
             )}
           </Link>
         </div>
