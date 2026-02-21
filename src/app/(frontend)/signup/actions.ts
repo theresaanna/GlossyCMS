@@ -2,7 +2,6 @@
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
-import { after } from 'next/server'
 import { headers } from 'next/headers'
 import {
   RESERVED_SUBDOMAINS,
@@ -10,12 +9,14 @@ import {
   SUBDOMAIN_MIN_LENGTH,
   SUBDOMAIN_MAX_LENGTH,
 } from '@/collections/ProvisionedSites/constants'
+import { getStripe } from '@/utilities/stripe'
 
 export type CreateSiteResult = {
   success: boolean
   message: string
   siteId?: number | string
   subdomain?: string
+  checkoutUrl?: string
 }
 
 export async function createSite(formData: FormData): Promise<CreateSiteResult> {
@@ -28,6 +29,7 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
   const ownerName = formData.get('ownerName') as string | null
   const siteName = formData.get('siteName') as string | null
   const siteDescription = formData.get('siteDescription') as string | null
+  const plan = (formData.get('plan') as string) || 'basic'
 
   // Validate required fields
   if (!rawSubdomain?.trim()) {
@@ -41,6 +43,10 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
   if (!emailRegex.test(ownerEmail)) {
     return { success: false, message: 'Please enter a valid email address.' }
+  }
+
+  if (plan !== 'basic' && plan !== 'pro') {
+    return { success: false, message: 'Invalid plan selected.' }
   }
 
   const subdomain = rawSubdomain.toLowerCase().trim()
@@ -105,7 +111,7 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
     return { success: false, message: `The subdomain "${subdomain}" is already taken.` }
   }
 
-  // Create the provisioned site record
+  // Create the provisioned site record with pending_payment status
   const site = await payload.create({
     collection: 'provisioned-sites',
     overrideAccess: true,
@@ -115,19 +121,55 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
       ownerName: ownerName?.trim() || undefined,
       siteName: siteName?.trim() || undefined,
       siteDescription: siteDescription?.trim() || undefined,
-      status: 'pending',
+      status: 'pending_payment',
+      plan: plan as 'basic' | 'pro',
     },
   })
 
-  // Enqueue the provisioning job
-  await payload.jobs.queue({
-    task: 'provision-site',
-    input: { siteId: site.id },
+  // Create Stripe Checkout session
+  const priceId =
+    plan === 'pro' ? process.env.STRIPE_PRO_PRICE_ID : process.env.STRIPE_BASIC_PRICE_ID
+
+  if (!priceId) {
+    return { success: false, message: 'Payment configuration error. Please try again later.' }
+  }
+
+  const stripe = getStripe()
+  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+  const session = await stripe.checkout.sessions.create({
+    mode: 'subscription',
+    payment_method_types: ['card'],
+    customer_email: ownerEmail.trim(),
+    line_items: [
+      {
+        price: priceId,
+        quantity: 1,
+      },
+    ],
+    metadata: {
+      siteId: String(site.id),
+      subdomain,
+    },
+    success_url: `${serverUrl}/signup/status/${site.id}?session_id={CHECKOUT_SESSION_ID}`,
+    cancel_url: `${serverUrl}/signup?cancelled=true`,
   })
 
-  // Run queued jobs after the response is sent — `after()` keeps the
-  // serverless function alive so the promise isn't abandoned on Vercel.
-  after(payload.jobs.run())
+  // Store checkout session ID on the record
+  await payload.update({
+    collection: 'provisioned-sites',
+    id: site.id,
+    overrideAccess: true,
+    data: {
+      stripeCheckoutSessionId: session.id,
+    },
+  })
 
-  return { success: true, message: 'Site created.', siteId: site.id, subdomain }
+  return {
+    success: true,
+    message: 'Redirecting to payment...',
+    checkoutUrl: session.url!,
+    siteId: site.id,
+    subdomain,
+  }
 }

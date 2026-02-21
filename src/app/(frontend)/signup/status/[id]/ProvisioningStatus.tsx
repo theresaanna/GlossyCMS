@@ -2,7 +2,7 @@
 
 import React, { useCallback, useEffect, useState } from 'react'
 
-type SiteStatus = 'pending' | 'provisioning' | 'active' | 'failed' | 'suspended'
+type SiteStatus = 'pending_payment' | 'pending' | 'provisioning' | 'active' | 'failed' | 'suspended'
 
 interface Props {
   siteId: number | string
@@ -12,6 +12,7 @@ interface Props {
 }
 
 const STATUS_MESSAGES: Record<SiteStatus, string> = {
+  pending_payment: 'Confirming your payment...',
   pending: 'Your site is queued for setup...',
   provisioning: 'Setting up your site...',
   active: 'Your site is live!',
@@ -61,7 +62,7 @@ export const ProvisioningStatus: React.FC<Props> = ({
     <div className="text-center">
       {/* Status indicator */}
       <div className="mb-8">
-        {(status === 'pending' || status === 'provisioning') && (
+        {(status === 'pending_payment' || status === 'pending' || status === 'provisioning') && (
           <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
             <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
           </div>
@@ -95,6 +96,11 @@ export const ProvisioningStatus: React.FC<Props> = ({
 
         <h1 className="text-2xl font-bold mb-2">{STATUS_MESSAGES[status]}</h1>
 
+        {status === 'pending_payment' && (
+          <p className="text-muted-foreground">
+            We&apos;re confirming your payment. This should only take a moment.
+          </p>
+        )}
         {(status === 'pending' || status === 'provisioning') && (
           <p className="text-muted-foreground">
             This usually takes about a minute. We&apos;re creating your database, configuring your
@@ -104,8 +110,13 @@ export const ProvisioningStatus: React.FC<Props> = ({
       </div>
 
       {/* Progress steps */}
-      {(status === 'pending' || status === 'provisioning') && (
+      {(status === 'pending_payment' || status === 'pending' || status === 'provisioning') && (
         <div className="text-left max-w-sm mx-auto mb-8 space-y-3">
+          <ProgressStep
+            label="Confirming payment"
+            done={status !== 'pending_payment'}
+            active={status === 'pending_payment'}
+          />
           <ProgressStep
             label="Creating project"
             done={status === 'provisioning'}

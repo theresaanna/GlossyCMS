@@ -52,7 +52,7 @@ export const provisionSiteTask: TaskConfig<{
       throw new Error(`Provisioned site ${siteId} not found.`)
     }
 
-    const { subdomain } = site
+    const { subdomain, plan } = site
     const domain = `${subdomain}.glossysites.live`
     const projectName = `glossy-${subdomain}`
 
@@ -100,6 +100,8 @@ export const provisionSiteTask: TaskConfig<{
         SITE_NAME: site.siteName || subdomain,
         SITE_DESCRIPTION: site.siteDescription || 'A website powered by GlossyCMS.',
         NEXT_PUBLIC_SERVER_URL: `https://${domain}`,
+        SITE_PLAN: plan || 'basic',
+        NEXT_PUBLIC_SITE_PLAN: plan || 'basic',
       })
 
       // 5. Add custom domain

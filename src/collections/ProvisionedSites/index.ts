@@ -15,7 +15,7 @@ export const ProvisionedSites: CollectionConfig = {
   },
   defaultSort: '-createdAt',
   admin: {
-    defaultColumns: ['subdomain', 'ownerEmail', 'status', 'provisionedAt'],
+    defaultColumns: ['subdomain', 'ownerEmail', 'plan', 'status', 'provisionedAt'],
     listSearchableFields: ['subdomain', 'ownerEmail'],
     useAsTitle: 'subdomain',
   },
@@ -45,11 +45,25 @@ export const ProvisionedSites: CollectionConfig = {
       type: 'textarea',
     },
     {
+      name: 'plan',
+      type: 'select',
+      defaultValue: 'basic',
+      required: true,
+      options: [
+        { label: 'Basic', value: 'basic' },
+        { label: 'Pro', value: 'pro' },
+      ],
+      admin: {
+        position: 'sidebar',
+      },
+    },
+    {
       name: 'status',
       type: 'select',
       defaultValue: 'pending',
       required: true,
       options: [
+        { label: 'Pending Payment', value: 'pending_payment' },
         { label: 'Pending', value: 'pending' },
         { label: 'Provisioning', value: 'provisioning' },
         { label: 'Active', value: 'active' },
@@ -82,6 +96,31 @@ export const ProvisionedSites: CollectionConfig = {
       admin: {
         position: 'sidebar',
         readOnly: true,
+      },
+    },
+    {
+      name: 'stripeCustomerId',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'stripeSubscriptionId',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
+      name: 'stripeCheckoutSessionId',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+        condition: (data) => data?.status === 'pending_payment',
       },
     },
     {

@@ -11,6 +11,7 @@ import { fileURLToPath } from 'url'
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { revalidateMedia, revalidateMediaDelete } from './hooks/revalidateMedia'
+import { canUploadMediaType, PLAN_UPLOAD_ERROR } from '../../utilities/plan'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -152,6 +153,18 @@ export const Media: CollectionConfig = {
   },
   hooks: {
     beforeChange: [
+      async ({ data, req, operation }) => {
+        if (operation !== 'create') return data
+
+        const mimeType = req.file?.mimetype || data?.mimeType || ''
+
+        if (mimeType && !canUploadMediaType(mimeType)) {
+          const { APIError } = await import('payload')
+          throw new APIError(PLAN_UPLOAD_ERROR, 403)
+        }
+
+        return data
+      },
       async ({ data, req, operation }) => {
         // Video compression and thumbnail extraction are handled client-side
         // via @ffmpeg/ffmpeg WASM. This hook ensures metadata fallbacks are set.
