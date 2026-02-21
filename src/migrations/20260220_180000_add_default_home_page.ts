@@ -10,7 +10,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     return
   }
 
-  const heroRichText = JSON.stringify({
+  const welcomeRichText = JSON.stringify({
     root: {
       type: 'root',
       children: [
@@ -30,7 +30,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
           direction: 'ltr',
           format: '',
           indent: 0,
-          tag: 'h1',
+          tag: 'h2',
           version: 1,
         },
         {
@@ -60,14 +60,14 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     },
   })
 
-  // Insert the page
+  // Insert the page with hero type 'none' — welcome content lives in blocks
   const result = await db.execute(sql`
     INSERT INTO pages (
-      title, hero_type, hero_rich_text, slug, _status,
+      title, hero_type, slug, _status,
       meta_title, meta_description, published_at,
       updated_at, created_at
     ) VALUES (
-      'Home', 'lowImpact', ${heroRichText}::jsonb, 'home', 'published',
+      'Home', 'none', 'home', 'published',
       'Home', 'Welcome to our website.', now(),
       now(), now()
     ) RETURNING id
@@ -76,23 +76,83 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   const pageId = result.rows[0]?.id
   if (!pageId) return
 
-  // Insert social media block (empty platforms)
-  await db.execute(sql`
+  // Insert Content block with welcome message (layout position 0)
+  const contentBlockResult = await db.execute(sql`
+    INSERT INTO pages_blocks_content (
+      _order, _parent_id, _path, id, block_name
+    ) VALUES (
+      0, ${pageId}, 'layout.0', gen_random_uuid()::text, null
+    ) RETURNING id
+  `)
+
+  const contentBlockId = contentBlockResult.rows[0]?.id
+  if (contentBlockId) {
+    await db.execute(sql`
+      INSERT INTO pages_blocks_content_columns (
+        _order, _parent_id, id, size, rich_text
+      ) VALUES (
+        0, ${contentBlockId}, gen_random_uuid()::text, 'full', ${welcomeRichText}::jsonb
+      )
+    `)
+  }
+
+  // Insert Social Media block with Cash App link (layout position 1)
+  const smBlockResult = await db.execute(sql`
     INSERT INTO pages_blocks_social_media (
       _order, _parent_id, _path, id, block_name, header
     ) VALUES (
-      0, ${pageId}, 'layout.0', gen_random_uuid()::text, 'Social Media', 'Follow Us'
-    )
+      1, ${pageId}, 'layout.1', gen_random_uuid()::text, null, null
+    ) RETURNING id
   `)
+
+  const smBlockId = smBlockResult.rows[0]?.id
+  if (smBlockId) {
+    await db.execute(sql`
+      INSERT INTO pages_blocks_social_media_platforms (
+        _order, _parent_id, id, platform, custom_label, custom_url, notes
+      ) VALUES (
+        0, ${smBlockId}, gen_random_uuid()::text, 'other', 'Cash App',
+        'https://cash.app/$annaadorable',
+        'If you like Glossy, please feel free to show your appreciation with a tip. Thank you.'
+      )
+    `)
+  }
 }
 
 export async function down({ db }: MigrateDownArgs): Promise<void> {
-  // Delete the social media block first (FK cascade would handle this, but be explicit)
+  // Delete content block columns
+  await db.execute(sql`
+    DELETE FROM pages_blocks_content_columns
+    WHERE _parent_id IN (
+      SELECT c.id FROM pages_blocks_content c
+      JOIN pages p ON c._parent_id = p.id
+      WHERE p.slug = 'home'
+    )
+  `)
+
+  // Delete content blocks
+  await db.execute(sql`
+    DELETE FROM pages_blocks_content
+    WHERE _parent_id IN (SELECT id FROM pages WHERE slug = 'home')
+  `)
+
+  // Delete social media platforms
+  await db.execute(sql`
+    DELETE FROM pages_blocks_social_media_platforms
+    WHERE _parent_id IN (
+      SELECT sm.id FROM pages_blocks_social_media sm
+      JOIN pages p ON sm._parent_id = p.id
+      WHERE p.slug = 'home'
+    )
+  `)
+
+  // Delete social media blocks
   await db.execute(sql`
     DELETE FROM pages_blocks_social_media
     WHERE _parent_id IN (SELECT id FROM pages WHERE slug = 'home')
   `)
 
+  // Delete the page
   await db.execute(sql`
     DELETE FROM pages WHERE slug = 'home'
   `)

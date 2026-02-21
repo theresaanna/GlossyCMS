@@ -14,8 +14,8 @@ describe('homeStatic', () => {
     expect(homeStatic.title).toBe('Home')
   })
 
-  it('has a lowImpact hero', () => {
-    expect(homeStatic.hero.type).toBe('lowImpact')
+  it('has a none hero type', () => {
+    expect(homeStatic.hero.type).toBe('none')
   })
 
   it('has a non-empty layout', () => {
@@ -30,18 +30,20 @@ describe('homeStatic', () => {
     expect(socialMediaBlock).toBeDefined()
   })
 
-  it('social media block has a header', () => {
+  it('social media block has no header', () => {
     const socialMediaBlock = homeStatic.layout.find(
       (block: any) => block.blockType === 'socialMedia',
     ) as any
-    expect(socialMediaBlock.header).toBe('Follow Us')
+    expect(socialMediaBlock.header).toBeNull()
   })
 
-  it('social media block has an empty platforms array', () => {
+  it('social media block has a Cash App platform', () => {
     const socialMediaBlock = homeStatic.layout.find(
       (block: any) => block.blockType === 'socialMedia',
     ) as any
-    expect(socialMediaBlock.platforms).toEqual([])
+    expect(socialMediaBlock.platforms).toHaveLength(1)
+    expect(socialMediaBlock.platforms[0].platform).toBe('other')
+    expect(socialMediaBlock.platforms[0].customLabel).toBe('Cash App')
   })
 
   it('has meta fields', () => {
