@@ -36,12 +36,16 @@ export async function loadFFmpeg(onLog?: (msg: string) => void): Promise<FFmpeg>
     ffmpeg.on('log', ({ message }) => onLog(message))
   }
 
-  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core-mt@0.12.10/dist/umd'
+  // Use single-threaded core to avoid SharedArrayBuffer requirement.
+  // The multi-threaded core (core-mt) needs SharedArrayBuffer, which
+  // requires Cross-Origin-Embedder-Policy headers. Even with COEP
+  // 'credentialless', Web Workers created from blob: URLs don't always
+  // get SharedArrayBuffer access in all browsers, causing CORS errors.
+  const baseURL = 'https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.10/dist/umd'
 
   await ffmpeg.load({
     coreURL: await toBlobURL(`${baseURL}/ffmpeg-core.js`, 'text/javascript'),
     wasmURL: await toBlobURL(`${baseURL}/ffmpeg-core.wasm`, 'application/wasm'),
-    workerURL: await toBlobURL(`${baseURL}/ffmpeg-core.worker.js`, 'text/javascript'),
   })
 
   ffmpegInstance = ffmpeg
