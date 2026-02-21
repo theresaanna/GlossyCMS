@@ -1,4 +1,5 @@
 import React from 'react'
+import Link from 'next/link'
 import { getMediaUrl } from '@/utilities/getMediaUrl'
 
 export interface SiteBannerMedia {
@@ -68,7 +69,7 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
       <div className="container relative">
         <div className="flex items-end gap-4 -mt-12 md:-mt-16">
           {/* Avatar circle */}
-          <div className="relative shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-background bg-muted overflow-hidden shadow-lg">
+          <Link href="/" className="relative shrink-0 w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-background bg-muted overflow-hidden shadow-lg block">
             {avatarUrl ? (
               <img
                 src={avatarUrl}
@@ -82,7 +83,7 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
                 </span>
               </div>
             )}
-          </div>
+          </Link>
         </div>
       </div>
     </div>
