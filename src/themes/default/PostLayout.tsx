@@ -6,7 +6,7 @@ import { RelatedPosts } from '@/blocks/RelatedPosts/Component'
 
 export function PostLayout({ post, auxiliaryContent }: PostLayoutProps) {
   return (
-    <article className="pt-16 pb-16">
+    <article className="pt-8 pb-16">
       {auxiliaryContent}
 
       <PostHero post={post} />

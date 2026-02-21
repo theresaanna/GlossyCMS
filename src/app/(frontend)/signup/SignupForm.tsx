@@ -82,6 +82,7 @@ export const SignupForm: React.FC = () => {
     try {
       const result = await createSite(formData)
       if (result.success && result.siteId) {
+        setIsSubmitting(false)
         setProvisioningSiteId(result.siteId)
         setProvisioningSubdomain(result.subdomain || subdomain)
         topRef.current?.scrollIntoView({ behavior: 'smooth' })
