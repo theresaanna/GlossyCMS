@@ -25,6 +25,7 @@ export const Media: CollectionConfig = {
     update: authenticated,
   },
   admin: {
+    defaultColumns: ['filename', 'filesize', 'createdAt', '_parentFolder'],
     components: {
       beforeListTable: ['@/components/admin/MediaUploadStatusBanner'],
     },
