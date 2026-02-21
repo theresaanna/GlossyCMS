@@ -6,7 +6,6 @@ const VERCEL_API_BASE = 'https://api.vercel.com'
 // Each entry lists candidate slugs to try (first match wins).
 const INTEGRATION_SLUG_CANDIDATES: Record<string, string[]> = {
   postgres: ['neon'],
-  blob: ['vercel-blob', 'blob', 'vercel-blob-store'],
 }
 
 function getVercelHeaders(): Record<string, string> {
@@ -79,7 +78,7 @@ const cachedProducts: Record<string, Array<{ id: string; slug: string; name: str
 
 async function getIntegrationProductSlug(
   configId: string,
-  type: 'postgres' | 'blob',
+  type: 'postgres',
 ): Promise<string> {
   if (!cachedProducts[configId]) {
     const response = await vercelFetch(`/v1/integrations/configuration/${configId}/products`)
@@ -96,9 +95,7 @@ async function getIntegrationProductSlug(
   // Find a product matching the storage type
   const product = products.find((p) => {
     const lower = (p.slug || p.name || '').toLowerCase()
-    if (type === 'postgres') return lower.includes('postgres') || lower.includes('neon')
-    if (type === 'blob') return lower.includes('blob')
-    return false
+    return lower.includes('postgres') || lower.includes('neon')
   })
 
   if (!product) {
@@ -154,15 +151,15 @@ export async function getVercelProject(name: string): Promise<{ id: string; name
 }
 
 export async function createVercelStorage(
-  type: 'postgres' | 'blob',
+  type: 'postgres',
   name: string,
-): Promise<{ id: string; connectionString?: string; token?: string }> {
+): Promise<{ id: string }> {
   // Check if store already exists
   const listResponse = await vercelFetch('/v1/storage/stores')
   if (listResponse.ok) {
     const data = await listResponse.json()
     const stores = data.stores || data
-    const existing = (stores as Array<{ name: string; type: string; id: string }>)?.find(
+    const existing = (stores as Array<{ name: string; id: string }>)?.find(
       (s) => s.name === name,
     )
     if (existing) {
@@ -170,7 +167,7 @@ export async function createVercelStorage(
     }
   }
 
-  // All storage types use the Marketplace integration endpoint
+  // Use the Marketplace integration endpoint
   const candidateSlugs = INTEGRATION_SLUG_CANDIDATES[type]
   if (!candidateSlugs) {
     throw new Error(`Unsupported storage type: ${type}`)
@@ -179,19 +176,13 @@ export async function createVercelStorage(
   const configId = await getIntegrationConfigId(candidateSlugs)
   const productSlug = await getIntegrationProductSlug(configId, type)
 
-  // Build metadata (e.g. Neon requires a region)
-  const metadata: Record<string, string> = {}
-  if (type === 'postgres') {
-    metadata.region = process.env.NEON_REGION || 'aws-us-east-1'
-  }
-
   const response = await vercelFetch('/v1/storage/stores/integration/direct', {
     method: 'POST',
     body: JSON.stringify({
       name,
       integrationConfigurationId: configId,
       integrationProductIdOrSlug: productSlug,
-      ...(Object.keys(metadata).length > 0 && { metadata }),
+      metadata: { region: process.env.NEON_REGION || 'aws-us-east-1' },
     }),
   })
 
