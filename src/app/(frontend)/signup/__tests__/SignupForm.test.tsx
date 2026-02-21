@@ -9,43 +9,52 @@ vi.mock('../actions', () => ({
   createSite: (...args: unknown[]) => mockCreateSite(...args),
 }))
 
-// Mock ProvisioningStatus to verify it receives the right props
-vi.mock('../status/[id]/ProvisioningStatus', () => ({
-  ProvisioningStatus: (props: { siteId: number | string; initialStatus: string; subdomain: string }) => (
-    <div data-testid="provisioning-status" data-site-id={props.siteId} data-subdomain={props.subdomain}>
-      {props.initialStatus}
-    </div>
-  ),
-}))
-
 // Mock fetch for subdomain availability checks
 const mockFetch = vi.fn()
 global.fetch = mockFetch
+
+// Mock window.location for redirect tests
+const mockLocationAssign = vi.fn()
+Object.defineProperty(window, 'location', {
+  value: {
+    ...window.location,
+    href: '',
+    search: '',
+    assign: mockLocationAssign,
+  },
+  writable: true,
+})
 
 beforeEach(() => {
   vi.clearAllMocks()
   mockFetch.mockResolvedValue({
     json: () => Promise.resolve({ available: true }),
   })
+  window.location.search = ''
 })
 
 describe('SignupForm', () => {
-  it('renders the form with heading and all fields', () => {
+  it('renders the form with heading, plan selector, and all fields', () => {
     render(<SignupForm />)
 
     expect(screen.getByText('Create Your Site')).toBeDefined()
+    expect(screen.getByText('Basic')).toBeDefined()
+    expect(screen.getByText('Pro')).toBeDefined()
+    expect(screen.getByText('$10')).toBeDefined()
+    expect(screen.getByText('$20')).toBeDefined()
     expect(screen.getByLabelText(/subdomain/i)).toBeDefined()
     expect(screen.getByLabelText(/email/i)).toBeDefined()
     expect(screen.getByLabelText(/your name/i)).toBeDefined()
     expect(screen.getByLabelText(/site name/i)).toBeDefined()
     expect(screen.getByLabelText(/site description/i)).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Create Site' })).toBeDefined()
+    expect(screen.getByRole('button', { name: 'Continue to Payment' })).toBeDefined()
   })
 
-  it('shows provisioning status after successful submission', async () => {
+  it('redirects to Stripe Checkout on successful submission', async () => {
     mockCreateSite.mockResolvedValue({
       success: true,
-      message: 'Site created.',
+      message: 'Redirecting to payment...',
+      checkoutUrl: 'https://checkout.stripe.com/test-session',
       siteId: 42,
       subdomain: 'my-site',
     })
@@ -53,46 +62,41 @@ describe('SignupForm', () => {
     render(<SignupForm />)
 
     const user = userEvent.setup()
-    const subdomainInput = screen.getByLabelText(/subdomain/i)
-    const emailInput = screen.getByLabelText(/email/i)
-    const submitButton = screen.getByRole('button', { name: 'Create Site' })
-
-    await user.type(subdomainInput, 'my-site')
-    await user.type(emailInput, 'test@example.com')
-    await user.click(submitButton)
+    await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
+    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
-      expect(screen.getByTestId('provisioning-status')).toBeDefined()
+      expect(window.location.href).toBe('https://checkout.stripe.com/test-session')
     })
-
-    const status = screen.getByTestId('provisioning-status')
-    expect(status.getAttribute('data-site-id')).toBe('42')
-    expect(status.getAttribute('data-subdomain')).toBe('my-site')
-    expect(status.textContent).toBe('pending')
   })
 
-  it('hides the form and heading when provisioning starts', async () => {
+  it('sends plan value in form data', async () => {
     mockCreateSite.mockResolvedValue({
       success: true,
-      message: 'Site created.',
-      siteId: 1,
-      subdomain: 'test-site',
+      message: 'Redirecting to payment...',
+      checkoutUrl: 'https://checkout.stripe.com/test-session',
+      siteId: 42,
+      subdomain: 'my-site',
     })
 
     render(<SignupForm />)
 
     const user = userEvent.setup()
-    await user.type(screen.getByLabelText(/subdomain/i), 'test-site')
+
+    // Click Pro plan
+    await user.click(screen.getByText('Pro'))
+
+    await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.click(screen.getByRole('button', { name: 'Create Site' }))
+    await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
-      expect(screen.getByTestId('provisioning-status')).toBeDefined()
+      expect(mockCreateSite).toHaveBeenCalled()
     })
 
-    expect(screen.queryByText('Create Your Site')).toBeNull()
-    expect(screen.queryByLabelText(/subdomain/i)).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Create Site' })).toBeNull()
+    const formData = mockCreateSite.mock.calls[0][0] as FormData
+    expect(formData.get('plan')).toBe('pro')
   })
 
   it('shows an error and keeps the form visible on failure', async () => {
@@ -106,7 +110,7 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
     await user.type(screen.getByLabelText(/subdomain/i), 'taken')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.click(screen.getByRole('button', { name: 'Create Site' }))
+    await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
       expect(screen.getByText('The subdomain "taken" is already taken.')).toBeDefined()
@@ -114,8 +118,7 @@ describe('SignupForm', () => {
 
     // Form should still be visible
     expect(screen.getByLabelText(/subdomain/i)).toBeDefined()
-    expect(screen.getByRole('button', { name: 'Create Site' })).toBeDefined()
-    expect(screen.queryByTestId('provisioning-status')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Continue to Payment' })).toBeDefined()
   })
 
   it('shows an error when the action throws unexpectedly', async () => {
@@ -126,15 +129,14 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
     await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.click(screen.getByRole('button', { name: 'Create Site' }))
+    await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
       expect(screen.getByText('An unexpected error occurred. Please try again.')).toBeDefined()
     })
 
     // Form should still be visible and re-enabled
-    expect(screen.getByRole('button', { name: 'Create Site' })).toBeDefined()
-    expect(screen.queryByTestId('provisioning-status')).toBeNull()
+    expect(screen.getByRole('button', { name: 'Continue to Payment' })).toBeDefined()
   })
 
   it('disables the submit button when subdomain is checking or unavailable', async () => {
@@ -153,30 +155,7 @@ describe('SignupForm', () => {
       expect(screen.getByText('Checking availability...')).toBeDefined()
     })
 
-    const button = screen.getByRole('button', { name: 'Create Site' })
+    const button = screen.getByRole('button', { name: 'Continue to Payment' })
     expect(button.hasAttribute('disabled')).toBe(true)
-  })
-
-  it('scrolls to top when provisioning begins', async () => {
-    const scrollIntoViewMock = vi.fn()
-    Element.prototype.scrollIntoView = scrollIntoViewMock
-
-    mockCreateSite.mockResolvedValue({
-      success: true,
-      message: 'Site created.',
-      siteId: 1,
-      subdomain: 'my-site',
-    })
-
-    render(<SignupForm />)
-
-    const user = userEvent.setup()
-    await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
-    await user.type(screen.getByLabelText(/email/i), 'test@example.com')
-    await user.click(screen.getByRole('button', { name: 'Create Site' }))
-
-    await waitFor(() => {
-      expect(scrollIntoViewMock).toHaveBeenCalledWith({ behavior: 'smooth' })
-    })
   })
 })

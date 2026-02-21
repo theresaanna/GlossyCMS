@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
+import { getSitePlan } from '@/utilities/plan'
 
 export async function POST(req: NextRequest) {
+  if (getSitePlan() !== 'pro') {
+    return NextResponse.json(
+      { error: 'Video uploads require the Pro plan.' },
+      { status: 403 },
+    )
+  }
+
   try {
     const formData = await req.formData()
     const file = formData.get('file') as File | null
