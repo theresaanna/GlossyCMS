@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { up, down } from '../20260221_130000_seed_default_content'
+import { up, down } from '../20260222_010000_seed_default_content'
 
-describe('Migration: 20260221_130000_seed_default_content', () => {
+describe('Migration: 20260222_010000_seed_default_content', () => {
   describe('up', () => {
     it('skips if About page already exists', async () => {
       const mockPayload = {
@@ -75,7 +75,7 @@ describe('Migration: 20260221_130000_seed_default_content', () => {
     it('is included in the migrations array', async () => {
       const { migrations } = await import('../index')
       const migration = migrations.find(
-        (m) => m.name === '20260221_130000_seed_default_content',
+        (m) => m.name === '20260222_010000_seed_default_content',
       )
       expect(migration).toBeDefined()
       expect(migration!.up).toBeDefined()
@@ -88,7 +88,7 @@ describe('Migration: 20260221_130000_seed_default_content', () => {
         (m) => m.name === '20260221_120000_add_social_media_notes',
       )
       const seedIndex = migrations.findIndex(
-        (m) => m.name === '20260221_130000_seed_default_content',
+        (m) => m.name === '20260222_010000_seed_default_content',
       )
       expect(seedIndex).toBeGreaterThan(notesIndex)
     })
