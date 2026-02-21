@@ -139,6 +139,83 @@ describe('SocialMediaBlock', () => {
     expect(container.querySelectorAll('a')).toHaveLength(0)
   })
 
+  describe('notes', () => {
+    it('renders notes text below the link when provided', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [
+              { platform: 'x', username: 'testuser', notes: 'Follow for updates', id: '1' },
+            ],
+          })}
+        />,
+      )
+
+      const notes = screen.getByText('Follow for updates')
+      expect(notes).toBeDefined()
+      expect(notes.tagName).toBe('P')
+    })
+
+    it('does not render notes when not provided', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [{ platform: 'x', username: 'testuser', id: '1' }],
+          })}
+        />,
+      )
+
+      expect(container.querySelectorAll('p')).toHaveLength(0)
+    })
+
+    it('does not render notes when set to empty string', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [{ platform: 'x', username: 'testuser', notes: '', id: '1' }],
+          })}
+        />,
+      )
+
+      expect(container.querySelectorAll('p')).toHaveLength(0)
+    })
+
+    it('renders notes for each platform that has them', () => {
+      render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [
+              { platform: 'x', username: 'user1', notes: 'Note one', id: '1' },
+              { platform: 'instagram', username: 'user2', id: '2' },
+              { platform: 'facebook', username: 'user3', notes: 'Note three', id: '3' },
+            ],
+          })}
+        />,
+      )
+
+      expect(screen.getByText('Note one')).toBeDefined()
+      expect(screen.getByText('Note three')).toBeDefined()
+    })
+  })
+
+  describe('layout', () => {
+    it('renders each platform in its own row', () => {
+      const { container } = render(
+        <SocialMediaBlock
+          {...makeProps({
+            platforms: [
+              { platform: 'x', username: 'user1', id: '1' },
+              { platform: 'instagram', username: 'user2', id: '2' },
+            ],
+          })}
+        />,
+      )
+
+      const wrapperDivs = container.querySelectorAll('.flex.flex-col.gap-1')
+      expect(wrapperDivs).toHaveLength(2)
+    })
+  })
+
   describe('header', () => {
     it('renders the header when provided', () => {
       render(

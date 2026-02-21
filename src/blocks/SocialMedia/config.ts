@@ -88,6 +88,14 @@ export const SocialMedia: Block = {
             description: 'Full URL (e.g. https://example.com/username)',
           },
         },
+        {
+          name: 'notes',
+          type: 'text',
+          label: 'Notes',
+          admin: {
+            description: 'Optional small text displayed below the link button',
+          },
+        },
       ],
     },
   ],

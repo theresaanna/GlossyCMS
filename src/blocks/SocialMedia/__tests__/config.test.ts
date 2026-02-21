@@ -168,6 +168,49 @@ describe('SocialMedia block config', () => {
     })
   })
 
+  describe('notes field', () => {
+    it('has an optional notes text field in platforms array', () => {
+      const platformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'platforms',
+      ) as any
+      const notesField = platformsField.fields.find(
+        (f: any) => f.name === 'notes',
+      )
+      expect(notesField).toBeDefined()
+      expect(notesField.type).toBe('text')
+    })
+
+    it('notes field is not required', () => {
+      const platformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'platforms',
+      ) as any
+      const notesField = platformsField.fields.find(
+        (f: any) => f.name === 'notes',
+      )
+      expect(notesField.required).toBeUndefined()
+    })
+
+    it('notes field has a description', () => {
+      const platformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'platforms',
+      ) as any
+      const notesField = platformsField.fields.find(
+        (f: any) => f.name === 'notes',
+      )
+      expect(notesField.admin.description).toBeTruthy()
+    })
+
+    it('notes field has no condition (always visible)', () => {
+      const platformsField = SocialMedia.fields.find(
+        (f) => 'name' in f && f.name === 'platforms',
+      ) as any
+      const notesField = platformsField.fields.find(
+        (f: any) => f.name === 'notes',
+      )
+      expect(notesField.admin.condition).toBeUndefined()
+    })
+  })
+
   it('orders fields as header, platforms', () => {
     const fieldNames = SocialMedia.fields
       .filter((f) => 'name' in f)

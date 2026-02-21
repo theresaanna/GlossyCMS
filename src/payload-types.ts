@@ -917,6 +917,10 @@ export interface SocialMediaBlock {
          * Full URL (e.g. https://example.com/username)
          */
         customUrl?: string | null;
+        /**
+         * Optional small text displayed below the link button
+         */
+        notes?: string | null;
         id?: string | null;
       }[]
     | null;
@@ -1473,6 +1477,7 @@ export interface SocialMediaBlockSelect<T extends boolean = true> {
         username?: T;
         customLabel?: T;
         customUrl?: T;
+        notes?: T;
         id?: T;
       };
   id?: T;
