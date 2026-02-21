@@ -3,7 +3,6 @@
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { headers } from 'next/headers'
-import { redirect } from 'next/navigation'
 import {
   RESERVED_SUBDOMAINS,
   SUBDOMAIN_REGEX,
@@ -11,10 +10,11 @@ import {
   SUBDOMAIN_MAX_LENGTH,
 } from '@/collections/ProvisionedSites/constants'
 
-type CreateSiteResult = {
+export type CreateSiteResult = {
   success: boolean
   message: string
   siteId?: number | string
+  subdomain?: string
 }
 
 export async function createSite(formData: FormData): Promise<CreateSiteResult> {
@@ -124,8 +124,8 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
     input: { siteId: site.id },
   })
 
-  // Run queued jobs
-  await payload.jobs.run()
+  // Run queued jobs (non-blocking — the job runner processes in the background)
+  payload.jobs.run()
 
-  redirect(`/signup/status/${site.id}`)
+  return { success: true, message: 'Site created.', siteId: site.id, subdomain }
 }

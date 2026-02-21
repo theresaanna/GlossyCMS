@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { createSite } from './actions'
+import { ProvisioningStatus } from './status/[id]/ProvisioningStatus'
 
 type AvailabilityState = 'idle' | 'checking' | 'available' | 'unavailable'
 
@@ -11,7 +12,10 @@ export const SignupForm: React.FC = () => {
   const [availabilityReason, setAvailabilityReason] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [provisioningSiteId, setProvisioningSiteId] = useState<number | string | null>(null)
+  const [provisioningSubdomain, setProvisioningSubdomain] = useState('')
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const topRef = useRef<HTMLDivElement>(null)
 
   const checkAvailability = useCallback(async (value: string) => {
     if (!value || value.length < 3) {
@@ -68,18 +72,43 @@ export const SignupForm: React.FC = () => {
 
     try {
       const result = await createSite(formData)
-      if (!result.success) {
+      if (result.success && result.siteId) {
+        setProvisioningSiteId(result.siteId)
+        setProvisioningSubdomain(result.subdomain || subdomain)
+        topRef.current?.scrollIntoView({ behavior: 'smooth' })
+      } else if (!result.success) {
         setError(result.message)
+        setIsSubmitting(false)
       }
     } catch {
-      // redirect() throws a NEXT_REDIRECT error, which is expected
-    } finally {
+      setError('An unexpected error occurred. Please try again.')
       setIsSubmitting(false)
     }
   }
 
+  // Once we have a siteId, show the provisioning status instead of the form
+  if (provisioningSiteId) {
+    return (
+      <div ref={topRef}>
+        <ProvisioningStatus
+          siteId={provisioningSiteId}
+          initialStatus="pending"
+          subdomain={provisioningSubdomain}
+        />
+      </div>
+    )
+  }
+
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <div>
+      <div className="prose dark:prose-invert max-w-none mb-8">
+        <h1>Create Your Site</h1>
+        <p>
+          Choose a subdomain and we&apos;ll set up your own GlossyCMS instance in about a minute.
+        </p>
+      </div>
+      <form action={handleSubmit} className="space-y-6">
+        <div ref={topRef} />
       {/* Subdomain */}
       <div>
         <label htmlFor="subdomain" className="block text-sm font-medium mb-2">
@@ -193,6 +222,7 @@ export const SignupForm: React.FC = () => {
       >
         {isSubmitting ? 'Creating your site...' : 'Create Site'}
       </button>
-    </form>
+      </form>
+    </div>
   )
 }

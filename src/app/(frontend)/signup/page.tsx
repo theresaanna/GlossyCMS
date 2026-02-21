@@ -12,13 +12,6 @@ export default async function SignupPage() {
     <article className="pt-4 pb-24">
       <div className="container py-16">
         <div className="max-w-xl mx-auto">
-          <div className="prose dark:prose-invert max-w-none mb-8">
-            <h1>Create Your Site</h1>
-            <p>
-              Choose a subdomain and we&apos;ll set up your own GlossyCMS instance in about a
-              minute.
-            </p>
-          </div>
           <SignupForm />
         </div>
       </div>
