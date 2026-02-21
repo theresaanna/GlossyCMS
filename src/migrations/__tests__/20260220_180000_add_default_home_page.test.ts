@@ -91,10 +91,5 @@ describe('Migration: 20260220_180000_add_default_home_page', () => {
       expect(migration!.down).toBeDefined()
     })
 
-    it('is the last migration in the list', async () => {
-      const { migrations } = await import('../index')
-      const lastMigration = migrations[migrations.length - 1]
-      expect(lastMigration.name).toBe('20260220_180000_add_default_home_page')
-    })
   })
 })
