@@ -63,13 +63,16 @@ const UploadProgressField: React.FC = () => {
     }
   }, [fileValue])
 
-  // Detect form processing (upload in progress)
+  // Detect actual upload (form submitted and processing).
+  // isProcessing alone is not enough — VideoCompressionField also sets
+  // processing=true during client-side compression, before any upload.
+  // We only show "Uploading..." once the form has actually been submitted.
   useEffect(() => {
-    if (isProcessing && fileValue instanceof File) {
+    if (isProcessing && isSubmitted && fileValue instanceof File) {
       setPhase('uploading')
       wasProcessingRef.current = true
     }
-  }, [isProcessing, fileValue])
+  }, [isProcessing, isSubmitted, fileValue])
 
   // Detect upload completion
   useEffect(() => {

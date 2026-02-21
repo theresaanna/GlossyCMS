@@ -6,9 +6,9 @@
  */
 export async function extractVideoThumbnailCanvas(
   file: File,
-  options: { timestamp?: number; width?: number } = {},
+  options: { timestamp?: number; width?: number; timeoutMs?: number } = {},
 ): Promise<File> {
-  const { timestamp = 1, width = 500 } = options
+  const { timestamp = 1, width = 500, timeoutMs = 10_000 } = options
 
   const url = URL.createObjectURL(file)
 
@@ -19,21 +19,31 @@ export async function extractVideoThumbnailCanvas(
     video.preload = 'auto'
     video.src = url
 
-    // Wait for metadata so we know the video dimensions
-    await new Promise<void>((resolve, reject) => {
-      video.onloadedmetadata = () => resolve()
-      video.onerror = () => reject(new Error('Failed to load video metadata'))
-    })
+    // Wait for metadata so we know the video dimensions.
+    // Some formats (e.g. .MOV on non-Safari browsers) may never fire
+    // loadedmetadata, so we race against a timeout.
+    await raceTimeout(
+      new Promise<void>((resolve, reject) => {
+        video.onloadedmetadata = () => resolve()
+        video.onerror = () => reject(new Error('Failed to load video metadata'))
+      }),
+      timeoutMs,
+      'Video metadata load timed out — format may not be supported by this browser',
+    )
 
     // Clamp timestamp to video duration
     const seekTime = Math.min(timestamp, video.duration - 0.1)
     video.currentTime = Math.max(0, seekTime)
 
     // Wait for the frame at the requested time to be available
-    await new Promise<void>((resolve, reject) => {
-      video.onseeked = () => resolve()
-      video.onerror = () => reject(new Error('Failed to seek video'))
-    })
+    await raceTimeout(
+      new Promise<void>((resolve, reject) => {
+        video.onseeked = () => resolve()
+        video.onerror = () => reject(new Error('Failed to seek video'))
+      }),
+      timeoutMs,
+      'Video seek timed out',
+    )
 
     // Scale to requested width, preserving aspect ratio
     const scale = width / video.videoWidth
@@ -62,4 +72,11 @@ export async function extractVideoThumbnailCanvas(
   } finally {
     URL.revokeObjectURL(url)
   }
+}
+
+function raceTimeout<T>(promise: Promise<T>, ms: number, message: string): Promise<T> {
+  return Promise.race([
+    promise,
+    new Promise<never>((_, reject) => setTimeout(() => reject(new Error(message)), ms)),
+  ])
 }
