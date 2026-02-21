@@ -54,10 +54,15 @@ describe('Migration: 20260220_150000_add_color_scheme_settings', () => {
       expect(migration!.down).toBeDefined()
     })
 
-    it('is the last migration in the list', async () => {
+    it('appears before 20260220_160000_add_media_block_size in the list', async () => {
       const { migrations } = await import('../index')
-      const lastMigration = migrations[migrations.length - 1]
-      expect(lastMigration.name).toBe('20260220_150000_add_color_scheme_settings')
+      const thisIndex = migrations.findIndex(
+        (m) => m.name === '20260220_150000_add_color_scheme_settings',
+      )
+      const nextIndex = migrations.findIndex(
+        (m) => m.name === '20260220_160000_add_media_block_size',
+      )
+      expect(thisIndex).toBeLessThan(nextIndex)
     })
   })
 })
