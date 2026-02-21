@@ -14,6 +14,7 @@ export async function extractVideoThumbnailCanvas(
 
   try {
     const video = document.createElement('video')
+    video.crossOrigin = 'anonymous'
     video.muted = true
     video.playsInline = true
     video.preload = 'auto'

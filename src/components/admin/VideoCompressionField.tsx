@@ -37,23 +37,27 @@ const VideoCompressionField: React.FC = () => {
         const compressSource = new File([file.slice()], file.name, { type: file.type })
 
         // Extract thumbnail using native <video> + <canvas> APIs.
-        // This is much lighter than FFmpeg WASM and won't starve the
-        // concurrent Vercel Blob upload of CPU/memory.
+        // This is best-effort — if it fails (CORS, unsupported format, timeout)
+        // we log and continue with compression. The upload should never stall
+        // because of a thumbnail failure.
         setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
-        const thumbnailFile = await extractVideoThumbnailCanvas(file, {
-          timestamp: 1,
-          width: 500,
-        })
+        try {
+          const thumbnailFile = await extractVideoThumbnailCanvas(file, {
+            timestamp: 1,
+            width: 500,
+          })
 
-        // Upload thumbnail via API
-        const formData = new FormData()
-        formData.append('file', thumbnailFile)
-        const res = await fetch('/api/video-thumbnail', { method: 'POST', body: formData })
-        if (!res.ok) {
-          throw new Error('Failed to upload thumbnail')
+          // Upload thumbnail via API
+          const formData = new FormData()
+          formData.append('file', thumbnailFile)
+          const res = await fetch('/api/video-thumbnail', { method: 'POST', body: formData })
+          if (res.ok) {
+            const { url } = await res.json()
+            setVideoThumbnailURL(url)
+          }
+        } catch (thumbErr) {
+          console.warn('Thumbnail extraction failed (non-blocking):', thumbErr)
         }
-        const { url } = await res.json()
-        setVideoThumbnailURL(url)
 
         // Skip compression for small files
         if (file.size < 1 * 1024 * 1024) {
