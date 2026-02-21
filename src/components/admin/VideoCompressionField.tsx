@@ -30,12 +30,6 @@ const VideoCompressionField: React.FC = () => {
       setError(null)
 
       try {
-        // Use file.slice() to create a clone for compression.
-        // Payload's client upload handler streams the original File to Vercel
-        // Blob concurrently — slice() creates a lightweight Blob reference
-        // without reading the bytes, so both can proceed.
-        const compressSource = new File([file.slice()], file.name, { type: file.type })
-
         // Extract thumbnail using native <video> + <canvas> APIs.
         // This is best-effort — if it fails (CORS, unsupported format, timeout)
         // we log and continue with compression. The upload should never stall
@@ -76,6 +70,17 @@ const VideoCompressionField: React.FC = () => {
           setProcessing(false)
           return
         }
+
+        // Read the file bytes into memory so compression has a fully
+        // independent copy. Payload's VercelBlobClientUploadHandler is
+        // concurrently streaming the original File to Vercel Blob — passing
+        // any Blob/File reference to FFmpeg's fetchFile() causes both
+        // consumers to contend for the same underlying disk I/O, stalling
+        // one of them. We use FileReader to snapshot the bytes into an
+        // ArrayBuffer, then wrap that in a new File for FFmpeg.
+        setProgress({ phase: 'loading', percent: 0, message: 'Preparing video...' })
+        const buffer = await readFileAsArrayBuffer(file)
+        const compressSource = new File([buffer], file.name, { type: file.type })
 
         const result = await compressVideo(compressSource, setProgress)
 
@@ -184,3 +189,13 @@ const VideoCompressionField: React.FC = () => {
 }
 
 export default VideoCompressionField
+
+/** Read a File into an ArrayBuffer using FileReader (independent I/O path). */
+function readFileAsArrayBuffer(file: File): Promise<ArrayBuffer> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader()
+    reader.onload = () => resolve(reader.result as ArrayBuffer)
+    reader.onerror = () => reject(reader.error)
+    reader.readAsArrayBuffer(file)
+  })
+}
