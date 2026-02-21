@@ -44,13 +44,11 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
         )}
         <HeaderNav data={data} />
       </div>
-      <Link href="/" className="block">
-        <SiteBanner
-          headerImage={headerImage}
-          userImage={userImage}
-          siteTitle={siteTitle}
-        />
-      </Link>
+      <SiteBanner
+        headerImage={headerImage}
+        userImage={userImage}
+        siteTitle={siteTitle}
+      />
     </header>
   )
 }
