@@ -4,70 +4,70 @@ import { up, down } from '../20260221_130000_seed_default_content'
 describe('Migration: 20260221_130000_seed_default_content', () => {
   describe('up', () => {
     it('skips if About page already exists', async () => {
-      const mockDb = {
-        execute: vi.fn().mockResolvedValueOnce({ rows: [{ id: 1 }] }), // SELECT about page exists
+      const mockPayload = {
+        find: vi.fn().mockResolvedValueOnce({ docs: [{ id: 1 }] }),
+        create: vi.fn(),
+        updateGlobal: vi.fn(),
       }
-      await up({ db: mockDb as any, payload: {} as any, req: {} as any })
+      await up({ db: {} as any, payload: mockPayload as any, req: {} as any })
 
-      expect(mockDb.execute).toHaveBeenCalledTimes(1)
+      expect(mockPayload.find).toHaveBeenCalledTimes(1)
+      expect(mockPayload.create).not.toHaveBeenCalled()
+      expect(mockPayload.updateGlobal).not.toHaveBeenCalled()
     })
 
     it('creates all seed content when About page does not exist', async () => {
-      const mockDb = {
-        execute: vi
+      const mockPayload = {
+        find: vi.fn().mockResolvedValueOnce({ docs: [] }),
+        create: vi
           .fn()
-          // 1: SELECT about page — not found
-          .mockResolvedValueOnce({ rows: [] })
-          // 2: INSERT about page
-          .mockResolvedValueOnce({ rows: [{ id: 10 }] })
-          // 3: INSERT content block
-          .mockResolvedValueOnce({ rows: [{ id: 'content-block-1' }] })
-          // 4: INSERT content column
-          .mockResolvedValueOnce({ rows: [] })
-          // 5: INSERT welcome post
-          .mockResolvedValueOnce({ rows: [{ id: 20 }] })
-          // 6: UPSERT header
-          .mockResolvedValueOnce({ rows: [] })
-          // 7: DELETE header_rels
-          .mockResolvedValueOnce({ rows: [] })
-          // 8: DELETE header_nav_items
-          .mockResolvedValueOnce({ rows: [] })
-          // 9: INSERT header nav item (About)
-          .mockResolvedValueOnce({ rows: [] })
-          // 10: INSERT header nav item (Posts)
-          .mockResolvedValueOnce({ rows: [] })
-          // 11: INSERT header_rels (About ref)
-          .mockResolvedValueOnce({ rows: [] })
-          // 12: UPSERT footer
-          .mockResolvedValueOnce({ rows: [] })
-          // 13: DELETE footer_rels
-          .mockResolvedValueOnce({ rows: [] })
-          // 14: DELETE footer_nav_items
-          .mockResolvedValueOnce({ rows: [] })
-          // 15: INSERT footer nav item (About)
-          .mockResolvedValueOnce({ rows: [] })
-          // 16: INSERT footer nav item (Posts)
-          .mockResolvedValueOnce({ rows: [] })
-          // 17: INSERT footer_rels (About ref)
-          .mockResolvedValueOnce({ rows: [] }),
+          .mockResolvedValueOnce({ id: 10 }) // About page
+          .mockResolvedValueOnce({ id: 20 }), // Welcome post
+        updateGlobal: vi.fn().mockResolvedValue({}),
       }
 
-      await up({ db: mockDb as any, payload: {} as any, req: {} as any })
+      await up({ db: {} as any, payload: mockPayload as any, req: {} as any })
 
-      expect(mockDb.execute).toHaveBeenCalledTimes(17)
+      // Creates About page and Welcome post
+      expect(mockPayload.create).toHaveBeenCalledTimes(2)
+      expect(mockPayload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: 'pages',
+          data: expect.objectContaining({ title: 'About', slug: 'about' }),
+        }),
+      )
+      expect(mockPayload.create).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: 'posts',
+          data: expect.objectContaining({ title: 'Welcome to Your New Site' }),
+        }),
+      )
+
+      // Updates header and footer globals
+      expect(mockPayload.updateGlobal).toHaveBeenCalledTimes(2)
+      expect(mockPayload.updateGlobal).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: 'header' }),
+      )
+      expect(mockPayload.updateGlobal).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: 'footer' }),
+      )
     })
   })
 
   describe('down', () => {
     it('cleans up all seed content', async () => {
-      const mockDb = {
-        execute: vi.fn().mockResolvedValue({ rows: [] }),
+      const mockPayload = {
+        find: vi
+          .fn()
+          .mockResolvedValueOnce({ docs: [{ id: 20 }] }) // post
+          .mockResolvedValueOnce({ docs: [{ id: 10 }] }), // about page
+        delete: vi.fn().mockResolvedValue({}),
+        updateGlobal: vi.fn().mockResolvedValue({}),
       }
-      await down({ db: mockDb as any, payload: {} as any, req: {} as any })
+      await down({ db: {} as any, payload: mockPayload as any, req: {} as any })
 
-      // footer rels, footer nav items, footer newsletter update,
-      // header rels, header nav items, delete post, delete about page
-      expect(mockDb.execute).toHaveBeenCalledTimes(7)
+      expect(mockPayload.updateGlobal).toHaveBeenCalledTimes(2)
+      expect(mockPayload.delete).toHaveBeenCalledTimes(2)
     })
   })
 
