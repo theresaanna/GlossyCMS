@@ -1,7 +1,6 @@
 import type { TaskConfig } from 'payload'
 import {
   createVercelProject,
-  connectGitRepo,
   createVercelStorage,
   linkStorageToProject,
   setVercelEnvVars,
@@ -63,23 +62,20 @@ export const provisionSiteTask: TaskConfig<{
     })
 
     try {
-      // 1. Create Vercel project
-      const project = await createVercelProject(projectName)
+      // 1. Create Vercel project with connected GitHub repo
+      const project = await createVercelProject(projectName, SOURCE_REPO)
 
-      // 2. Connect to shared GitHub repo
-      await connectGitRepo(project.id, SOURCE_REPO)
-
-      // 3. Create Postgres database
+      // 2. Create Postgres database
       const pgStore = await createVercelStorage('postgres', `${subdomain}-db`)
 
-      // 4. Create Blob store
+      // 3. Create Blob store
       const blobStore = await createVercelStorage('blob', `${subdomain}-blob`)
 
-      // 5. Link storage to project (auto-injects POSTGRES_URL, BLOB_READ_WRITE_TOKEN)
+      // 4. Link storage to project (auto-injects POSTGRES_URL, BLOB_READ_WRITE_TOKEN)
       await linkStorageToProject(pgStore.id, project.id)
       await linkStorageToProject(blobStore.id, project.id)
 
-      // 6. Set remaining environment variables
+      // 5. Set remaining environment variables
       await setVercelEnvVars(project.id, {
         PAYLOAD_SECRET: generateSecret(),
         CRON_SECRET: generateSecret(),
@@ -92,13 +88,13 @@ export const provisionSiteTask: TaskConfig<{
         NEXT_PUBLIC_SERVER_URL: `https://${domain}`,
       })
 
-      // 7. Add custom domain
+      // 6. Add custom domain
       await addVercelDomain(project.id, domain)
 
-      // 8. Trigger deployment
+      // 7. Trigger deployment
       await triggerVercelDeploy(project.id)
 
-      // 9. Update record to active
+      // 8. Update record to active
       await req.payload.update({
         collection: 'provisioned-sites',
         id: siteId,
