@@ -106,7 +106,7 @@ export const provisionSiteTask: TaskConfig<{
       await addVercelDomain(project.id, domain)
 
       // 6. Trigger deployment
-      await triggerVercelDeploy(project.id)
+      await triggerVercelDeploy(project.id, project.link?.repoId)
 
       // 7. Update record to active
       await req.payload.update({
