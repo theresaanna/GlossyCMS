@@ -44,13 +44,43 @@ describe('Migration: 20260222_010000_seed_default_content', () => {
       )
 
       // Updates header and footer globals
-      expect(mockPayload.updateGlobal).toHaveBeenCalledTimes(2)
       expect(mockPayload.updateGlobal).toHaveBeenCalledWith(
         expect.objectContaining({ slug: 'header' }),
       )
       expect(mockPayload.updateGlobal).toHaveBeenCalledWith(
         expect.objectContaining({ slug: 'footer' }),
       )
+    })
+
+    it('populates site settings from env vars when available', async () => {
+      const originalSiteName = process.env.SITE_NAME
+      const originalSiteDesc = process.env.SITE_DESCRIPTION
+      process.env.SITE_NAME = 'My Cool Site'
+      process.env.SITE_DESCRIPTION = 'A cool description'
+
+      const mockPayload = {
+        find: vi.fn().mockResolvedValueOnce({ docs: [] }),
+        create: vi
+          .fn()
+          .mockResolvedValueOnce({ id: 10 })
+          .mockResolvedValueOnce({ id: 20 }),
+        updateGlobal: vi.fn().mockResolvedValue({}),
+      }
+
+      await up({ db: {} as any, payload: mockPayload as any, req: {} as any })
+
+      expect(mockPayload.updateGlobal).toHaveBeenCalledWith(
+        expect.objectContaining({
+          slug: 'site-settings',
+          data: expect.objectContaining({
+            siteTitle: 'My Cool Site',
+            siteDescription: 'A cool description',
+          }),
+        }),
+      )
+
+      process.env.SITE_NAME = originalSiteName
+      process.env.SITE_DESCRIPTION = originalSiteDesc
     })
   })
 
@@ -66,7 +96,10 @@ describe('Migration: 20260222_010000_seed_default_content', () => {
       }
       await down({ db: {} as any, payload: mockPayload as any, req: {} as any })
 
-      expect(mockPayload.updateGlobal).toHaveBeenCalledTimes(2)
+      expect(mockPayload.updateGlobal).toHaveBeenCalledTimes(3)
+      expect(mockPayload.updateGlobal).toHaveBeenCalledWith(
+        expect.objectContaining({ slug: 'site-settings' }),
+      )
       expect(mockPayload.delete).toHaveBeenCalledTimes(2)
     })
   })

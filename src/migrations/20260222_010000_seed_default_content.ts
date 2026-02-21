@@ -191,7 +191,24 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
     },
   })
 
-  // ─── 3. Populate Header nav ───
+  // ─── 3. Populate Site Settings from signup form (passed as env vars) ───
+
+  const siteName = process.env.SITE_NAME || undefined
+  const siteDescription = process.env.SITE_DESCRIPTION || undefined
+
+  if (siteName || siteDescription) {
+    await payload.updateGlobal({
+      slug: 'site-settings',
+      context: { disableRevalidate: true },
+      req,
+      data: {
+        ...(siteName ? { siteTitle: siteName } : {}),
+        ...(siteDescription ? { siteDescription } : {}),
+      },
+    })
+  }
+
+  // ─── 4. Populate Header nav ───
 
   await payload.updateGlobal({
     slug: 'header',
@@ -221,7 +238,7 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
     },
   })
 
-  // ─── 4. Populate Footer nav + newsletter ───
+  // ─── 5. Populate Footer nav + newsletter ───
 
   await payload.updateGlobal({
     slug: 'footer',
@@ -255,14 +272,24 @@ export async function up({ db, payload, req }: MigrateUpArgs): Promise<void> {
 }
 
 export async function down({ db, payload, req }: MigrateDownArgs): Promise<void> {
-  // 1. Clear header nav
+  // 1. Clear site settings
+  await payload.updateGlobal({
+    slug: 'site-settings',
+    req,
+    data: {
+      siteTitle: null,
+      siteDescription: null,
+    },
+  })
+
+  // 2. Clear header nav
   await payload.updateGlobal({
     slug: 'header',
     req,
     data: { navItems: [] },
   })
 
-  // 2. Clear footer nav + newsletter
+  // 3. Clear footer nav + newsletter
   await payload.updateGlobal({
     slug: 'footer',
     req,
@@ -273,7 +300,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
     },
   })
 
-  // 3. Delete welcome post
+  // 4. Delete welcome post
   const posts = await payload.find({
     collection: 'posts',
     where: { slug: { equals: 'welcome-to-your-new-site' } },
@@ -285,7 +312,7 @@ export async function down({ db, payload, req }: MigrateDownArgs): Promise<void>
     await payload.delete({ collection: 'posts', id: doc.id, req })
   }
 
-  // 4. Delete About page
+  // 5. Delete About page
   const pages = await payload.find({
     collection: 'pages',
     where: { slug: { equals: 'about' } },
