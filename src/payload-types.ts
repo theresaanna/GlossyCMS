@@ -592,6 +592,7 @@ export interface ContentBlock {
  */
 export interface MediaBlock {
   media: number | Media;
+  size?: ('small' | 'medium' | 'large' | 'full') | null;
   id?: string | null;
   blockName?: string | null;
   blockType: 'mediaBlock';
@@ -1400,6 +1401,7 @@ export interface ContentBlockSelect<T extends boolean = true> {
  */
 export interface MediaBlockSelect<T extends boolean = true> {
   media?: T;
+  size?: T;
   id?: T;
   blockName?: T;
 }
@@ -2107,11 +2109,11 @@ export interface SiteSetting {
   /**
    * The color scheme used when the site is in light mode.
    */
-  colorSchemeLight?: ('default' | 'eggplant') | null;
+  colorSchemeLight?: ('default' | 'eggplant' | 'ocean' | 'spring' | '80s') | null;
   /**
    * The color scheme used when the site is in dark mode.
    */
-  colorSchemeDark?: ('default' | 'eggplant') | null;
+  colorSchemeDark?: ('default' | 'eggplant' | 'ocean' | 'autumn' | '80s') | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }
