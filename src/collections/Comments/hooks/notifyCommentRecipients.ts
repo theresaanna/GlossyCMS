@@ -57,115 +57,125 @@ export const notifyCommentRecipients: CollectionAfterChangeHook<Comment> = async
   operation,
   req: { payload },
 }) => {
-  if (operation !== 'create') return doc
-
-  const postId = typeof doc.post === 'object' ? doc.post.id : doc.post
-  let post: { slug?: string; title?: string; authors?: (number | { id: number; email: string })[] | null }
-
   try {
-    post = await payload.findByID({
+    payload.logger.info(`[comment-notify] Hook fired: operation=${operation}, comment=${doc.id}`)
+
+    if (operation !== 'create') return doc
+
+    const postId = typeof doc.post === 'object' ? doc.post.id : doc.post
+    payload.logger.info(`[comment-notify] Processing new comment ${doc.id} for post ${postId}`)
+
+    const post = await payload.findByID({
       collection: 'posts',
       id: postId,
       overrideAccess: true,
       depth: 0,
     })
-  } catch (err) {
-    payload.logger.error(`[comment-notify] Failed to fetch post ${postId}: ${err}`)
-    return doc
-  }
 
-  if (!post?.slug) return doc
+    if (!post?.slug) {
+      payload.logger.info(`[comment-notify] Post ${postId} has no slug, skipping`)
+      return doc
+    }
 
-  const baseUrl = getServerSideURL()
-  const commentUrl = `${baseUrl}/posts/${post.slug}#comment-${doc.id}`
-  const postTitle = post.title || 'Untitled Post'
-  const commentAuthorEmail = doc.authorEmail?.toLowerCase()
+    payload.logger.info(
+      `[comment-notify] Post found: "${post.title}" (${post.slug}), authors: ${JSON.stringify(post.authors)}`,
+    )
 
-  // Collect post author emails
-  const postAuthorEmails = new Set<string>()
-  if (post.authors && Array.isArray(post.authors)) {
-    for (const author of post.authors) {
-      const authorId = typeof author === 'object' ? author.id : author
+    const baseUrl = getServerSideURL()
+    const commentUrl = `${baseUrl}/posts/${post.slug}#comment-${doc.id}`
+    const postTitle = post.title || 'Untitled Post'
+    const commentAuthorEmail = doc.authorEmail?.toLowerCase()
+
+    // Collect post author emails
+    const postAuthorEmails = new Set<string>()
+    if (post.authors && Array.isArray(post.authors)) {
+      for (const author of post.authors) {
+        const authorId = typeof author === 'object' ? author.id : author
+        try {
+          const user = await payload.findByID({
+            collection: 'users',
+            id: authorId,
+            overrideAccess: true,
+          })
+          if (user?.email) {
+            postAuthorEmails.add(user.email.toLowerCase())
+          }
+        } catch (err) {
+          payload.logger.error(`[comment-notify] Failed to fetch user ${authorId}: ${err}`)
+        }
+      }
+    }
+
+    payload.logger.info(
+      `[comment-notify] Comment ${doc.id} on post "${postTitle}": found ${postAuthorEmails.size} post author(s)`,
+    )
+
+    // Collect parent comment author email (for replies)
+    let parentAuthorEmail: string | undefined
+    if (doc.parent) {
+      const parentId = typeof doc.parent === 'object' ? doc.parent.id : doc.parent
       try {
-        const user = await payload.findByID({
-          collection: 'users',
-          id: authorId,
+        const parentComment = await payload.findByID({
+          collection: 'comments',
+          id: parentId,
           overrideAccess: true,
         })
-        if (user?.email) {
-          postAuthorEmails.add(user.email.toLowerCase())
+        if (parentComment?.authorEmail) {
+          parentAuthorEmail = parentComment.authorEmail.toLowerCase()
         }
       } catch (err) {
-        payload.logger.error(`[comment-notify] Failed to fetch user ${authorId}: ${err}`)
+        payload.logger.error(`[comment-notify] Failed to fetch parent comment ${parentId}: ${err}`)
       }
     }
-  }
 
-  payload.logger.info(
-    `[comment-notify] Comment ${doc.id} on post "${postTitle}": found ${postAuthorEmails.size} post author(s)`,
-  )
-
-  // Collect parent comment author email (for replies)
-  let parentAuthorEmail: string | undefined
-  if (doc.parent) {
-    const parentId = typeof doc.parent === 'object' ? doc.parent.id : doc.parent
-    try {
-      const parentComment = await payload.findByID({
-        collection: 'comments',
-        id: parentId,
-        overrideAccess: true,
-      })
-      if (parentComment?.authorEmail) {
-        parentAuthorEmail = parentComment.authorEmail.toLowerCase()
+    // Send to post authors (excluding the comment author themselves)
+    for (const email of postAuthorEmails) {
+      if (email === commentAuthorEmail) continue
+      try {
+        await payload.sendEmail({
+          to: email,
+          subject: `New comment on "${postTitle}" from ${doc.authorName}`,
+          html: buildEmailHtml({
+            commentAuthor: doc.authorName,
+            commentBody: doc.body,
+            postTitle,
+            commentUrl,
+            isReply: false,
+          }),
+        })
+        payload.logger.info(`[comment-notify] Sent notification to post author ${email}`)
+      } catch (err) {
+        payload.logger.error(`[comment-notify] Failed to send to ${email}: ${err}`)
       }
-    } catch (err) {
-      payload.logger.error(`[comment-notify] Failed to fetch parent comment ${parentId}: ${err}`)
     }
-  }
 
-  // Send to post authors (excluding the comment author themselves)
-  for (const email of postAuthorEmails) {
-    if (email === commentAuthorEmail) continue
-    try {
-      await payload.sendEmail({
-        to: email,
-        subject: `New comment on "${postTitle}" from ${doc.authorName}`,
-        html: buildEmailHtml({
-          commentAuthor: doc.authorName,
-          commentBody: doc.body,
-          postTitle,
-          commentUrl,
-          isReply: false,
-        }),
-      })
-      payload.logger.info(`[comment-notify] Sent notification to post author ${email}`)
-    } catch (err) {
-      payload.logger.error(`[comment-notify] Failed to send to ${email}: ${err}`)
+    // Send to parent comment author (if it's a reply and not already notified as post author)
+    if (
+      parentAuthorEmail &&
+      parentAuthorEmail !== commentAuthorEmail &&
+      !postAuthorEmails.has(parentAuthorEmail)
+    ) {
+      try {
+        await payload.sendEmail({
+          to: parentAuthorEmail,
+          subject: `${doc.authorName} replied to your comment on "${postTitle}"`,
+          html: buildEmailHtml({
+            commentAuthor: doc.authorName,
+            commentBody: doc.body,
+            postTitle,
+            commentUrl,
+            isReply: true,
+          }),
+        })
+        payload.logger.info(`[comment-notify] Sent reply notification to ${parentAuthorEmail}`)
+      } catch (err) {
+        payload.logger.error(
+          `[comment-notify] Failed to send reply notification to ${parentAuthorEmail}: ${err}`,
+        )
+      }
     }
-  }
-
-  // Send to parent comment author (if it's a reply and not already notified as post author)
-  if (
-    parentAuthorEmail &&
-    parentAuthorEmail !== commentAuthorEmail &&
-    !postAuthorEmails.has(parentAuthorEmail)
-  ) {
-    try {
-      await payload.sendEmail({
-        to: parentAuthorEmail,
-        subject: `${doc.authorName} replied to your comment on "${postTitle}"`,
-        html: buildEmailHtml({
-          commentAuthor: doc.authorName,
-          commentBody: doc.body,
-          postTitle,
-          commentUrl,
-          isReply: true,
-        }),
-      })
-      payload.logger.info(`[comment-notify] Sent reply notification to ${parentAuthorEmail}`)
-    } catch (err) {
-      payload.logger.error(`[comment-notify] Failed to send reply notification to ${parentAuthorEmail}: ${err}`)
-    }
+  } catch (err) {
+    payload.logger.error(`[comment-notify] Unexpected error: ${err}`)
   }
 
   return doc
