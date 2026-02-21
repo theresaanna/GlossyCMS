@@ -138,4 +138,39 @@ describe('SiteBanner', () => {
     const images = screen.getAllByRole('img')
     expect(images).toHaveLength(2)
   })
+
+  describe('admin link behavior', () => {
+    it('avatar links to "/" when isAdmin is false', () => {
+      render(<SiteBanner siteTitle="Test" />)
+      const link = screen.getByRole('link')
+      expect(link.getAttribute('href')).toBe('/')
+    })
+
+    it('avatar links to "/" when isAdmin is undefined', () => {
+      render(<SiteBanner siteTitle="Test" isAdmin={undefined} />)
+      const link = screen.getByRole('link')
+      expect(link.getAttribute('href')).toBe('/')
+    })
+
+    it('avatar links to admin site settings when isAdmin is true', () => {
+      render(<SiteBanner siteTitle="Test" isAdmin={true} />)
+      const link = screen.getByRole('link')
+      expect(link.getAttribute('href')).toBe('/admin/globals/site-settings')
+    })
+
+    it('shows gear icon when isAdmin is true', () => {
+      render(<SiteBanner siteTitle="Test" isAdmin={true} />)
+      expect(screen.getByTestId('admin-settings-icon')).toBeDefined()
+    })
+
+    it('does not show gear icon when isAdmin is false', () => {
+      render(<SiteBanner siteTitle="Test" isAdmin={false} />)
+      expect(screen.queryByTestId('admin-settings-icon')).toBeNull()
+    })
+
+    it('does not show gear icon when isAdmin is undefined', () => {
+      render(<SiteBanner siteTitle="Test" />)
+      expect(screen.queryByTestId('admin-settings-icon')).toBeNull()
+    })
+  })
 })

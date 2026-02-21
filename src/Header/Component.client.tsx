@@ -11,6 +11,7 @@ import { SiteBanner, type SiteBannerProps } from '@/components/SiteBanner'
 
 interface HeaderClientProps extends SiteBannerProps {
   data: Header
+  isAdmin?: boolean
 }
 
 export const HeaderClient: React.FC<HeaderClientProps> = ({
@@ -18,6 +19,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
   headerImage,
   userImage,
   siteTitle,
+  isAdmin,
 }) => {
   /* Storing the value in a useState to avoid hydration errors */
   const [theme, setTheme] = useState<string | null>(null)
@@ -40,6 +42,7 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
         headerImage={headerImage}
         userImage={userImage}
         siteTitle={siteTitle}
+        isAdmin={isAdmin}
       />
       <div className="container py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
         {siteTitle && (
