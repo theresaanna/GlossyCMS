@@ -54,10 +54,15 @@ describe('Migration: 20260220_170000_add_site_meta_fields', () => {
       expect(migration!.down).toBeDefined()
     })
 
-    it('is the last migration in the list', async () => {
+    it('is positioned after add_media_block_size', async () => {
       const { migrations } = await import('../index')
-      const lastMigration = migrations[migrations.length - 1]
-      expect(lastMigration.name).toBe('20260220_170000_add_site_meta_fields')
+      const thisIndex = migrations.findIndex(
+        (m) => m.name === '20260220_170000_add_site_meta_fields',
+      )
+      const prevIndex = migrations.findIndex(
+        (m) => m.name === '20260220_160000_add_media_block_size',
+      )
+      expect(thisIndex).toBeGreaterThan(prevIndex)
     })
   })
 })

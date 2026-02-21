@@ -84,5 +84,12 @@ export const homeStatic: RequiredDataFromCollectionSlug<'pages'> = {
     title: 'Home',
   },
   title: 'Home',
-  layout: [],
+  layout: [
+    {
+      blockType: 'socialMedia',
+      blockName: 'Social Media',
+      header: 'Follow Us',
+      platforms: [],
+    },
+  ],
 }
