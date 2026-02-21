@@ -304,7 +304,7 @@
 [data-theme='dark'][data-color-scheme-dark='cherry'] {
   --background: oklch(32.3% 0.009 285.8deg);
   --foreground: oklch(92.0% 0.008 25deg);
-  --card: oklch(38.0% 0.020 25deg);
+  --card: oklch(30.0% 0.080 25deg);
   --card-foreground: oklch(92.0% 0.008 25deg);
   --popover: oklch(32.3% 0.009 285.8deg);
   --popover-foreground: oklch(92.0% 0.008 25deg);
