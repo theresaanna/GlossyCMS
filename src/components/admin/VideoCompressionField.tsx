@@ -34,14 +34,16 @@ const VideoCompressionField: React.FC = () => {
       setError(null)
 
       try {
-        // Read the file bytes once so we can create independent clones.
-        // Each FFmpeg operation consumes the File via fetchFile(), so we
-        // need a fresh File object per operation to avoid stalling.
-        const fileBytes = await file.arrayBuffer()
+        // Use file.slice() instead of file.arrayBuffer() to create clones.
+        // Payload's client upload handler streams the original File to Vercel
+        // Blob concurrently — calling arrayBuffer() on it locks the underlying
+        // data and stalls the upload. slice() creates a lightweight Blob
+        // reference without reading the bytes, so both can proceed.
+        const thumbClone = new File([file.slice()], file.name, { type: file.type })
+        const compressSource = new File([file.slice()], file.name, { type: file.type })
 
         // Extract thumbnail first (works even for small files that skip compression)
         setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
-        const thumbClone = new File([fileBytes.slice(0)], file.name, { type: file.type })
         const thumbnailFile = await extractVideoThumbnail(thumbClone, { timestamp: 1, width: 500 })
 
         // Upload thumbnail via API
@@ -75,8 +77,7 @@ const VideoCompressionField: React.FC = () => {
           return
         }
 
-        const compressClone = new File([fileBytes.slice(0)], file.name, { type: file.type })
-        const result = await compressVideo(compressClone, setProgress)
+        const result = await compressVideo(compressSource, setProgress)
 
         // Mark the compressed file so we don't re-process it
         processedFilesRef.current.add(result.compressedFile)
