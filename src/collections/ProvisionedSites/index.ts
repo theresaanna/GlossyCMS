@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
+import { teardownProvisionedSite } from './hooks/teardownProvisionedSite'
 import { validateSubdomain } from './hooks/validateSubdomain'
 
 export const ProvisionedSites: CollectionConfig = {
@@ -103,6 +104,7 @@ export const ProvisionedSites: CollectionConfig = {
     },
   ],
   hooks: {
+    afterDelete: [teardownProvisionedSite],
     beforeValidate: [validateSubdomain],
   },
   timestamps: true,

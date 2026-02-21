@@ -290,6 +290,22 @@ export async function triggerVercelDeploy(
   return response.json()
 }
 
+export async function deleteVercelProject(projectId: string): Promise<void> {
+  const response = await vercelFetch(`/v9/projects/${encodeURIComponent(projectId)}`, {
+    method: 'DELETE',
+  })
+
+  if (response.status === 404) {
+    // Already deleted — nothing to do
+    return
+  }
+
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(`Failed to delete Vercel project "${projectId}": ${JSON.stringify(error)}`)
+  }
+}
+
 export function generateSecret(): string {
   return crypto.randomBytes(32).toString('hex')
 }
