@@ -71,7 +71,7 @@
 
   @variant lg {
     .container {
-      max-width: var(--breakpoint-lg);
+      max-width: 70%;
     }
   }
 

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { up, down } from '../20260220_160000_add_media_block_size'
+import { up, down } from '../20260220_170000_add_site_meta_fields'
 
-describe('Migration: 20260220_160000_add_media_block_size', () => {
+describe('Migration: 20260220_170000_add_site_meta_fields', () => {
   const createMockDb = () => {
     const executedStatements: string[] = []
     return {
@@ -47,22 +47,17 @@ describe('Migration: 20260220_160000_add_media_block_size', () => {
     it('is included in the migrations array', async () => {
       const { migrations } = await import('../index')
       const migration = migrations.find(
-        (m) => m.name === '20260220_160000_add_media_block_size',
+        (m) => m.name === '20260220_170000_add_site_meta_fields',
       )
       expect(migration).toBeDefined()
       expect(migration!.up).toBeDefined()
       expect(migration!.down).toBeDefined()
     })
 
-    it('appears before 20260220_170000_add_site_meta_fields in the list', async () => {
+    it('is the last migration in the list', async () => {
       const { migrations } = await import('../index')
-      const thisIndex = migrations.findIndex(
-        (m) => m.name === '20260220_160000_add_media_block_size',
-      )
-      const nextIndex = migrations.findIndex(
-        (m) => m.name === '20260220_170000_add_site_meta_fields',
-      )
-      expect(thisIndex).toBeLessThan(nextIndex)
+      const lastMigration = migrations[migrations.length - 1]
+      expect(lastMigration.name).toBe('20260220_170000_add_site_meta_fields')
     })
   })
 })

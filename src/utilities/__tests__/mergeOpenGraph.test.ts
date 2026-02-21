@@ -22,8 +22,8 @@ describe('mergeOpenGraph', () => {
     const { mergeOpenGraph } = await import('../mergeOpenGraph')
     const result = mergeOpenGraph()
 
-    expect(result?.siteName).toBe('GlossyCMS')
-    expect(result?.title).toBe('GlossyCMS')
+    expect(result?.siteName).toBe('Glossy')
+    expect(result?.title).toBe('Glossy')
   })
 
   it('uses SITE_NAME env var when set', async () => {
@@ -42,7 +42,7 @@ describe('mergeOpenGraph', () => {
     const { mergeOpenGraph } = await import('../mergeOpenGraph')
     const result = mergeOpenGraph()
 
-    expect(result?.description).toBe('A website powered by GlossyCMS.')
+    expect(result?.description).toBe('A website powered by Glossy.')
   })
 
   it('uses SITE_DESCRIPTION env var when set', async () => {
@@ -66,7 +66,7 @@ describe('mergeOpenGraph', () => {
     expect(result?.title).toBe('Custom Title')
     expect(result?.description).toBe('Custom description')
     // siteName should still come from default since it wasn't overridden
-    expect(result?.siteName).toBe('GlossyCMS')
+    expect(result?.siteName).toBe('Glossy')
   })
 
   it('uses custom images when provided', async () => {
@@ -83,5 +83,37 @@ describe('mergeOpenGraph', () => {
     const result = mergeOpenGraph()
 
     expect(result?.images).toEqual([{ url: 'http://localhost:3000/website-template-OG.webp' }])
+  })
+
+  it('uses defaults parameter when provided', async () => {
+    delete process.env.SITE_NAME
+    delete process.env.SITE_DESCRIPTION
+
+    const { mergeOpenGraph } = await import('../mergeOpenGraph')
+    const result = mergeOpenGraph(undefined, {
+      siteName: 'My DB Site',
+      siteDescription: 'From the database',
+      ogImageUrl: 'http://localhost:3000/db-og.png',
+    })
+
+    expect(result?.siteName).toBe('My DB Site')
+    expect(result?.title).toBe('My DB Site')
+    expect(result?.description).toBe('From the database')
+    expect(result?.images).toEqual([{ url: 'http://localhost:3000/db-og.png' }])
+  })
+
+  it('defaults parameter takes priority over env vars', async () => {
+    process.env.SITE_NAME = 'Env Site'
+    process.env.SITE_DESCRIPTION = 'Env description'
+
+    const { mergeOpenGraph } = await import('../mergeOpenGraph')
+    const result = mergeOpenGraph(undefined, {
+      siteName: 'DB Site',
+      siteDescription: 'DB description',
+      ogImageUrl: 'http://localhost:3000/db-og.png',
+    })
+
+    expect(result?.siteName).toBe('DB Site')
+    expect(result?.description).toBe('DB description')
   })
 })

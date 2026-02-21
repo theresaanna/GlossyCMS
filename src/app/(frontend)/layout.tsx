@@ -21,6 +21,7 @@ import { Providers } from '@/providers'
 import { InitTheme } from '@/providers/Theme/InitTheme'
 import { AgeGateProvider, AgeGateModal } from '@/plugins/ageGate'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
+import { getSiteMetaDefaults } from '@/utilities/getSiteMetaDefaults'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import type { AdultContent as AdultContentType, SiteSetting } from '@/payload-types'
 import { draftMode } from 'next/headers'
@@ -82,11 +83,15 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   )
 }
 
-export const metadata: Metadata = {
-  metadataBase: new URL(getServerSideURL()),
-  openGraph: mergeOpenGraph(),
-  twitter: {
-    card: 'summary_large_image',
-    creator: process.env.TWITTER_HANDLE || '',
-  },
+export async function generateMetadata(): Promise<Metadata> {
+  const defaults = await getSiteMetaDefaults()
+
+  return {
+    metadataBase: new URL(getServerSideURL()),
+    openGraph: mergeOpenGraph(undefined, defaults),
+    twitter: {
+      card: 'summary_large_image',
+      creator: process.env.TWITTER_HANDLE || '',
+    },
+  }
 }

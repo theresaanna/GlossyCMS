@@ -30,6 +30,22 @@ export const SiteSettings: GlobalConfig = {
       },
     },
     {
+      name: 'siteDescription',
+      type: 'textarea',
+      admin: {
+        description: 'A short description of your site used in search results and social previews.',
+      },
+    },
+    {
+      name: 'ogImage',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Default image used for social media previews when no page-specific image is set.',
+      },
+    },
+    {
       name: 'headerImage',
       type: 'upload',
       relationTo: 'media',

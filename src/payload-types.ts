@@ -2099,6 +2099,14 @@ export interface SiteSetting {
    */
   siteTitle?: string | null;
   /**
+   * A short description of your site used in search results and social previews.
+   */
+  siteDescription?: string | null;
+  /**
+   * Default image used for social media previews when no page-specific image is set.
+   */
+  ogImage?: (number | null) | Media;
+  /**
    * A header/banner image for your site.
    */
   headerImage?: (number | null) | Media;
@@ -2196,6 +2204,8 @@ export interface AdultContentSelect<T extends boolean = true> {
  */
 export interface SiteSettingsSelect<T extends boolean = true> {
   siteTitle?: T;
+  siteDescription?: T;
+  ogImage?: T;
   headerImage?: T;
   userImage?: T;
   colorSchemeLight?: T;
