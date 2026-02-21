@@ -48,7 +48,7 @@ async function getIntegrationConfigurations(): Promise<
 > {
   if (cachedConfigurations) return cachedConfigurations
 
-  const response = await vercelFetch('/v1/integrations/configurations')
+  const response = await vercelFetch('/v1/integrations/configurations?view=account')
   if (!response.ok) {
     const error = await response.json()
     throw new Error(`Failed to list integration configurations: ${JSON.stringify(error)}`)
