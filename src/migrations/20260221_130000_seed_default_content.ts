@@ -9,30 +9,7 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
     return
   }
 
-  // ─── 1. Add platform entries to home page social media block ───
-
-  const smBlock = await db.execute(sql`
-    SELECT sm.id FROM pages_blocks_social_media sm
-    JOIN pages p ON sm._parent_id = p.id
-    WHERE p.slug = 'home'
-    LIMIT 1
-  `)
-
-  if (smBlock.rows.length > 0) {
-    const smBlockId = smBlock.rows[0].id
-
-    await db.execute(sql`
-      INSERT INTO pages_blocks_social_media_platforms (
-        _order, _parent_id, id, platform, username, notes
-      ) VALUES
-      (0, ${smBlockId}, gen_random_uuid()::text, 'instagram', 'yourname',
-       'Visit /admin to create your first admin account'),
-      (1, ${smBlockId}, gen_random_uuid()::text, 'x', 'yourname',
-       'Visit /admin/globals/site-settings to configure your site title and settings')
-    `)
-  }
-
-  // ─── 2. Create About page ───
+  // ─── 1. Create About page ───
 
   const aboutHeroRichText = JSON.stringify({
     root: {
@@ -327,14 +304,4 @@ export async function down({ db }: MigrateDownArgs): Promise<void> {
 
   // 4. Delete About page (cascade handles block child rows)
   await db.execute(sql`DELETE FROM pages WHERE slug = 'about'`)
-
-  // 5. Delete social media platforms from home page
-  await db.execute(sql`
-    DELETE FROM pages_blocks_social_media_platforms
-    WHERE _parent_id IN (
-      SELECT sm.id FROM pages_blocks_social_media sm
-      JOIN pages p ON sm._parent_id = p.id
-      WHERE p.slug = 'home'
-    )
-  `)
 }
