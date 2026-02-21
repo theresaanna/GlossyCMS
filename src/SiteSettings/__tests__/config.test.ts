@@ -88,7 +88,8 @@ describe('SiteSettings global config', () => {
     expect(fieldNames).toContain('userImage')
     expect(fieldNames).toContain('colorSchemeLight')
     expect(fieldNames).toContain('colorSchemeDark')
-    expect(fieldNames).toHaveLength(5)
+    expect(fieldNames).toContain('colorSchemeReloader')
+    expect(fieldNames).toHaveLength(6)
   })
 
   it('has an afterChange hook for revalidation', () => {
