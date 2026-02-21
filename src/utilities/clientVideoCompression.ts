@@ -63,8 +63,11 @@ export async function compressVideo(
 
   const ffmpeg = await loadFFmpeg()
 
+  // FFmpeg's progress value can plateau during the faststart moov-atom
+  // relocation pass. We cap the encoding portion at 90% and reserve the
+  // last 10% for the finalisation step so the bar never appears stuck.
   ffmpeg.on('progress', ({ progress }) => {
-    const pct = Math.min(Math.round(progress * 100), 99)
+    const pct = Math.min(Math.round(progress * 90), 90)
     onProgress?.({ phase: 'compressing', percent: pct, message: `Compressing: ${pct}%` })
   })
 
@@ -82,7 +85,7 @@ export async function compressVideo(
       '-c:v',
       'libx264',
       '-preset',
-      'medium',
+      'fast',
       '-crf',
       '28',
       '-maxrate',
@@ -101,6 +104,8 @@ export async function compressVideo(
       '+faststart',
       outputName,
     ])
+
+    onProgress?.({ phase: 'compressing', percent: 95, message: 'Finalising...' })
 
     const data = await ff.readFile(outputName)
     const uint8 = data as Uint8Array
@@ -122,7 +127,7 @@ export async function compressVideo(
       terminateFFmpeg()
       const freshFfmpeg = await loadFFmpeg()
       freshFfmpeg.on('progress', ({ progress }) => {
-        const pct = Math.min(Math.round(progress * 100), 99)
+        const pct = Math.min(Math.round(progress * 90), 90)
         onProgress?.({ phase: 'compressing', percent: pct, message: `Compressing: ${pct}%` })
       })
       compressedFile = await runCompression(freshFfmpeg)
