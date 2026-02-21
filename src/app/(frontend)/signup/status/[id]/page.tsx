@@ -3,7 +3,6 @@ import { notFound } from 'next/navigation'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 import { getSiteMetaDefaults } from '@/utilities/getSiteMetaDefaults'
-import themeConfig from '@/theme.config'
 import { ProvisioningStatus } from './ProvisioningStatus'
 
 type Args = {
@@ -38,10 +37,8 @@ export default async function StatusPage({ params }: Args) {
     notFound()
   }
 
-  const { PageLayout } = themeConfig.layouts
-
   return (
-    <PageLayout>
+    <article className="pt-4 pb-24">
       <div className="container py-16">
         <div className="max-w-xl mx-auto">
           <ProvisioningStatus
@@ -52,7 +49,7 @@ export default async function StatusPage({ params }: Args) {
           />
         </div>
       </div>
-    </PageLayout>
+    </article>
   )
 }
 

@@ -1,7 +1,6 @@
 import type { Metadata } from 'next/types'
 import { notFound } from 'next/navigation'
 import { getSiteMetaDefaults } from '@/utilities/getSiteMetaDefaults'
-import themeConfig from '@/theme.config'
 import { SignupForm } from './SignupForm'
 
 export default async function SignupPage() {
@@ -9,10 +8,8 @@ export default async function SignupPage() {
     notFound()
   }
 
-  const { PageLayout } = themeConfig.layouts
-
   return (
-    <PageLayout>
+    <article className="pt-4 pb-24">
       <div className="container py-16">
         <div className="max-w-xl mx-auto">
           <div className="prose dark:prose-invert max-w-none mb-8">
@@ -25,7 +22,7 @@ export default async function SignupPage() {
           <SignupForm />
         </div>
       </div>
-    </PageLayout>
+    </article>
   )
 }
 
