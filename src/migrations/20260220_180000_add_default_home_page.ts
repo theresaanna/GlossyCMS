@@ -109,11 +109,10 @@ export async function up({ db }: MigrateUpArgs): Promise<void> {
   if (smBlockId) {
     await db.execute(sql`
       INSERT INTO pages_blocks_social_media_platforms (
-        _order, _parent_id, id, platform, custom_label, custom_url, notes
+        _order, _parent_id, id, platform, custom_label, custom_url
       ) VALUES (
         0, ${smBlockId}, gen_random_uuid()::text, 'other', 'Cash App',
-        'https://cash.app/$annaadorable',
-        'If you like Glossy, please feel free to show your appreciation with a tip. Thank you.'
+        'https://cash.app/$annaadorable'
       )
     `)
   }
