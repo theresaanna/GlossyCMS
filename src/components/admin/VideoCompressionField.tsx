@@ -2,12 +2,8 @@
 
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { useField, useForm } from '@payloadcms/ui'
-import {
-  compressVideo,
-  extractVideoThumbnail,
-  terminateFFmpeg,
-  type CompressionProgress,
-} from '@/utilities/clientVideoCompression'
+import { compressVideo, type CompressionProgress } from '@/utilities/clientVideoCompression'
+import { extractVideoThumbnailCanvas } from '@/utilities/extractVideoThumbnailCanvas'
 
 const FILE_SIZE_CAP = 250 * 1024 * 1024 // 250MB
 
@@ -34,17 +30,20 @@ const VideoCompressionField: React.FC = () => {
       setError(null)
 
       try {
-        // Use file.slice() instead of file.arrayBuffer() to create clones.
+        // Use file.slice() to create a clone for compression.
         // Payload's client upload handler streams the original File to Vercel
-        // Blob concurrently — calling arrayBuffer() on it locks the underlying
-        // data and stalls the upload. slice() creates a lightweight Blob
-        // reference without reading the bytes, so both can proceed.
-        const thumbClone = new File([file.slice()], file.name, { type: file.type })
+        // Blob concurrently — slice() creates a lightweight Blob reference
+        // without reading the bytes, so both can proceed.
         const compressSource = new File([file.slice()], file.name, { type: file.type })
 
-        // Extract thumbnail first (works even for small files that skip compression)
+        // Extract thumbnail using native <video> + <canvas> APIs.
+        // This is much lighter than FFmpeg WASM and won't starve the
+        // concurrent Vercel Blob upload of CPU/memory.
         setProgress({ phase: 'loading', percent: 0, message: 'Generating thumbnail...' })
-        const thumbnailFile = await extractVideoThumbnail(thumbClone, { timestamp: 1, width: 500 })
+        const thumbnailFile = await extractVideoThumbnailCanvas(file, {
+          timestamp: 1,
+          width: 500,
+        })
 
         // Upload thumbnail via API
         const formData = new FormData()
@@ -55,9 +54,6 @@ const VideoCompressionField: React.FC = () => {
         }
         const { url } = await res.json()
         setVideoThumbnailURL(url)
-
-        // Reset FFmpeg instance between operations to prevent WASM memory corruption
-        terminateFFmpeg()
 
         // Skip compression for small files
         if (file.size < 1 * 1024 * 1024) {
