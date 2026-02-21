@@ -17,6 +17,7 @@ export const colorSchemes = [
   { value: 'ocean', label: 'Ocean', modes: ['light', 'dark'] },
   { value: 'spring', label: 'Spring', modes: ['light'] },
   { value: 'autumn', label: 'Autumn', modes: ['dark'] },
+  { value: 'cherry', label: 'Cherry', modes: ['light', 'dark'] },
   { value: '80s', label: "80's", modes: ['light', 'dark'] },
 ] as const
 
