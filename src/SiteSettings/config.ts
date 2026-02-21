@@ -73,6 +73,15 @@ export const SiteSettings: GlobalConfig = {
         },
       ],
     },
+    {
+      name: 'colorSchemeReloader',
+      type: 'ui',
+      admin: {
+        components: {
+          Field: '@/components/admin/ReloadOnColorSchemeChange',
+        },
+      },
+    },
   ],
   hooks: {
     afterChange: [revalidateSiteSettings],
