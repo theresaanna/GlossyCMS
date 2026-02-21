@@ -2,6 +2,12 @@ import crypto from 'crypto'
 
 const VERCEL_API_BASE = 'https://api.vercel.com'
 
+// Maps our storage type names to Vercel Marketplace integration slugs
+const INTEGRATION_SLUGS: Record<string, string> = {
+  postgres: 'neon',
+  blob: 'blob',
+}
+
 function getVercelHeaders(): Record<string, string> {
   const token = process.env.VERCEL_TOKEN
   if (!token) {
@@ -28,6 +34,78 @@ async function vercelFetch(path: string, options: RequestInit = {}): Promise<Res
     },
   })
   return response
+}
+
+// Cache for integration configurations to avoid repeated API calls
+let cachedConfigurations: Array<{
+  id: string
+  slug: string
+  integrationId: string
+}> | null = null
+
+async function getIntegrationConfigurations(): Promise<
+  Array<{ id: string; slug: string; integrationId: string }>
+> {
+  if (cachedConfigurations) return cachedConfigurations
+
+  const response = await vercelFetch('/v1/integrations/configurations')
+  if (!response.ok) {
+    const error = await response.json()
+    throw new Error(`Failed to list integration configurations: ${JSON.stringify(error)}`)
+  }
+
+  const data = await response.json()
+  cachedConfigurations = data
+  return data
+}
+
+async function getIntegrationConfigId(integrationSlug: string): Promise<string> {
+  const configurations = await getIntegrationConfigurations()
+  const config = configurations.find((c) => c.slug === integrationSlug)
+  if (!config) {
+    throw new Error(
+      `No "${integrationSlug}" integration found on your Vercel account. ` +
+        `Install it from the Vercel Marketplace before provisioning.`,
+    )
+  }
+  return config.id
+}
+
+// Cache for integration products keyed by configuration ID
+const cachedProducts: Record<string, Array<{ id: string; slug: string; name: string }>> = {}
+
+async function getIntegrationProductSlug(
+  configId: string,
+  type: 'postgres' | 'blob',
+): Promise<string> {
+  if (!cachedProducts[configId]) {
+    const response = await vercelFetch(`/v1/integrations/configuration/${configId}/products`)
+    if (!response.ok) {
+      const error = await response.json()
+      throw new Error(`Failed to list integration products: ${JSON.stringify(error)}`)
+    }
+    const data = await response.json()
+    cachedProducts[configId] = data.products || data
+  }
+
+  const products = cachedProducts[configId]
+
+  // Find a product matching the storage type
+  const product = products.find((p) => {
+    const lower = (p.slug || p.name || '').toLowerCase()
+    if (type === 'postgres') return lower.includes('postgres')
+    if (type === 'blob') return lower.includes('blob')
+    return false
+  })
+
+  if (!product) {
+    throw new Error(
+      `No ${type} product found for integration config "${configId}". ` +
+        `Available products: ${products.map((p) => p.slug || p.name).join(', ')}`,
+    )
+  }
+
+  return product.id || product.slug
 }
 
 export async function createVercelProject(
@@ -79,21 +157,32 @@ export async function createVercelStorage(
   // Check if store already exists
   const listResponse = await vercelFetch('/v1/storage/stores')
   if (listResponse.ok) {
-    const { stores } = await listResponse.json()
-    const existing = stores?.find(
-      (s: { name: string; type: string }) => s.name === name && s.type === type,
+    const data = await listResponse.json()
+    const stores = data.stores || data
+    const existing = (stores as Array<{ name: string; type: string; id: string }>)?.find(
+      (s) => s.name === name,
     )
     if (existing) {
       return existing
     }
   }
 
-  // Create new store
-  const response = await vercelFetch('/v1/storage/stores', {
+  // Discover the integration configuration and product for this storage type
+  const integrationSlug = INTEGRATION_SLUGS[type]
+  if (!integrationSlug) {
+    throw new Error(`Unsupported storage type: ${type}`)
+  }
+
+  const configId = await getIntegrationConfigId(integrationSlug)
+  const productSlug = await getIntegrationProductSlug(configId, type)
+
+  // Create new store via the Marketplace integration endpoint
+  const response = await vercelFetch('/v1/storage/stores/integration/direct', {
     method: 'POST',
     body: JSON.stringify({
-      type,
       name,
+      integrationConfigurationId: configId,
+      integrationProductIdOrSlug: productSlug,
     }),
   })
 
@@ -102,7 +191,9 @@ export async function createVercelStorage(
     throw new Error(`Failed to create ${type} storage "${name}": ${JSON.stringify(error)}`)
   }
 
-  return response.json()
+  const result = await response.json()
+  // The integration endpoint wraps the store in a `store` property
+  return result.store || result
 }
 
 export async function linkStorageToProject(storeId: string, projectId: string): Promise<void> {
