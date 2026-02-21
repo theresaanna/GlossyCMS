@@ -13,6 +13,7 @@ import { Posts } from './collections/Posts'
 import { Users } from './collections/Users'
 import { NewsletterRecipients } from './collections/NewsletterRecipients'
 import { Newsletters } from './collections/Newsletters'
+import { ProvisionedSites } from './collections/ProvisionedSites'
 import { AdultContent } from './AdultContent/config'
 import { Footer } from './Footer/config'
 import { Gallery } from './Gallery/config'
@@ -21,10 +22,12 @@ import { SiteSettings } from './SiteSettings/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
+import { provisionSiteTask } from './jobs/provision-site'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
 
+const isPrimaryInstance = process.env.IS_PRIMARY_INSTANCE === 'true'
 const resendKey = process.env.RESEND_API_KEY;
 if (!resendKey && process.env.NODE_ENV === 'production') {
   throw new Error('RESEND_API_KEY is not defined in environment variables');
@@ -83,7 +86,17 @@ export default buildConfig({
       connectionString: process.env.POSTGRES_URL || '',
     },
   }),
-  collections: [Pages, Posts, Media, Categories, Users, Comments, NewsletterRecipients, Newsletters],
+  collections: [
+    Pages,
+    Posts,
+    Media,
+    Categories,
+    Users,
+    Comments,
+    NewsletterRecipients,
+    Newsletters,
+    ...(isPrimaryInstance ? [ProvisionedSites] : []),
+  ],
   cors: [getServerSideURL()].filter(Boolean),
   ...(resendKey
     ? {
@@ -117,6 +130,6 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [],
+    tasks: [...(isPrimaryInstance ? [provisionSiteTask] : [])],
   },
 })
