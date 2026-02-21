@@ -176,6 +176,12 @@ export async function createVercelStorage(
   const configId = await getIntegrationConfigId(integrationSlug)
   const productSlug = await getIntegrationProductSlug(configId, type)
 
+  // Build metadata required by certain integrations (e.g. Neon requires a region)
+  const metadata: Record<string, string> = {}
+  if (type === 'postgres') {
+    metadata.region = process.env.NEON_REGION || 'aws-us-east-1'
+  }
+
   // Create new store via the Marketplace integration endpoint
   const response = await vercelFetch('/v1/storage/stores/integration/direct', {
     method: 'POST',
@@ -183,6 +189,7 @@ export async function createVercelStorage(
       name,
       integrationConfigurationId: configId,
       integrationProductIdOrSlug: productSlug,
+      ...(Object.keys(metadata).length > 0 && { metadata }),
     }),
   })
 
