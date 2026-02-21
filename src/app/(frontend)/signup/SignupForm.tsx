@@ -93,7 +93,7 @@ export const SignupForm: React.FC = () => {
             required
             minLength={3}
             maxLength={63}
-            pattern="[a-z0-9]([a-z0-9-]{1,61}[a-z0-9])?"
+            pattern="[a-z0-9]([a-z0-9\-]{1,61}[a-z0-9])?"
             placeholder="your-site"
             value={subdomain}
             onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
