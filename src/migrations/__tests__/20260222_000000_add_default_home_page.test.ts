@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { up, down } from '../20260220_180000_add_default_home_page'
+import { up, down } from '../20260222_000000_add_default_home_page'
 
-describe('Migration: 20260220_180000_add_default_home_page', () => {
+describe('Migration: 20260222_000000_add_default_home_page', () => {
   describe('up', () => {
     it('creates a home page with content and social media blocks when none exists', async () => {
       const mockPayload = {
@@ -68,7 +68,7 @@ describe('Migration: 20260220_180000_add_default_home_page', () => {
     it('is included in the migrations array', async () => {
       const { migrations } = await import('../index')
       const migration = migrations.find(
-        (m) => m.name === '20260220_180000_add_default_home_page',
+        (m) => m.name === '20260222_000000_add_default_home_page',
       )
       expect(migration).toBeDefined()
       expect(migration!.up).toBeDefined()
