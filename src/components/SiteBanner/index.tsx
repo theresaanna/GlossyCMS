@@ -66,6 +66,15 @@ export const SiteBanner: React.FC<SiteBannerProps> = ({
         ) : (
           <div className="w-full h-full bg-gradient-to-r from-primary/20 to-primary/5" />
         )}
+        {isAdmin && (
+          <Link
+            href="/admin/globals/site-settings"
+            className="absolute top-3 right-3 flex items-center justify-center w-8 h-8 rounded-full bg-background/80 backdrop-blur-sm shadow border border-border/50 hover:bg-background transition-colors group"
+            data-testid="banner-settings-icon"
+          >
+            <Settings className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+          </Link>
+        )}
       </div>
 
       {/* Avatar + title area */}
