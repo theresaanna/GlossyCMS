@@ -14,7 +14,9 @@ export async function extractVideoThumbnailCanvas(
 
   try {
     const video = document.createElement('video')
-    video.crossOrigin = 'anonymous'
+    // Do NOT set crossOrigin here — the src is a blob: URL which is
+    // same-origin by default. Setting crossOrigin = 'anonymous' would
+    // make the browser demand CORS headers that blob: URLs can't provide.
     video.muted = true
     video.playsInline = true
     video.preload = 'auto'
