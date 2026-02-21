@@ -2,6 +2,7 @@
 
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
+import { after } from 'next/server'
 import { headers } from 'next/headers'
 import {
   RESERVED_SUBDOMAINS,
@@ -124,8 +125,9 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
     input: { siteId: site.id },
   })
 
-  // Run queued jobs (non-blocking — the job runner processes in the background)
-  payload.jobs.run()
+  // Run queued jobs after the response is sent — `after()` keeps the
+  // serverless function alive so the promise isn't abandoned on Vercel.
+  after(payload.jobs.run())
 
   return { success: true, message: 'Site created.', siteId: site.id, subdomain }
 }
