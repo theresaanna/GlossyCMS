@@ -30,13 +30,25 @@ async function vercelFetch(path: string, options: RequestInit = {}): Promise<Res
   return response
 }
 
-export async function createVercelProject(name: string): Promise<{ id: string; name: string }> {
+export async function createVercelProject(
+  name: string,
+  gitRepo?: string,
+): Promise<{ id: string; name: string }> {
+  const body: Record<string, unknown> = {
+    name,
+    framework: 'nextjs',
+  }
+
+  if (gitRepo) {
+    body.gitRepository = {
+      type: 'github',
+      repo: gitRepo,
+    }
+  }
+
   const response = await vercelFetch('/v10/projects', {
     method: 'POST',
-    body: JSON.stringify({
-      name,
-      framework: 'nextjs',
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
@@ -58,24 +70,6 @@ export async function getVercelProject(name: string): Promise<{ id: string; name
     throw new Error(`Failed to get Vercel project: ${response.statusText}`)
   }
   return response.json()
-}
-
-export async function connectGitRepo(projectId: string, repo: string): Promise<void> {
-  const [owner, repoName] = repo.split('/')
-  const response = await vercelFetch(`/v10/projects/${projectId}`, {
-    method: 'PATCH',
-    body: JSON.stringify({
-      gitRepository: {
-        type: 'github',
-        repo: `${owner}/${repoName}`,
-      },
-    }),
-  })
-
-  if (!response.ok) {
-    const error = await response.json()
-    throw new Error(`Failed to connect git repo: ${JSON.stringify(error)}`)
-  }
 }
 
 export async function createVercelStorage(
