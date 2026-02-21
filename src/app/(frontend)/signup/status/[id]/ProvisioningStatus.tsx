@@ -32,7 +32,7 @@ export const ProvisioningStatus: React.FC<Props> = ({
 
   const pollStatus = useCallback(async () => {
     try {
-      const response = await fetch(`/api/provisioned-sites/${siteId}`)
+      const response = await fetch(`/api/provisioning/status/${siteId}`)
       if (!response.ok) return
       const data = await response.json()
       setStatus(data.status as SiteStatus)
