@@ -8,7 +8,7 @@ const SubscriptionNavLink: React.FC = () => {
   const { setNavOpen } = useNav()
 
   return (
-    <NavGroup label="Globals">
+    <NavGroup label="Subscription">
       <Link
         href="/admin/subscription"
         onClick={() => setNavOpen(false)}
@@ -23,7 +23,7 @@ const SubscriptionNavLink: React.FC = () => {
           transition: 'background-color 150ms ease',
         }}
       >
-        Subscription
+        Manage Subscription
       </Link>
     </NavGroup>
   )
