@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { after } from 'next/server'
 import type Stripe from 'stripe'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
@@ -67,21 +66,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       },
     })
 
-    // Queue provisioning job
+    // Queue provisioning job — it will be picked up by the status polling
+    // endpoint so the webhook can respond to Stripe immediately.
     await payload.jobs.queue({
       task: 'provision-site',
       input: { siteId: Number(siteId) },
-    })
-
-    // Run the job after the response is sent. next/server `after` keeps the
-    // serverless function alive so the work isn't killed when we return.
-    after(async () => {
-      try {
-        const p = await getPayload({ config: configPromise })
-        await p.jobs.run()
-      } catch (err) {
-        console.error('Provisioning job failed:', err)
-      }
     })
   }
 
