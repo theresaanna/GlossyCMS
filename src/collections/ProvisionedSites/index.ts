@@ -124,6 +124,14 @@ export const ProvisionedSites: CollectionConfig = {
       },
     },
     {
+      name: 'siteApiKey',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'provisioningError',
       type: 'textarea',
       admin: {

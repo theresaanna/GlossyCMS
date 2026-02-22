@@ -202,11 +202,9 @@ export const Media: CollectionConfig = {
             id,
           })) as any
 
-          if (media?.isExternalVideo && media?.url) {
-            console.log(`Would delete from Blob: ${media.url}`)
-            // Uncomment to enable deletion:
-            // const { del } = await import('@vercel/blob')
-            // await del(media.url, { token: process.env.BLOB_READ_WRITE_TOKEN })
+          if (media?.url && process.env.BLOB_READ_WRITE_TOKEN) {
+            const { del } = await import('@vercel/blob')
+            await del(media.url, { token: process.env.BLOB_READ_WRITE_TOKEN })
           }
         } catch (error) {
           console.error('Error deleting from Blob:', error)

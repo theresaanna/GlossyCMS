@@ -243,6 +243,52 @@ export async function setVercelEnvVars(
   }
 }
 
+export async function updateVercelEnvVars(
+  projectId: string,
+  vars: Record<string, string>,
+): Promise<void> {
+  // Fetch existing env vars to find IDs for the keys we need to update
+  const listResponse = await vercelFetch(`/v10/projects/${projectId}/env`)
+  if (!listResponse.ok) {
+    const error = await listResponse.json()
+    throw new Error(`Failed to list environment variables: ${JSON.stringify(error)}`)
+  }
+
+  const data = await listResponse.json()
+  const existingVars = (data.envs || data) as Array<{ id: string; key: string }>
+
+  for (const [key, value] of Object.entries(vars)) {
+    const existing = existingVars.find((v) => v.key === key)
+    if (existing) {
+      const response = await vercelFetch(`/v10/projects/${projectId}/env/${existing.id}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ value }),
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(`Failed to update env var "${key}": ${JSON.stringify(error)}`)
+      }
+    } else {
+      // Env var doesn't exist yet — create it
+      const response = await vercelFetch(`/v10/projects/${projectId}/env`, {
+        method: 'POST',
+        body: JSON.stringify([
+          {
+            key,
+            value,
+            type: 'encrypted' as const,
+            target: ['production', 'preview', 'development'],
+          },
+        ]),
+      })
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(`Failed to create env var "${key}": ${JSON.stringify(error)}`)
+      }
+    }
+  }
+}
+
 export async function addVercelDomain(projectId: string, domain: string): Promise<void> {
   const response = await vercelFetch(`/v10/projects/${projectId}/domains`, {
     method: 'POST',
