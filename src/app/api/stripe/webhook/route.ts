@@ -66,14 +66,16 @@ export async function POST(req: NextRequest): Promise<Response> {
       },
     })
 
-    // Queue provisioning job
+    // Queue provisioning job and start it without blocking the webhook response.
+    // The status page polls /api/provisioning/status/[id] to track progress.
     await payload.jobs.queue({
       task: 'provision-site',
       input: { siteId: Number(siteId) },
     })
 
-    // Run the job
-    await payload.jobs.run()
+    payload.jobs.run().catch((err) => {
+      console.error('Provisioning job failed:', err)
+    })
   }
 
   return NextResponse.json({ received: true })
