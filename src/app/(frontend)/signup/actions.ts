@@ -78,98 +78,113 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
     headersList.get('x-real-ip') ||
     'unknown'
 
-  const payload = await getPayload({ config: configPromise })
-
-  const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
-  // Rate limit by checking recent provisioned sites — a rough proxy using creation time
-  // In production, use a proper rate limiting mechanism
-  const recentSignups = await payload.find({
-    collection: 'provisioned-sites',
-    overrideAccess: true,
-    where: {
-      ownerEmail: { equals: ownerEmail },
-      createdAt: { greater_than: oneHourAgo },
-    },
-    limit: 0,
-  })
-
-  if (recentSignups.totalDocs >= 3) {
-    return { success: false, message: 'Too many signups. Please wait before trying again.' }
+  let payload
+  try {
+    payload = await getPayload({ config: configPromise })
+  } catch (error) {
+    console.error('Failed to initialize Payload:', error)
+    return { success: false, message: 'Service temporarily unavailable. Please try again.' }
   }
 
-  // Check subdomain uniqueness
-  const existing = await payload.find({
-    collection: 'provisioned-sites',
-    overrideAccess: true,
-    where: {
-      subdomain: { equals: subdomain },
-    },
-    limit: 1,
-  })
-
-  if (existing.totalDocs > 0) {
-    return { success: false, message: `The subdomain "${subdomain}" is already taken.` }
-  }
-
-  // Create the provisioned site record with pending_payment status
-  const site = await payload.create({
-    collection: 'provisioned-sites',
-    overrideAccess: true,
-    data: {
-      subdomain,
-      ownerEmail: ownerEmail.trim(),
-      ownerName: ownerName?.trim() || undefined,
-      siteName: siteName?.trim() || undefined,
-      siteDescription: siteDescription?.trim() || undefined,
-      status: 'pending_payment',
-      plan: plan as 'basic' | 'pro',
-    },
-  })
-
-  // Create Stripe Checkout session
-  const priceId =
-    plan === 'pro' ? process.env.STRIPE_PRO_PRICE_ID : process.env.STRIPE_BASIC_PRICE_ID
-
-  if (!priceId) {
-    return { success: false, message: 'Payment configuration error. Please try again later.' }
-  }
-
-  const stripe = getStripe()
-  const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
-
-  const session = await stripe.checkout.sessions.create({
-    mode: 'subscription',
-    payment_method_types: ['card'],
-    customer_email: ownerEmail.trim(),
-    line_items: [
-      {
-        price: priceId,
-        quantity: 1,
+  try {
+    const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000).toISOString()
+    // Rate limit by checking recent provisioned sites — a rough proxy using creation time
+    // In production, use a proper rate limiting mechanism
+    const recentSignups = await payload.find({
+      collection: 'provisioned-sites',
+      overrideAccess: true,
+      where: {
+        ownerEmail: { equals: ownerEmail },
+        createdAt: { greater_than: oneHourAgo },
       },
-    ],
-    metadata: {
-      siteId: String(site.id),
+      limit: 0,
+    })
+
+    if (recentSignups.totalDocs >= 3) {
+      return { success: false, message: 'Too many signups. Please wait before trying again.' }
+    }
+
+    // Check subdomain uniqueness
+    const existing = await payload.find({
+      collection: 'provisioned-sites',
+      overrideAccess: true,
+      where: {
+        subdomain: { equals: subdomain },
+      },
+      limit: 1,
+    })
+
+    if (existing.totalDocs > 0) {
+      return { success: false, message: `The subdomain "${subdomain}" is already taken.` }
+    }
+
+    // Create the provisioned site record with pending_payment status
+    const site = await payload.create({
+      collection: 'provisioned-sites',
+      overrideAccess: true,
+      data: {
+        subdomain,
+        ownerEmail: ownerEmail.trim(),
+        ownerName: ownerName?.trim() || undefined,
+        siteName: siteName?.trim() || undefined,
+        siteDescription: siteDescription?.trim() || undefined,
+        status: 'pending_payment',
+        plan: plan as 'basic' | 'pro',
+      },
+    })
+
+    // Create Stripe Checkout session
+    const priceId =
+      plan === 'pro' ? process.env.STRIPE_PRO_PRICE_ID : process.env.STRIPE_BASIC_PRICE_ID
+
+    if (!priceId) {
+      return { success: false, message: 'Payment configuration error. Please try again later.' }
+    }
+
+    const stripe = getStripe()
+    const serverUrl = process.env.NEXT_PUBLIC_SERVER_URL || 'http://localhost:3000'
+
+    const session = await stripe.checkout.sessions.create({
+      mode: 'subscription',
+      payment_method_types: ['card'],
+      customer_email: ownerEmail.trim(),
+      line_items: [
+        {
+          price: priceId,
+          quantity: 1,
+        },
+      ],
+      metadata: {
+        siteId: String(site.id),
+        subdomain,
+      },
+      success_url: `${serverUrl}/signup/status/${site.id}?session_id={CHECKOUT_SESSION_ID}`,
+      cancel_url: `${serverUrl}/signup?cancelled=true`,
+    })
+
+    // Store checkout session ID on the record
+    await payload.update({
+      collection: 'provisioned-sites',
+      id: site.id,
+      overrideAccess: true,
+      data: {
+        stripeCheckoutSessionId: session.id,
+      },
+    })
+
+    return {
+      success: true,
+      message: 'Redirecting to payment...',
+      checkoutUrl: session.url!,
+      siteId: site.id,
       subdomain,
-    },
-    success_url: `${serverUrl}/signup/status/${site.id}?session_id={CHECKOUT_SESSION_ID}`,
-    cancel_url: `${serverUrl}/signup?cancelled=true`,
-  })
-
-  // Store checkout session ID on the record
-  await payload.update({
-    collection: 'provisioned-sites',
-    id: site.id,
-    overrideAccess: true,
-    data: {
-      stripeCheckoutSessionId: session.id,
-    },
-  })
-
-  return {
-    success: true,
-    message: 'Redirecting to payment...',
-    checkoutUrl: session.url!,
-    siteId: site.id,
-    subdomain,
+    }
+  } catch (error) {
+    console.error('Signup error:', error)
+    const message =
+      error instanceof Error && error.message.includes('DbHandler')
+        ? 'Database connection error. Please try again in a moment.'
+        : 'Something went wrong. Please try again.'
+    return { success: false, message }
   }
 }
