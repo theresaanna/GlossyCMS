@@ -33,13 +33,12 @@ import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } f
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
 import { default as default_8dcb7ddfb5353a39efaf4b2cd84d9d6f } from '@/components/admin/ReloadOnColorSchemeChange'
+import { default as default_1a517f8db35bc37b98f9408bf8db5ca7 } from '@/components/admin/SubscriptionView'
 import { default as default_497ff965a89fc4c87f4d374e11f3f378 } from '@/components/AdminAvatar'
 import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
 import { default as default_aa0a2d19d38a4839dbd373417e210b89 } from '@/components/AdminLogo'
-import { default as default_cd15b8bca2f610f0e3428981e589ac79 } from '@/components/admin/SubscriptionNavLink'
 import { default as default_a173f0dc41cdbda70884c84fdb609d6c } from '@/components/AdminColorSchemeProvider'
 import { VercelBlobClientUploadHandler as VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e } from '@payloadcms/storage-vercel-blob/client'
-import { default as default_1a517f8db35bc37b98f9408bf8db5ca7 } from '@/components/admin/SubscriptionView'
 import { CollectionCards as CollectionCards_ab83ff7e88da8d3530831f296ec4756a } from '@payloadcms/ui/rsc'
 
 export const importMap = {
@@ -78,12 +77,11 @@ export const importMap = {
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
   "@/components/admin/ReloadOnColorSchemeChange#default": default_8dcb7ddfb5353a39efaf4b2cd84d9d6f,
+  "@/components/admin/SubscriptionView#default": default_1a517f8db35bc37b98f9408bf8db5ca7,
   "@/components/AdminAvatar#default": default_497ff965a89fc4c87f4d374e11f3f378,
   "@/components/AdminIcon#default": default_c1363893506d7ed29a71d1a4da01ddb5,
   "@/components/AdminLogo#default": default_aa0a2d19d38a4839dbd373417e210b89,
-  "@/components/admin/SubscriptionNavLink#default": default_cd15b8bca2f610f0e3428981e589ac79,
   "@/components/AdminColorSchemeProvider#default": default_a173f0dc41cdbda70884c84fdb609d6c,
   "@payloadcms/storage-vercel-blob/client#VercelBlobClientUploadHandler": VercelBlobClientUploadHandler_16c82c5e25f430251a3e3ba57219ff4e,
-  "@/components/admin/SubscriptionView#default": default_1a517f8db35bc37b98f9408bf8db5ca7,
   "@payloadcms/ui/rsc#CollectionCards": CollectionCards_ab83ff7e88da8d3530831f296ec4756a
 }

@@ -31,7 +31,7 @@ export async function POST(): Promise<Response> {
     )
   }
 
-  const returnUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/admin/subscription`
+  const returnUrl = `${process.env.NEXT_PUBLIC_SERVER_URL || ''}/admin/globals/subscription`
 
   try {
     const response = await fetch(`${PRIMARY_URL}/api/stripe/create-portal-session`, {

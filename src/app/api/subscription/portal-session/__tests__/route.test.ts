@@ -89,7 +89,7 @@ describe('POST /api/subscription/portal-session', () => {
           Authorization: 'Bearer test-site-api-key',
         },
         body: JSON.stringify({
-          returnUrl: 'https://test-site.glossysites.live/admin/subscription',
+          returnUrl: 'https://test-site.glossysites.live/admin/globals/subscription',
         }),
       },
     )

@@ -19,6 +19,7 @@ import { Footer } from './Footer/config'
 import { Gallery } from './Gallery/config'
 import { Header } from './Header/config'
 import { SiteSettings } from './SiteSettings/config'
+import { Subscription } from './globals/Subscription/config'
 import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
@@ -51,17 +52,6 @@ export default buildConfig({
         Icon: '@/components/AdminIcon',
       },
       providers: ['@/components/AdminColorSchemeProvider'],
-      ...(!isPrimaryInstance
-        ? {
-            afterNavLinks: ['@/components/admin/SubscriptionNavLink'],
-            views: {
-              subscription: {
-                Component: '@/components/admin/SubscriptionView',
-                path: '/subscription',
-              },
-            },
-          }
-        : {}),
     },
     importMap: {
       baseDir: path.resolve(dirname),
@@ -120,7 +110,14 @@ export default buildConfig({
         }),
       }
     : {}),
-  globals: [Header, Footer, Gallery, AdultContent, SiteSettings],
+  globals: [
+    Header,
+    Footer,
+    Gallery,
+    AdultContent,
+    SiteSettings,
+    ...(!isPrimaryInstance ? [Subscription] : []),
+  ],
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
