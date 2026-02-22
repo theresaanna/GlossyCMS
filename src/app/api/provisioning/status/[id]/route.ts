@@ -1,4 +1,4 @@
-import { NextResponse } from 'next/server'
+import { NextResponse, after } from 'next/server'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
@@ -24,6 +24,21 @@ export async function GET(
       id: numericId,
       overrideAccess: true,
     })
+
+    // If the site is in "pending" status, a job has been queued but not yet
+    // started. Kick off payload.jobs.run() after responding so the
+    // provisioning pipeline executes in this request's lifecycle rather than
+    // relying on the webhook (which must return quickly to Stripe).
+    if (site.status === 'pending') {
+      after(async () => {
+        try {
+          const p = await getPayload({ config: configPromise })
+          await p.jobs.run()
+        } catch (err) {
+          console.error('Provisioning job run failed:', err)
+        }
+      })
+    }
 
     // Only expose safe fields publicly
     return NextResponse.json({
