@@ -1,4 +1,4 @@
-import { NextResponse, after } from 'next/server'
+import { NextResponse } from 'next/server'
 import configPromise from '@payload-config'
 import { getPayload } from 'payload'
 
@@ -26,17 +26,23 @@ export async function GET(
     })
 
     // If the site is in "pending" status, a job has been queued but not yet
-    // started. Kick off payload.jobs.run() after responding so the
-    // provisioning pipeline executes in this request's lifecycle rather than
-    // relying on the webhook (which must return quickly to Stripe).
+    // started. Run it now — the browser is polling so it can wait for this
+    // request to complete. Subsequent polls will see "provisioning" or later.
     if (site.status === 'pending') {
-      after(async () => {
-        try {
-          const p = await getPayload({ config: configPromise })
-          await p.jobs.run()
-        } catch (err) {
-          console.error('Provisioning job run failed:', err)
-        }
+      await payload.jobs.run()
+
+      // Re-fetch after the job ran so the response reflects the new status
+      const updated = await payload.findByID({
+        collection: 'provisioned-sites',
+        id: numericId,
+        overrideAccess: true,
+      })
+
+      return NextResponse.json({
+        status: updated.status,
+        subdomain: updated.subdomain,
+        provisioningError: updated.status === 'failed' ? updated.provisioningError : undefined,
+        provisionedAt: updated.provisionedAt,
       })
     }
 
