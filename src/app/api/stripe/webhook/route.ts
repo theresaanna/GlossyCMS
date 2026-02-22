@@ -44,9 +44,11 @@ export async function POST(req: NextRequest): Promise<Response> {
     case 'invoice.payment_failed': {
       const invoice = event.data.object as Stripe.Invoice
       const subscriptionId =
-        typeof invoice.subscription === 'string'
-          ? invoice.subscription
-          : invoice.subscription?.id
+        invoice.parent?.subscription_details?.subscription
+          ? typeof invoice.parent.subscription_details.subscription === 'string'
+            ? invoice.parent.subscription_details.subscription
+            : invoice.parent.subscription_details.subscription.id
+          : null
       if (subscriptionId) {
         await handleSubscriptionSuspend(subscriptionId, 'payment failed', payload)
       }

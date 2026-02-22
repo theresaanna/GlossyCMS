@@ -251,7 +251,7 @@ describe('POST /api/stripe/webhook', () => {
       mockGetPayload.mockResolvedValue(mockPayload)
 
       const event = makeStripeEvent('invoice.payment_failed', {
-        subscription: 'sub_123',
+        parent: { subscription_details: { subscription: 'sub_123' } },
       })
       mockGetStripe.mockReturnValue({
         webhooks: { constructEvent: () => event },
@@ -274,7 +274,7 @@ describe('POST /api/stripe/webhook', () => {
       mockGetPayload.mockResolvedValue(mockPayload)
 
       const event = makeStripeEvent('invoice.payment_failed', {
-        subscription: { id: 'sub_123' },
+        parent: { subscription_details: { subscription: { id: 'sub_123' } } },
       })
       mockGetStripe.mockReturnValue({
         webhooks: { constructEvent: () => event },
@@ -290,7 +290,7 @@ describe('POST /api/stripe/webhook', () => {
       mockGetPayload.mockResolvedValue(mockPayload)
 
       const event = makeStripeEvent('invoice.payment_failed', {
-        subscription: null,
+        parent: null,
       })
       mockGetStripe.mockReturnValue({
         webhooks: { constructEvent: () => event },
