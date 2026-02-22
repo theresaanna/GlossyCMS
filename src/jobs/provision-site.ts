@@ -104,6 +104,7 @@ export const provisionSiteTask: TaskConfig<{
         SITE_PLAN: plan || 'basic',
         NEXT_PUBLIC_SITE_PLAN: plan || 'basic',
         SITE_API_KEY: siteApiKey,
+        NEXT_PUBLIC_PRIMARY_URL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://www.glossysites.live',
       })
 
       // 5. Add custom domain

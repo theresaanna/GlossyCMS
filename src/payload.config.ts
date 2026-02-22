@@ -51,6 +51,17 @@ export default buildConfig({
         Icon: '@/components/AdminIcon',
       },
       providers: ['@/components/AdminColorSchemeProvider'],
+      ...(!isPrimaryInstance
+        ? {
+            afterNavLinks: ['@/components/admin/SubscriptionNavLink'],
+            views: {
+              subscription: {
+                Component: '@/components/admin/SubscriptionView',
+                path: '/subscription',
+              },
+            },
+          }
+        : {}),
     },
     importMap: {
       baseDir: path.resolve(dirname),
