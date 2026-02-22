@@ -55,6 +55,7 @@ export const provisionSiteTask: TaskConfig<{
     const { subdomain, plan } = site
     const domain = `${subdomain}.glossysites.live`
     const projectName = `glossy-${subdomain}`
+    const siteApiKey = generateSecret()
 
     // Fail early if required env vars are missing on the primary instance
     if (!process.env.RESEND_API_KEY) {
@@ -102,6 +103,7 @@ export const provisionSiteTask: TaskConfig<{
         NEXT_PUBLIC_SERVER_URL: `https://${domain}`,
         SITE_PLAN: plan || 'basic',
         NEXT_PUBLIC_SITE_PLAN: plan || 'basic',
+        SITE_API_KEY: siteApiKey,
       })
 
       // 5. Add custom domain
@@ -119,6 +121,7 @@ export const provisionSiteTask: TaskConfig<{
           status: 'active',
           vercelProjectId: project.id,
           postgresStoreId: pgStore.id,
+          siteApiKey,
           provisionedAt: new Date().toISOString(),
         },
       })

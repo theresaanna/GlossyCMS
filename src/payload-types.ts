@@ -1025,6 +1025,7 @@ export interface ProvisionedSite {
   stripeCustomerId?: string | null;
   stripeSubscriptionId?: string | null;
   stripeCheckoutSessionId?: string | null;
+  siteApiKey?: string | null;
   provisioningError?: string | null;
   provisionedAt?: string | null;
   updatedAt: string;
@@ -1761,6 +1762,7 @@ export interface ProvisionedSitesSelect<T extends boolean = true> {
   stripeCustomerId?: T;
   stripeSubscriptionId?: T;
   stripeCheckoutSessionId?: T;
+  siteApiKey?: T;
   provisioningError?: T;
   provisionedAt?: T;
   updatedAt?: T;
