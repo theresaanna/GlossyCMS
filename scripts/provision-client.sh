@@ -5,23 +5,25 @@ set -euo pipefail
 # GlossyCMS Client Provisioning Script
 # =============================================================================
 # Creates a new client instance on *.glossysites.live with its own Vercel
-# project, database, blob storage, and environment variables.
+# project and a Neon database branch from the template site.
 #
 # All instances deploy from the shared theresaanna/GlossyCMS repo.
+# Each instance gets a Neon branch (copy-on-write) of the template database
+# and shares the primary instance's Vercel Blob storage.
 #
 # Usage:
 #   ./scripts/provision-client.sh --client-name <name> --team <vercel-team> [--domain <domain>]
 #
 # Environment variables:
-#   VERCEL_TOKEN    - Required. Vercel API token.
-#   RESEND_API_KEY  - Required. Shared Resend API key (or read from .env).
+#   VERCEL_TOKEN              - Required. Vercel API token.
+#   RESEND_API_KEY            - Required. Shared Resend API key (or read from .env).
+#   BLOB_READ_WRITE_TOKEN     - Required. Shared Vercel Blob token (or read from .env).
+#   NEON_API_KEY              - Required. Neon API key for database branching.
+#   NEON_TEMPLATE_PROJECT_ID  - Required. Neon project ID of the template database.
 #
 # Prerequisites:
 #   - vercel CLI (authenticated)
-#   - openssl
-#   - pnpm
-#   - curl
-#   - python3
+#   - openssl, pnpm, curl, python3, psql
 # =============================================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -62,8 +64,11 @@ while [[ $# -gt 0 ]]; do
       echo "  --help         Show this help message"
       echo ""
       echo "Environment variables:"
-      echo "  VERCEL_TOKEN    Required. Vercel API token."
-      echo "  RESEND_API_KEY  Required. Shared Resend API key."
+      echo "  VERCEL_TOKEN              Required. Vercel API token."
+      echo "  RESEND_API_KEY            Required. Shared Resend API key."
+      echo "  BLOB_READ_WRITE_TOKEN     Required. Shared Vercel Blob token."
+      echo "  NEON_API_KEY              Required. Neon API key for branching."
+      echo "  NEON_TEMPLATE_PROJECT_ID  Required. Template database project ID."
       exit 0
       ;;
     *)
@@ -115,6 +120,46 @@ if [[ -z "${RESEND_API_KEY:-}" ]]; then
     echo "Error: RESEND_API_KEY is required"
     exit 1
   fi
+fi
+
+# Resolve shared BLOB_READ_WRITE_TOKEN
+if [[ -z "${BLOB_READ_WRITE_TOKEN:-}" ]]; then
+  if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+    BLOB_READ_WRITE_TOKEN=$(grep -E "^BLOB_READ_WRITE_TOKEN=" "${PROJECT_ROOT}/.env" | cut -d= -f2- || true)
+  fi
+fi
+
+if [[ -z "${BLOB_READ_WRITE_TOKEN:-}" ]]; then
+  read -rp "Shared Vercel Blob token: " BLOB_READ_WRITE_TOKEN
+  if [[ -z "${BLOB_READ_WRITE_TOKEN}" ]]; then
+    echo "Error: BLOB_READ_WRITE_TOKEN is required"
+    exit 1
+  fi
+fi
+
+# Validate Neon env vars
+if [[ -z "${NEON_API_KEY:-}" ]]; then
+  if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+    NEON_API_KEY=$(grep -E "^NEON_API_KEY=" "${PROJECT_ROOT}/.env" | cut -d= -f2- || true)
+  fi
+fi
+
+if [[ -z "${NEON_API_KEY:-}" ]]; then
+  echo "Error: NEON_API_KEY environment variable is required."
+  echo "Create one at: https://console.neon.tech/app/settings/api-keys"
+  exit 1
+fi
+
+if [[ -z "${NEON_TEMPLATE_PROJECT_ID:-}" ]]; then
+  if [[ -f "${PROJECT_ROOT}/.env" ]]; then
+    NEON_TEMPLATE_PROJECT_ID=$(grep -E "^NEON_TEMPLATE_PROJECT_ID=" "${PROJECT_ROOT}/.env" | cut -d= -f2- || true)
+  fi
+fi
+
+if [[ -z "${NEON_TEMPLATE_PROJECT_ID:-}" ]]; then
+  echo "Error: NEON_TEMPLATE_PROJECT_ID environment variable is required."
+  echo "Find it in your Neon dashboard for the template database project."
+  exit 1
 fi
 
 echo "All prerequisites met."
@@ -191,33 +236,29 @@ fi
 echo ""
 
 # -----------------------------------------------------------------------------
-# Step 5: Create storage resources
+# Step 5: Create database branch from template
 # -----------------------------------------------------------------------------
-echo "=== Step 5: Creating storage resources ==="
+echo "=== Step 5: Creating database branch from template ==="
 
-echo "Creating Vercel Postgres database..."
-PG_STORE_ID=$(create_vercel_storage "postgres" "${CLIENT_NAME}-db" "${VERCEL_TEAM}")
-echo "Postgres store ID: ${PG_STORE_ID}"
+echo "Branching Neon database from template..."
+BRANCH_RESULT=$(create_neon_branch "glossy-${CLIENT_NAME}")
+NEON_BRANCH_ID=$(echo "${BRANCH_RESULT}" | python3 -c "import sys,json; print(json.load(sys.stdin)['branchId'])")
+POSTGRES_URL=$(echo "${BRANCH_RESULT}" | python3 -c "import sys,json; print(json.load(sys.stdin)['connectionUri'])")
+echo "Neon branch ID: ${NEON_BRANCH_ID}"
 
-echo "Creating Vercel Blob store..."
-BLOB_STORE_ID=$(create_vercel_storage "blob" "${CLIENT_NAME}-blob" "${VERCEL_TEAM}")
-echo "Blob store ID: ${BLOB_STORE_ID}"
+echo "Cleaning sensitive data from branched database..."
+clean_branched_database "${POSTGRES_URL}" "${SITE_NAME}" "${SITE_DESCRIPTION}"
 
-echo "Linking Postgres to project..."
-link_storage_to_project "${PG_STORE_ID}" "${PROJECT_NAME}" "${VERCEL_TEAM}"
-
-echo "Linking Blob store to project..."
-link_storage_to_project "${BLOB_STORE_ID}" "${PROJECT_NAME}" "${VERCEL_TEAM}"
-
-echo "Storage resources created and linked."
+echo "Database branch created and cleaned."
 echo ""
 
 # -----------------------------------------------------------------------------
 # Step 6: Set environment variables
 # -----------------------------------------------------------------------------
 echo "=== Step 6: Setting environment variables ==="
-echo "Note: POSTGRES_URL and BLOB_READ_WRITE_TOKEN are auto-set by storage linking."
 
+set_vercel_env "POSTGRES_URL" "${POSTGRES_URL}" "${PROJECT_NAME}" "${TEAM_FLAG}"
+set_vercel_env "BLOB_READ_WRITE_TOKEN" "${BLOB_READ_WRITE_TOKEN}" "${PROJECT_NAME}" "${TEAM_FLAG}"
 set_vercel_env "PAYLOAD_SECRET" "${PAYLOAD_SECRET}" "${PROJECT_NAME}" "${TEAM_FLAG}"
 set_vercel_env "CRON_SECRET" "${CRON_SECRET}" "${PROJECT_NAME}" "${TEAM_FLAG}"
 set_vercel_env "PREVIEW_SECRET" "${PREVIEW_SECRET}" "${PROJECT_NAME}" "${TEAM_FLAG}"
@@ -249,10 +290,11 @@ echo "========================================"
 echo "Client provisioned successfully!"
 echo "========================================"
 echo ""
-echo "  Vercel Project:  ${PROJECT_NAME}"
-echo "  Domain:          https://${CLIENT_DOMAIN}"
-echo "  Site Name:       ${SITE_NAME}"
-echo "  Email Sender:    ${FROM_NAME} <${FROM_EMAIL}>"
+echo "  Vercel Project:   ${PROJECT_NAME}"
+echo "  Domain:           https://${CLIENT_DOMAIN}"
+echo "  Site Name:        ${SITE_NAME}"
+echo "  Email Sender:     ${FROM_NAME} <${FROM_EMAIL}>"
+echo "  Neon Branch ID:   ${NEON_BRANCH_ID}"
 echo ""
 echo "Next steps:"
 echo "  1. Ensure wildcard DNS is configured: *.glossysites.live CNAME cname.vercel-dns.com"

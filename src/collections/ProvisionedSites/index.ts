@@ -83,6 +83,14 @@ export const ProvisionedSites: CollectionConfig = {
       },
     },
     {
+      name: 'neonBranchId',
+      type: 'text',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'postgresStoreId',
       type: 'text',
       admin: {

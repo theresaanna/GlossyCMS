@@ -1,16 +1,12 @@
 import type { TaskConfig } from 'payload'
 import {
   createVercelProject,
-  createVercelStorage,
-  linkStorageToProject,
   setVercelEnvVars,
   addVercelDomain,
   triggerVercelDeploy,
   generateSecret,
 } from '@/utilities/vercel-api'
-
-// Blob storage is shared from the primary instance via BLOB_READ_WRITE_TOKEN
-// rather than creating per-site stores (Vercel Blob has no Marketplace API).
+import { createNeonBranch, cleanBranchedDatabase } from '@/utilities/neon-api'
 
 const SOURCE_REPO = 'theresaanna/GlossyCMS'
 
@@ -70,6 +66,18 @@ export const provisionSiteTask: TaskConfig<{
           'Add it in Vercel project settings before provisioning new sites.',
       )
     }
+    if (!process.env.NEON_API_KEY) {
+      throw new Error(
+        'NEON_API_KEY is not set on the primary instance. ' +
+          'Add it in Vercel project settings before provisioning new sites.',
+      )
+    }
+    if (!process.env.NEON_TEMPLATE_PROJECT_ID) {
+      throw new Error(
+        'NEON_TEMPLATE_PROJECT_ID is not set on the primary instance. ' +
+          'Add it in Vercel project settings before provisioning new sites.',
+      )
+    }
 
     // Update status to provisioning
     await req.payload.update({
@@ -83,14 +91,26 @@ export const provisionSiteTask: TaskConfig<{
       // 1. Create Vercel project with connected GitHub repo
       const project = await createVercelProject(projectName, SOURCE_REPO)
 
-      // 2. Create Postgres database via Neon Marketplace integration
-      const pgStore = await createVercelStorage('postgres', `${subdomain}-db`)
+      // 2. Create Neon branch from template database
+      const branch = await createNeonBranch(`glossy-${subdomain}`)
 
-      // 3. Link postgres to project (auto-injects POSTGRES_URL)
-      await linkStorageToProject(pgStore.id, project.id)
+      // Store branch ID immediately so teardown can clean up orphaned branches
+      await req.payload.update({
+        collection: 'provisioned-sites',
+        id: siteId,
+        overrideAccess: true,
+        data: { neonBranchId: branch.branchId },
+      })
 
-      // 4. Set environment variables (including shared blob token from primary instance)
+      // 3. Clean sensitive data from branched database and set site settings
+      await cleanBranchedDatabase(branch.connectionUri, {
+        siteName: site.siteName || subdomain,
+        siteDescription: site.siteDescription || 'A website powered by GlossyCMS.',
+      })
+
+      // 4. Set environment variables (POSTGRES_URL explicitly since no auto-injection)
       await setVercelEnvVars(project.id, {
+        POSTGRES_URL: branch.connectionUri,
         PAYLOAD_SECRET: generateSecret(),
         CRON_SECRET: generateSecret(),
         PREVIEW_SECRET: generateSecret(),
@@ -104,7 +124,8 @@ export const provisionSiteTask: TaskConfig<{
         SITE_PLAN: plan || 'basic',
         NEXT_PUBLIC_SITE_PLAN: plan || 'basic',
         SITE_API_KEY: siteApiKey,
-        NEXT_PUBLIC_PRIMARY_URL: process.env.NEXT_PUBLIC_SERVER_URL || 'https://www.glossysites.live',
+        NEXT_PUBLIC_PRIMARY_URL:
+          process.env.NEXT_PUBLIC_SERVER_URL || 'https://www.glossysites.live',
       })
 
       // 5. Add custom domain
@@ -121,7 +142,7 @@ export const provisionSiteTask: TaskConfig<{
         data: {
           status: 'active',
           vercelProjectId: project.id,
-          postgresStoreId: pgStore.id,
+          neonBranchId: branch.branchId,
           siteApiKey,
           provisionedAt: new Date().toISOString(),
         },

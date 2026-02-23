@@ -14,7 +14,7 @@ generate_secret() {
 check_prerequisites() {
   local missing=()
 
-  for cmd in vercel openssl pnpm curl python3; do
+  for cmd in vercel openssl pnpm curl python3 psql; do
     if ! command -v "${cmd}" &>/dev/null; then
       missing+=("${cmd}")
     fi
@@ -29,6 +29,7 @@ check_prerequisites() {
     echo "  pnpm:    npm i -g pnpm"
     echo "  curl:    Usually pre-installed on macOS"
     echo "  python3: Usually pre-installed on macOS"
+    echo "  psql:    brew install libpq (macOS) or apt install postgresql-client (Linux)"
     exit 1
   fi
 
@@ -168,4 +169,125 @@ link_storage_to_project() {
     echo "Error: Failed to link storage to project (HTTP ${http_code}): ${body}" >&2
     return 1
   fi
+}
+
+# =============================================================================
+# Neon Branching Functions
+# =============================================================================
+
+# Create a Neon branch from the template project
+# Usage: create_neon_branch BRANCH_NAME
+# Outputs JSON: { "branchId": "...", "connectionUri": "..." }
+# Requires: NEON_API_KEY, NEON_TEMPLATE_PROJECT_ID
+create_neon_branch() {
+  local branch_name="$1"
+  local project_id="${NEON_TEMPLATE_PROJECT_ID}"
+  local parent_id="${NEON_TEMPLATE_BRANCH_ID:-}"
+  local db_name="${NEON_TEMPLATE_DB_NAME:-neondb}"
+  local role_name="${NEON_TEMPLATE_ROLE_NAME:-neondb_owner}"
+
+  # Build branch creation body
+  local branch_body
+  if [[ -n "${parent_id}" ]]; then
+    branch_body="{\"branch\":{\"name\":\"${branch_name}\",\"parent_id\":\"${parent_id}\"},\"endpoints\":[{\"type\":\"read_write\"}]}"
+  else
+    branch_body="{\"branch\":{\"name\":\"${branch_name}\"},\"endpoints\":[{\"type\":\"read_write\"}]}"
+  fi
+
+  # Create branch
+  local response
+  response=$(curl -s -w "\n%{http_code}" -X POST \
+    "https://console.neon.tech/api/v2/projects/${project_id}/branches" \
+    -H "Authorization: Bearer ${NEON_API_KEY}" \
+    -H "Content-Type: application/json" \
+    -d "${branch_body}")
+
+  local http_code
+  http_code=$(echo "${response}" | tail -1)
+  local body
+  body=$(echo "${response}" | sed '$d')
+
+  if [[ "${http_code}" -lt 200 || "${http_code}" -ge 300 ]]; then
+    echo "Error: Failed to create Neon branch '${branch_name}' (HTTP ${http_code}): ${body}" >&2
+    return 1
+  fi
+
+  local branch_id
+  branch_id=$(echo "${body}" | python3 -c "import sys,json; print(json.load(sys.stdin)['branch']['id'])")
+
+  # Get connection URI
+  local conn_response
+  conn_response=$(curl -s -w "\n%{http_code}" \
+    "https://console.neon.tech/api/v2/projects/${project_id}/connection_uri?branch_id=${branch_id}&database_name=${db_name}&role_name=${role_name}" \
+    -H "Authorization: Bearer ${NEON_API_KEY}")
+
+  local conn_http_code
+  conn_http_code=$(echo "${conn_response}" | tail -1)
+  local conn_body
+  conn_body=$(echo "${conn_response}" | sed '$d')
+
+  if [[ "${conn_http_code}" -lt 200 || "${conn_http_code}" -ge 300 ]]; then
+    echo "Error: Failed to get connection URI for branch '${branch_id}' (HTTP ${conn_http_code}): ${conn_body}" >&2
+    return 1
+  fi
+
+  local connection_uri
+  connection_uri=$(echo "${conn_body}" | python3 -c "import sys,json; print(json.load(sys.stdin)['uri'])")
+
+  # Ensure sslmode=require
+  if [[ "${connection_uri}" != *"sslmode="* ]]; then
+    if [[ "${connection_uri}" == *"?"* ]]; then
+      connection_uri="${connection_uri}&sslmode=require"
+    else
+      connection_uri="${connection_uri}?sslmode=require"
+    fi
+  fi
+
+  # Output as JSON for the caller to parse
+  python3 -c "import json; print(json.dumps({'branchId': '${branch_id}', 'connectionUri': '${connection_uri}'}))"
+}
+
+# Clean sensitive tables from a branched database and set site settings
+# Usage: clean_branched_database CONNECTION_URI SITE_NAME SITE_DESCRIPTION
+clean_branched_database() {
+  local conn_uri="$1"
+  local site_name="$2"
+  local site_description="$3"
+
+  # Escape single quotes for SQL safety
+  local escaped_name="${site_name//\'/\'\'}"
+  local escaped_desc="${site_description//\'/\'\'}"
+
+  psql "${conn_uri}" <<SQL
+BEGIN;
+TRUNCATE TABLE users CASCADE;
+TRUNCATE TABLE newsletter_recipients CASCADE;
+TRUNCATE TABLE comments CASCADE;
+TRUNCATE TABLE search CASCADE;
+TRUNCATE TABLE payload_locked_documents CASCADE;
+TRUNCATE TABLE payload_locked_documents_rels CASCADE;
+TRUNCATE TABLE payload_preferences CASCADE;
+TRUNCATE TABLE payload_preferences_rels CASCADE;
+
+UPDATE site_settings SET
+  site_title = '${escaped_name}',
+  site_description = '${escaped_desc}',
+  og_image_id = NULL,
+  favicon_id = NULL,
+  header_image_id = NULL,
+  user_image_id = NULL
+WHERE id = 1;
+COMMIT;
+SQL
+}
+
+# Delete a Neon branch
+# Usage: delete_neon_branch PROJECT_ID BRANCH_ID
+delete_neon_branch() {
+  local project_id="$1"
+  local branch_id="$2"
+
+  curl -s -X DELETE \
+    "https://console.neon.tech/api/v2/projects/${project_id}/branches/${branch_id}" \
+    -H "Authorization: Bearer ${NEON_API_KEY}" > /dev/null
 }
