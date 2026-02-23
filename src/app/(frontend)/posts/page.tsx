@@ -35,10 +35,8 @@ export default async function Page() {
   return (
     <ArchiveLayout>
       <PageClient />
-      <div className="container mb-16">
-        <div className="prose dark:prose-invert max-w-none">
-          <h1>Posts</h1>
-        </div>
+      <div className="container mb-8">
+        <h1 className="text-xl md:text-2xl lg:text-3xl font-heading">Posts</h1>
       </div>
 
       <div className="container mb-8">

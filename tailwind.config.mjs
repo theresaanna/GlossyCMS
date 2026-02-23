@@ -19,7 +19,7 @@ const config = {
           css: [
             {
               h1: {
-                fontSize: '2.5rem',
+                fontSize: '1.25rem',
               },
               h2: {
                 fontSize: '1.25rem',
@@ -32,7 +32,7 @@ const config = {
           css: [
             {
               h1: {
-                fontSize: '3.5rem',
+                fontSize: '1.5rem',
               },
               h2: {
                 fontSize: '1.5rem',

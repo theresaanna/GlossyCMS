@@ -37,7 +37,7 @@ export const PostHero: React.FC<{
           })}
         </div>
 
-        <h1 className="mb-4 text-3xl md:text-5xl lg:text-6xl">{title}</h1>
+        <h1 className="mb-4 text-xl md:text-2xl lg:text-3xl font-heading">{title}</h1>
 
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
           {hasAuthors && <span>By {formatAuthors(populatedAuthors)}</span>}

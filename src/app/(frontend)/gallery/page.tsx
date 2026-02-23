@@ -48,7 +48,7 @@ export default async function GalleryPage() {
   return (
     <GalleryLayout>
       <EditLink global="gallery-settings" label="Edit gallery settings" />
-      <h1 className="text-4xl font-bold mb-8">{title}</h1>
+      <h1 className="text-xl md:text-2xl lg:text-3xl font-heading mb-8">{title}</h1>
 
       {validMedia.length === 0 ? (
         <div className="text-center py-16 bg-gray-50 rounded-lg">
