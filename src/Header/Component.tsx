@@ -27,7 +27,9 @@ export async function Header() {
         siteTitle={siteSettings?.siteTitle ?? null}
         isAdmin={isAdmin}
       />
-      <EditLink global="header" label="Edit header" inline />
+      <div className="flex justify-center">
+        <EditLink global="header" label="Edit header" inline />
+      </div>
     </div>
   )
 }

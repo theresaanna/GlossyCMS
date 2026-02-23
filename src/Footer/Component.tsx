@@ -44,7 +44,9 @@ export async function Footer() {
         </div>
       )}
 
-      <EditLink global="footer" label="Edit footer" inline className="text-white/60 hover:text-white" />
+      <div className="flex justify-center pb-4">
+        <EditLink global="footer" label="Edit footer" inline className="text-white/60 hover:text-white" />
+      </div>
     </footer>
   )
 }
