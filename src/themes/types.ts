@@ -9,6 +9,7 @@ export interface SiteLayoutProps {
 }
 
 export interface PageLayoutProps {
+  title?: string
   hero: Page['hero']
   blocks: Page['layout'][0][]
   auxiliaryContent?: ReactNode

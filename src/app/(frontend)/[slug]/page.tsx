@@ -64,11 +64,12 @@ export default async function Page({ params: paramsPromise }: Args) {
     return <PayloadRedirects url={url} />
   }
 
-  const { hero, layout } = page
+  const { hero, layout, title } = page
   const { PageLayout } = themeConfig.layouts
 
   return (
     <PageLayout
+      title={title}
       hero={hero}
       blocks={layout}
       auxiliaryContent={

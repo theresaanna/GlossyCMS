@@ -1,5 +1,4 @@
 import type { Metadata } from 'next'
-import { getServerSideURL } from './getURL'
 import type { SiteMetaDefaults } from './getSiteMetaDefaults'
 
 const DEFAULT_SITE_NAME = 'Glossy'
@@ -8,11 +7,9 @@ const DEFAULT_DESCRIPTION = 'A website powered by Glossy.'
 const getDefaultOpenGraph = (defaults?: SiteMetaDefaults): Metadata['openGraph'] => ({
   type: 'website',
   description: defaults?.siteDescription || process.env.SITE_DESCRIPTION || DEFAULT_DESCRIPTION,
-  images: [
-    {
-      url: defaults?.ogImageUrl || `${getServerSideURL()}/website-template-OG.webp`,
-    },
-  ],
+  images: defaults?.ogImageUrl
+    ? [{ url: defaults.ogImageUrl }]
+    : undefined,
   siteName: defaults?.siteName || process.env.SITE_NAME || DEFAULT_SITE_NAME,
   title: defaults?.siteName || process.env.SITE_NAME || DEFAULT_SITE_NAME,
 })

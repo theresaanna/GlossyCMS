@@ -1,9 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 
-vi.mock('@/utilities/getURL', () => ({
-  getServerSideURL: () => 'http://localhost:3000',
-}))
-
 describe('mergeOpenGraph', () => {
   const originalEnv = { ...process.env }
 
@@ -78,11 +74,11 @@ describe('mergeOpenGraph', () => {
     expect(result?.images).toEqual(customImages)
   })
 
-  it('uses default images when none provided', async () => {
+  it('uses no images when no defaults or custom images provided', async () => {
     const { mergeOpenGraph } = await import('../mergeOpenGraph')
     const result = mergeOpenGraph()
 
-    expect(result?.images).toEqual([{ url: 'http://localhost:3000/website-template-OG.webp' }])
+    expect(result?.images).toBeUndefined()
   })
 
   it('uses defaults parameter when provided', async () => {
