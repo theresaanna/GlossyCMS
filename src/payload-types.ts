@@ -1020,6 +1020,7 @@ export interface ProvisionedSite {
   plan: 'basic' | 'pro';
   status: 'pending_payment' | 'pending' | 'provisioning' | 'active' | 'failed' | 'suspended';
   vercelProjectId?: string | null;
+  neonBranchId?: string | null;
   postgresStoreId?: string | null;
   blobStoreId?: string | null;
   stripeCustomerId?: string | null;
@@ -1757,6 +1758,7 @@ export interface ProvisionedSitesSelect<T extends boolean = true> {
   plan?: T;
   status?: T;
   vercelProjectId?: T;
+  neonBranchId?: T;
   postgresStoreId?: T;
   blobStoreId?: T;
   stripeCustomerId?: T;
