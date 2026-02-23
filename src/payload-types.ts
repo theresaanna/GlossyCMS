@@ -75,6 +75,7 @@ export interface Config {
     comments: Comment;
     'newsletter-recipients': NewsletterRecipient;
     newsletters: Newsletter;
+    'provisioned-sites': ProvisionedSite;
     redirects: Redirect;
     forms: Form;
     'form-submissions': FormSubmission;
@@ -100,6 +101,7 @@ export interface Config {
     comments: CommentsSelect<false> | CommentsSelect<true>;
     'newsletter-recipients': NewsletterRecipientsSelect<false> | NewsletterRecipientsSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
+    'provisioned-sites': ProvisionedSitesSelect<false> | ProvisionedSitesSelect<true>;
     redirects: RedirectsSelect<false> | RedirectsSelect<true>;
     forms: FormsSelect<false> | FormsSelect<true>;
     'form-submissions': FormSubmissionsSelect<false> | FormSubmissionsSelect<true>;
@@ -135,6 +137,7 @@ export interface Config {
   };
   jobs: {
     tasks: {
+      'provision-site': TaskProvisionSite;
       schedulePublish: TaskSchedulePublish;
       inline: {
         input: unknown;
@@ -1005,6 +1008,32 @@ export interface Newsletter {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provisioned-sites".
+ */
+export interface ProvisionedSite {
+  id: number;
+  subdomain: string;
+  ownerEmail: string;
+  ownerName?: string | null;
+  siteName?: string | null;
+  siteDescription?: string | null;
+  plan: 'basic' | 'pro';
+  status: 'pending_payment' | 'pending' | 'provisioning' | 'active' | 'failed' | 'suspended';
+  vercelProjectId?: string | null;
+  neonBranchId?: string | null;
+  postgresStoreId?: string | null;
+  blobStoreId?: string | null;
+  stripeCustomerId?: string | null;
+  stripeSubscriptionId?: string | null;
+  stripeCheckoutSessionId?: string | null;
+  siteApiKey?: string | null;
+  provisioningError?: string | null;
+  provisionedAt?: string | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "redirects".
  */
 export interface Redirect {
@@ -1152,7 +1181,7 @@ export interface PayloadJob {
     | {
         executedAt: string;
         completedAt: string;
-        taskSlug: 'inline' | 'schedulePublish';
+        taskSlug: 'inline' | 'provision-site' | 'schedulePublish';
         taskID: string;
         input?:
           | {
@@ -1185,7 +1214,7 @@ export interface PayloadJob {
         id?: string | null;
       }[]
     | null;
-  taskSlug?: ('inline' | 'schedulePublish') | null;
+  taskSlug?: ('inline' | 'provision-site' | 'schedulePublish') | null;
   queue?: string | null;
   waitUntil?: string | null;
   processing?: boolean | null;
@@ -1230,6 +1259,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'newsletters';
         value: number | Newsletter;
+      } | null)
+    | ({
+        relationTo: 'provisioned-sites';
+        value: number | ProvisionedSite;
       } | null)
     | ({
         relationTo: 'redirects';
@@ -1709,6 +1742,31 @@ export interface NewslettersSelect<T extends boolean = true> {
   status?: T;
   sentAt?: T;
   recipientCount?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "provisioned-sites_select".
+ */
+export interface ProvisionedSitesSelect<T extends boolean = true> {
+  subdomain?: T;
+  ownerEmail?: T;
+  ownerName?: T;
+  siteName?: T;
+  siteDescription?: T;
+  plan?: T;
+  status?: T;
+  vercelProjectId?: T;
+  neonBranchId?: T;
+  postgresStoreId?: T;
+  blobStoreId?: T;
+  stripeCustomerId?: T;
+  stripeSubscriptionId?: T;
+  stripeCheckoutSessionId?: T;
+  siteApiKey?: T;
+  provisioningError?: T;
+  provisionedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -2223,6 +2281,18 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   updatedAt?: T;
   createdAt?: T;
   globalType?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "TaskProvision-site".
+ */
+export interface TaskProvisionSite {
+  input: {
+    siteId: number;
+  };
+  output: {
+    vercelProjectId?: string | null;
+  };
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
