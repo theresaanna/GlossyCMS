@@ -96,6 +96,23 @@ describe('SiteSettings global config', () => {
     expect(field.admin.description).toContain('description')
   })
 
+  it('has a favicon upload field related to media', () => {
+    const field = SiteSettings.fields.find(
+      (f) => 'name' in f && f.name === 'favicon',
+    ) as any
+    expect(field).toBeDefined()
+    expect(field.type).toBe('upload')
+    expect(field.relationTo).toBe('media')
+  })
+
+  it('has a description on the favicon field', () => {
+    const field = SiteSettings.fields.find(
+      (f) => 'name' in f && f.name === 'favicon',
+    ) as any
+    expect(field.admin.description).toBeDefined()
+    expect(field.admin.description).toContain('favicon')
+  })
+
   it('has an ogImage upload field related to media', () => {
     const field = SiteSettings.fields.find(
       (f) => 'name' in f && f.name === 'ogImage',
@@ -119,12 +136,13 @@ describe('SiteSettings global config', () => {
     expect(fieldNames).toContain('siteTitle')
     expect(fieldNames).toContain('siteDescription')
     expect(fieldNames).toContain('ogImage')
+    expect(fieldNames).toContain('favicon')
     expect(fieldNames).toContain('headerImage')
     expect(fieldNames).toContain('userImage')
     expect(fieldNames).toContain('colorSchemeLight')
     expect(fieldNames).toContain('colorSchemeDark')
     expect(fieldNames).toContain('colorSchemeReloader')
-    expect(fieldNames).toHaveLength(8)
+    expect(fieldNames).toHaveLength(9)
   })
 
   it('has an afterChange hook for revalidation', () => {

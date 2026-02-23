@@ -23,7 +23,7 @@ import { AgeGateProvider, AgeGateModal } from '@/plugins/ageGate'
 import { mergeOpenGraph } from '@/utilities/mergeOpenGraph'
 import { getSiteMetaDefaults } from '@/utilities/getSiteMetaDefaults'
 import { getCachedGlobal } from '@/utilities/getGlobals'
-import type { AdultContent as AdultContentType, SiteSetting } from '@/payload-types'
+import type { AdultContent as AdultContentType, SiteSetting, Media } from '@/payload-types'
 import { draftMode } from 'next/headers'
 import themeConfig from '@/theme.config'
 
@@ -56,8 +56,24 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     >
       <head>
         <InitTheme />
-        <link href="/favicon.ico" rel="icon" sizes="32x32" />
-        <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+        {(() => {
+          const favicon = siteSettings?.favicon
+          if (favicon && typeof favicon === 'object') {
+            const media = favicon as Media
+            const thumbUrl = (media.sizes as { thumbnail?: { url?: string } })?.thumbnail?.url
+            const faviconUrl = thumbUrl || media.url
+            if (faviconUrl) {
+              const mimeType = media.mimeType || 'image/x-icon'
+              return <link href={faviconUrl} rel="icon" type={mimeType} />
+            }
+          }
+          return (
+            <>
+              <link href="/favicon.ico" rel="icon" sizes="32x32" />
+              <link href="/favicon.svg" rel="icon" type="image/svg+xml" />
+            </>
+          )
+        })()}
       </head>
       <body>
         <Providers>

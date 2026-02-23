@@ -9,6 +9,7 @@ import { getPayload } from 'payload'
 import React from 'react'
 import PageClient from './page.client'
 import themeConfig from '@/theme.config'
+import { EditLink } from '@/components/EditLink'
 
 export const dynamic = 'force-static'
 export const revalidate = 600
@@ -37,6 +38,7 @@ export default async function Page() {
       <PageClient />
       <div className="container mb-8">
         <h1 className="text-xl md:text-2xl lg:text-3xl font-heading">Posts</h1>
+        <EditLink collection="posts" label="Draft a new post" inline />
       </div>
 
       <div className="container mb-8">

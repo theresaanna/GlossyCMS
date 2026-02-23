@@ -46,6 +46,15 @@ export const SiteSettings: GlobalConfig = {
       },
     },
     {
+      name: 'favicon',
+      type: 'upload',
+      relationTo: 'media',
+      admin: {
+        description:
+          'Custom favicon for your site. Recommended: square image, at least 32x32px. Supports ICO, PNG, or SVG.',
+      },
+    },
+    {
       name: 'headerImage',
       type: 'upload',
       relationTo: 'media',

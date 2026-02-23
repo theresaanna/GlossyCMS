@@ -31,6 +31,7 @@ import * as migration_20260222_010000_seed_default_content from './20260222_0100
 import * as migration_20260222_020000_add_stripe_plan_fields from './20260222_020000_add_stripe_plan_fields';
 import * as migration_20260222_030000_add_pending_payment_status from './20260222_030000_add_pending_payment_status';
 import * as migration_20260222_040000_add_site_api_key from './20260222_040000_add_site_api_key';
+import * as migration_20260223_120000_add_favicon_field from './20260223_120000_add_favicon_field';
 
 export const migrations = [
   {
@@ -197,5 +198,10 @@ export const migrations = [
     up: migration_20260222_040000_add_site_api_key.up,
     down: migration_20260222_040000_add_site_api_key.down,
     name: '20260222_040000_add_site_api_key',
+  },
+  {
+    up: migration_20260223_120000_add_favicon_field.up,
+    down: migration_20260223_120000_add_favicon_field.down,
+    name: '20260223_120000_add_favicon_field',
   },
 ];

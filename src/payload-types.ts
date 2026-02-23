@@ -2168,6 +2168,10 @@ export interface SiteSetting {
    */
   ogImage?: (number | null) | Media;
   /**
+   * Custom favicon for your site. Recommended: square image, at least 32x32px. Supports ICO, PNG, or SVG.
+   */
+  favicon?: (number | null) | Media;
+  /**
    * A header/banner image for your site.
    */
   headerImage?: (number | null) | Media;
@@ -2267,6 +2271,7 @@ export interface SiteSettingsSelect<T extends boolean = true> {
   siteTitle?: T;
   siteDescription?: T;
   ogImage?: T;
+  favicon?: T;
   headerImage?: T;
   userImage?: T;
   colorSchemeLight?: T;

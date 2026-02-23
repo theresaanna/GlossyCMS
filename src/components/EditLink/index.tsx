@@ -55,6 +55,9 @@ export const EditLink: React.FC<EditLinkProps> = ({
   } else if (collection && id != null) {
     href = `/admin/collections/${collection}/${id}`
     defaultLabel = collection === 'posts' ? 'Edit this post' : 'Edit this page'
+  } else if (collection && id == null) {
+    href = `/admin/collections/${collection}/create`
+    defaultLabel = 'Draft a new post'
   } else {
     return null
   }
