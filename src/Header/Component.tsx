@@ -1,6 +1,7 @@
 import { HeaderClient } from './Component.client'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import { getMeUser } from '@/utilities/getMeUser'
+import { EditLink } from '@/components/EditLink'
 import React from 'react'
 
 import type { Header, SiteSetting } from '@/payload-types'
@@ -18,12 +19,15 @@ export async function Header() {
   }
 
   return (
-    <HeaderClient
-      data={headerData}
-      headerImage={siteSettings?.headerImage ?? null}
-      userImage={siteSettings?.userImage ?? null}
-      siteTitle={siteSettings?.siteTitle ?? null}
-      isAdmin={isAdmin}
-    />
+    <div className="relative">
+      <HeaderClient
+        data={headerData}
+        headerImage={siteSettings?.headerImage ?? null}
+        userImage={siteSettings?.userImage ?? null}
+        siteTitle={siteSettings?.siteTitle ?? null}
+        isAdmin={isAdmin}
+      />
+      <EditLink global="header" label="Edit header" inline />
+    </div>
   )
 }
