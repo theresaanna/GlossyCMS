@@ -149,4 +149,44 @@ describe('EditLink', () => {
       })
     })
   })
+
+  describe('inline variant', () => {
+    it('renders inline styling when inline prop is true', async () => {
+      mockFetchAuthenticated()
+      render(<EditLink global="header" label="Edit header" inline />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-link')).toBeDefined()
+      })
+
+      const link = screen.getByTestId('edit-link')
+      expect(link.className).toContain('inline-flex')
+      expect(link.className).not.toContain('fixed')
+      expect(link.getAttribute('title')).toBe('Edit header')
+    })
+
+    it('renders fixed styling when inline prop is false', async () => {
+      mockFetchAuthenticated()
+      render(<EditLink global="header" label="Edit header" />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-link')).toBeDefined()
+      })
+
+      const link = screen.getByTestId('edit-link')
+      expect(link.className).toContain('fixed')
+    })
+
+    it('applies custom className', async () => {
+      mockFetchAuthenticated()
+      render(<EditLink global="footer" label="Edit footer" inline className="text-white/60" />)
+
+      await waitFor(() => {
+        expect(screen.getByTestId('edit-link')).toBeDefined()
+      })
+
+      const link = screen.getByTestId('edit-link')
+      expect(link.className).toContain('text-white/60')
+    })
+  })
 })

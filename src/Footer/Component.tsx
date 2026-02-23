@@ -6,6 +6,7 @@ import type { Footer, SiteSetting } from '@/payload-types'
 
 import { ThemeSelector } from '@/providers/Theme/ThemeSelector'
 import { CMSLink } from '@/components/Link'
+import { EditLink } from '@/components/EditLink'
 import { NewsletterForm } from './NewsletterForm'
 
 export async function Footer() {
@@ -42,6 +43,8 @@ export async function Footer() {
           </div>
         </div>
       )}
+
+      <EditLink global="footer" label="Edit footer" inline className="text-white/60 hover:text-white" />
     </footer>
   )
 }
