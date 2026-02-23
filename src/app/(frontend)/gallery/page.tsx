@@ -1,6 +1,7 @@
 import { getPayload, Where } from 'payload'
 import config from '@payload-config'
 import GalleryGrid from '@/components/GalleryGrid'
+import { EditLink } from '@/components/EditLink'
 import themeConfig from '@/theme.config'
 import { getCachedGlobal } from '@/utilities/getGlobals'
 import type { GallerySetting } from '@/payload-types'
@@ -46,6 +47,7 @@ export default async function GalleryPage() {
 
   return (
     <GalleryLayout>
+      <EditLink global="gallery-settings" label="Edit gallery settings" />
       <h1 className="text-4xl font-bold mb-8">{title}</h1>
 
       {validMedia.length === 0 ? (
