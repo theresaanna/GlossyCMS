@@ -8,6 +8,7 @@ import React, { cache } from 'react'
 import { homeStatic } from '@/endpoints/seed/home-static'
 
 import { generateMeta } from '@/utilities/generateMeta'
+import { EditLink } from '@/components/EditLink'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import themeConfig from '@/theme.config'
@@ -72,6 +73,7 @@ export default async function Page({ params: paramsPromise }: Args) {
       blocks={layout}
       auxiliaryContent={
         <>
+          <EditLink collection="pages" id={page.id} />
           <PageClient />
           {/* Allows redirects for valid pages too */}
           <PayloadRedirects disableNotFound url={url} />

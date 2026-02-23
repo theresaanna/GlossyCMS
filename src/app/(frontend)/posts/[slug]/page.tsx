@@ -7,6 +7,7 @@ import { draftMode } from 'next/headers'
 import React, { cache } from 'react'
 
 import { generateMeta } from '@/utilities/generateMeta'
+import { EditLink } from '@/components/EditLink'
 import PageClient from './page.client'
 import { LivePreviewListener } from '@/components/LivePreviewListener'
 import themeConfig from '@/theme.config'
@@ -54,6 +55,7 @@ export default async function Post({ params: paramsPromise }: Args) {
       post={post}
       auxiliaryContent={
         <>
+          <EditLink collection="posts" id={post.id} />
           <PageClient />
           {/* Allows redirects for valid pages too */}
           <PayloadRedirects disableNotFound url={url} />
