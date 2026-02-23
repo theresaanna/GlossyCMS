@@ -8,6 +8,7 @@ import type { Header } from '@/payload-types'
 
 import { HeaderNav } from './Nav'
 import { SiteBanner, type SiteBannerProps } from '@/components/SiteBanner'
+import { EditLink } from '@/components/EditLink'
 
 interface HeaderClientProps extends SiteBannerProps {
   data: Header
@@ -46,9 +47,12 @@ export const HeaderClient: React.FC<HeaderClientProps> = ({
       />
       <div className="container py-4 flex flex-col sm:flex-row items-center sm:justify-between gap-2 sm:gap-0">
         {siteTitle && (
-          <Link href="/" className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground font-heading hover:no-underline">
-            {siteTitle}
-          </Link>
+          <div className="flex items-center gap-2">
+            <Link href="/" className="text-2xl md:text-3xl lg:text-4xl font-bold text-foreground font-heading hover:no-underline">
+              {siteTitle}
+            </Link>
+            <EditLink global="site-settings" label="Edit site title" inline />
+          </div>
         )}
         <HeaderNav data={data} />
       </div>
