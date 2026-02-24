@@ -18,7 +18,7 @@ export const LowImpactHero: React.FC<LowImpactHeroType> = ({ children, richText 
   return (
     <div className="container">
       <div className="max-w-[48rem]">
-        {children || (richText && <RichText data={richText} enableGutter={false} />)}
+        {children || (richText && <RichText className="prose-h1:text-base prose-h1:md:text-lg prose-h1:lg:text-xl prose-h1:font-heading" data={richText} enableGutter={false} />)}
       </div>
     </div>
   )
