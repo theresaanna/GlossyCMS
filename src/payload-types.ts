@@ -213,7 +213,6 @@ export interface Page {
           id?: string | null;
         }[]
       | null;
-    media?: (number | null) | Media;
   };
   layout: (
     | CallToActionBlock
@@ -1352,7 +1351,6 @@ export interface PagesSelect<T extends boolean = true> {
                   };
               id?: T;
             };
-        media?: T;
       };
   layout?:
     | T

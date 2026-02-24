@@ -108,7 +108,7 @@ export default buildConfig({
     Comments,
     NewsletterRecipients,
     Newsletters,
-    ...(isPrimaryInstance ? [ProvisionedSites] : []),
+    ProvisionedSites,
   ],
   cors: [getServerSideURL()].filter(Boolean),
   serverURL: getServerSideURL(),
@@ -144,6 +144,6 @@ export default buildConfig({
         return authHeader === `Bearer ${secret}`
       },
     },
-    tasks: [...(isPrimaryInstance ? [provisionSiteTask] : [])],
+    tasks: [provisionSiteTask],
   },
 })

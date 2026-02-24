@@ -5,6 +5,8 @@ import { authenticated } from '../../access/authenticated'
 import { teardownProvisionedSite } from './hooks/teardownProvisionedSite'
 import { validateSubdomain } from './hooks/validateSubdomain'
 
+const isPrimaryInstance = process.env.IS_PRIMARY_INSTANCE === 'true'
+
 export const ProvisionedSites: CollectionConfig = {
   slug: 'provisioned-sites',
   access: {
@@ -15,6 +17,7 @@ export const ProvisionedSites: CollectionConfig = {
   },
   defaultSort: '-createdAt',
   admin: {
+    hidden: !isPrimaryInstance,
     defaultColumns: ['subdomain', 'ownerEmail', 'plan', 'status', 'provisionedAt'],
     listSearchableFields: ['subdomain', 'ownerEmail'],
     useAsTitle: 'subdomain',
