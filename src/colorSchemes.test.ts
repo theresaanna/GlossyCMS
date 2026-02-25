@@ -42,4 +42,28 @@ describe('colorSchemes', () => {
     const scheme: ColorScheme = 'default'
     expect(scheme).toBe('default')
   })
+
+  it('each scheme has a colors object with arrays matching its modes', () => {
+    for (const scheme of colorSchemes) {
+      expect(scheme.colors).toBeDefined()
+      for (const mode of scheme.modes) {
+        const modeColors = scheme.colors[mode as keyof typeof scheme.colors]
+        expect(modeColors).toBeDefined()
+        expect(Array.isArray(modeColors)).toBe(true)
+        expect(modeColors!.length).toBe(4)
+      }
+    }
+  })
+
+  it('color arrays contain valid oklch strings', () => {
+    const oklchPattern = /^oklch\(.+\)$/
+    for (const scheme of colorSchemes) {
+      for (const mode of scheme.modes) {
+        const modeColors = scheme.colors[mode as keyof typeof scheme.colors]!
+        for (const color of modeColors) {
+          expect(color).toMatch(oklchPattern)
+        }
+      }
+    }
+  })
 })

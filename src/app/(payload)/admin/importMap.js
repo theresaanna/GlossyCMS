@@ -32,6 +32,8 @@ import { ReindexButton as ReindexButton_aead06e4cbf6b2620c5c51c9ab283634 } from 
 import { FolderTypeField as FolderTypeField_3817bf644402e67bfe6577f60ef982de } from '@payloadcms/ui'
 import { RowLabel as RowLabel_ec255a65fa6fa8d1faeb09cf35284224 } from '@/Header/RowLabel'
 import { RowLabel as RowLabel_1f6ff6ff633e3695d348f4f3c58f1466 } from '@/Footer/RowLabel'
+import { default as default_db7003b2a2553af1e0336f0a2a054898 } from '@/components/admin/ColorSchemeSelectLight'
+import { default as default_16485bb2cee30364b6583dd07e381355 } from '@/components/admin/ColorSchemeSelectDark'
 import { default as default_8dcb7ddfb5353a39efaf4b2cd84d9d6f } from '@/components/admin/ReloadOnColorSchemeChange'
 import { default as default_497ff965a89fc4c87f4d374e11f3f378 } from '@/components/AdminAvatar'
 import { default as default_c1363893506d7ed29a71d1a4da01ddb5 } from '@/components/AdminIcon'
@@ -78,6 +80,8 @@ export const importMap = {
   "@payloadcms/ui#FolderTypeField": FolderTypeField_3817bf644402e67bfe6577f60ef982de,
   "@/Header/RowLabel#RowLabel": RowLabel_ec255a65fa6fa8d1faeb09cf35284224,
   "@/Footer/RowLabel#RowLabel": RowLabel_1f6ff6ff633e3695d348f4f3c58f1466,
+  "@/components/admin/ColorSchemeSelectLight#default": default_db7003b2a2553af1e0336f0a2a054898,
+  "@/components/admin/ColorSchemeSelectDark#default": default_16485bb2cee30364b6583dd07e381355,
   "@/components/admin/ReloadOnColorSchemeChange#default": default_8dcb7ddfb5353a39efaf4b2cd84d9d6f,
   "@/components/AdminAvatar#default": default_497ff965a89fc4c87f4d374e11f3f378,
   "@/components/AdminIcon#default": default_c1363893506d7ed29a71d1a4da01ddb5,

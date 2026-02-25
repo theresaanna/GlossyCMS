@@ -81,8 +81,10 @@ export const SiteSettings: GlobalConfig = {
           defaultValue: 'default',
           options: lightColorSchemeOptions,
           admin: {
-            description: 'The color scheme used when the site is in light mode.',
             width: '50%',
+            components: {
+              Field: '@/components/admin/ColorSchemeSelectLight',
+            },
           },
         },
         {
@@ -92,8 +94,10 @@ export const SiteSettings: GlobalConfig = {
           defaultValue: 'default',
           options: darkColorSchemeOptions,
           admin: {
-            description: 'The color scheme used when the site is in dark mode.',
             width: '50%',
+            components: {
+              Field: '@/components/admin/ColorSchemeSelectDark',
+            },
           },
         },
       ],
