@@ -199,11 +199,15 @@ describe('SiteSettings global config', () => {
       expect(rowFieldNames).toContain('colorSchemeDark')
     })
 
-    it('color scheme fields have descriptions', () => {
+    it('color scheme fields use custom Field components with color swatches', () => {
       const lightField = allFields.find((f) => f.name === 'colorSchemeLight')
       const darkField = allFields.find((f) => f.name === 'colorSchemeDark')
-      expect(lightField.admin.description).toContain('light')
-      expect(darkField.admin.description).toContain('dark')
+      expect(lightField.admin.components.Field).toBe(
+        '@/components/admin/ColorSchemeSelectLight',
+      )
+      expect(darkField.admin.components.Field).toBe(
+        '@/components/admin/ColorSchemeSelectDark',
+      )
     })
   })
 })
