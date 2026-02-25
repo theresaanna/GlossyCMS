@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
-import { getSitePlan } from '@/utilities/plan'
+import { getSitePlan, isPrimaryInstance } from '@/utilities/plan'
 
 export async function POST(req: NextRequest) {
-  if (getSitePlan() !== 'pro') {
+  if (getSitePlan() !== 'pro' && !isPrimaryInstance()) {
     return NextResponse.json(
       { error: 'Video uploads require the Pro plan.' },
       { status: 403 },
