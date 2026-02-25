@@ -23,6 +23,7 @@ import { plugins } from './plugins'
 import { defaultLexical } from '@/fields/defaultLexical'
 import { getServerSideURL } from './utilities/getURL'
 import { provisionSiteTask } from './jobs/provision-site'
+import { ensureHomePage } from './utilities/ensureHomePage'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -122,6 +123,9 @@ export default buildConfig({
       }
     : {}),
   globals: [Header, Footer, Gallery, AdultContent, SiteSettings],
+  onInit: async (payload) => {
+    await ensureHomePage(payload)
+  },
   plugins,
   secret: process.env.PAYLOAD_SECRET,
   sharp,
