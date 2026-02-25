@@ -26,12 +26,14 @@ describe('ensureHomePage', () => {
       where: { slug: { equals: 'home' } },
       limit: 1,
       depth: 0,
+      overrideAccess: true,
     })
     expect(payload.create).toHaveBeenCalledTimes(1)
     expect(payload.create).toHaveBeenCalledWith(
       expect.objectContaining({
         collection: 'pages',
         depth: 0,
+        overrideAccess: true,
         context: { disableRevalidate: true },
         data: expect.objectContaining({
           title: 'Home',
@@ -54,6 +56,15 @@ describe('ensureHomePage', () => {
     expect(payload.find).toHaveBeenCalledTimes(1)
     expect(payload.create).not.toHaveBeenCalled()
     expect(payload.logger.info).not.toHaveBeenCalled()
+  })
+
+  it('uses overrideAccess so it works without an authenticated user', async () => {
+    const payload = createMockPayload()
+
+    await ensureHomePage(payload)
+
+    expect(payload.find.mock.calls[0][0].overrideAccess).toBe(true)
+    expect(payload.create.mock.calls[0][0].overrideAccess).toBe(true)
   })
 
   it('creates a page with published status and content layout', async () => {
