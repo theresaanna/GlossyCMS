@@ -50,7 +50,7 @@ describe('colorSchemes', () => {
         const modeColors = scheme.colors[mode as keyof typeof scheme.colors]
         expect(modeColors).toBeDefined()
         expect(Array.isArray(modeColors)).toBe(true)
-        expect(modeColors!.length).toBe(4)
+        expect(modeColors!.length).toBe(5)
       }
     }
   })
