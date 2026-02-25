@@ -6,7 +6,14 @@ export function getSitePlan(): SitePlan {
   return 'basic'
 }
 
+export function isPrimaryInstance(): boolean {
+  return process.env.IS_PRIMARY_INSTANCE === 'true'
+}
+
 export function canUploadMediaType(mimeType: string): boolean {
+  // Primary instance always allows all media types
+  if (isPrimaryInstance()) return true
+
   const plan = getSitePlan()
 
   if (plan === 'pro') return true
