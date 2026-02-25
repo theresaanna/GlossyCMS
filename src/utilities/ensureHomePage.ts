@@ -12,6 +12,7 @@ export async function ensureHomePage(payload: Payload): Promise<void> {
     where: { slug: { equals: 'home' } },
     limit: 1,
     depth: 0,
+    overrideAccess: true,
   })
 
   if (existing.docs.length > 0) {
@@ -21,6 +22,7 @@ export async function ensureHomePage(payload: Payload): Promise<void> {
   await payload.create({
     collection: 'pages',
     depth: 0,
+    overrideAccess: true,
     context: { disableRevalidate: true },
     data: {
       title: 'Home',
