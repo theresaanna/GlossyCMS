@@ -26,6 +26,7 @@ import { getCachedGlobal } from '@/utilities/getGlobals'
 import type { AdultContent as AdultContentType, SiteSetting, Media } from '@/payload-types'
 import { draftMode } from 'next/headers'
 import themeConfig from '@/theme.config'
+import { Analytics } from "@vercel/analytics/next"
 
 import './globals.css'
 import { getServerSideURL } from '@/utilities/getURL'
@@ -94,6 +95,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
             </SiteLayout>
           </AgeGateProvider>
         </Providers>
+	<Analytics/>
       </body>
     </html>
   )
