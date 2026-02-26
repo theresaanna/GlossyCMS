@@ -99,6 +99,7 @@ export default buildConfig({
       connectionString: process.env.NEON_POSTGRES_URL || process.env.POSTGRES_URL,
       connectionTimeoutMillis: 10000,
     },
+    push: process.env.PAYLOAD_DB_PUSH === 'true',
   }),
   collections: [
     Pages,

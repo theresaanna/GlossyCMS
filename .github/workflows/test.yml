@@ -73,6 +73,7 @@ jobs:
       SITE_DESCRIPTION: A website powered by GlossyCMS.
       FROM_EMAIL: test@example.com
       FROM_NAME: GlossyCMS
+      PAYLOAD_DB_PUSH: 'true'
 
     steps:
       - uses: actions/checkout@v4
@@ -91,11 +92,9 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install chromium --with-deps
 
-      - name: Run database migrations
-        run: echo y | pnpm exec cross-env NODE_OPTIONS=--no-deprecation payload migrate
-
       - name: Start dev server
         run: |
+          # PAYLOAD_DB_PUSH=true tells Payload to push the schema directly (skip migrations)
           pnpm dev &
           # Wait for the server to be ready
           echo "Waiting for dev server..."
