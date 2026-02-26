@@ -157,7 +157,9 @@ jobs:
           echo "Database seeded successfully"
 
       - name: Run E2E tests
-        run: pnpm test:e2e
+        run: pnpm exec playwright test --config=playwright.config.ts
+        env:
+          NODE_OPTIONS: '--no-deprecation'
 
       - name: Upload Playwright report
         if: always()
