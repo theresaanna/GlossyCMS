@@ -55,6 +55,16 @@ test.describe('Navigation', () => {
       await expect(payloadLink).toHaveAttribute('target', '_blank')
     })
 
+    test('displays bug report link', async ({ page }) => {
+      await page.goto('/')
+
+      const footer = page.locator('footer')
+      const bugLink = footer.getByRole('link', { name: 'Report a bug' })
+      await expect(bugLink).toBeVisible()
+      await expect(bugLink).toHaveAttribute('href', 'https://wkf.ms/4qSABHT')
+      await expect(bugLink).toHaveAttribute('target', '_blank')
+    })
+
     test('site title in footer links to homepage', async ({ page }) => {
       await page.goto('/posts')
 
