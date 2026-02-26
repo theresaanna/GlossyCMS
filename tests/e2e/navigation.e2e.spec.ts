@@ -59,7 +59,7 @@ test.describe('Navigation', () => {
       await page.goto('/posts')
 
       const footer = page.locator('footer')
-      const homeLink = footer.getByRole('link').filter({ has: page.locator('[href="/"]') }).first()
+      const homeLink = footer.locator('a[href="/"]').first()
       await homeLink.click()
       await page.waitForURL('/')
 
