@@ -32,12 +32,12 @@ jobs:
           COVERAGE=$(node -e "const c = require('./coverage/coverage-summary.json'); console.log(c.total.lines.pct)")
           echo "{\"schemaVersion\":1,\"label\":\"coverage\",\"message\":\"${COVERAGE}%\",\"color\":\"$(node -e "const p=${COVERAGE}; console.log(p>=80?'brightgreen':p>=60?'yellow':'red')")\"}" > coverage-badge.json
 
-      - name: Upload coverage badge
+      - name: Commit coverage badge
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-artifact@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: coverage-badge
-          path: coverage-badge.json
+          commit_message: 'Update coverage badge [skip ci]'
+          file_pattern: coverage-badge.json
 
       - name: Upload coverage report
         if: always()
@@ -45,3 +45,134 @@ jobs:
         with:
           name: coverage-report
           path: coverage/
+
+  e2e-tests:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: glossycms
+          POSTGRES_PASSWORD: glossycms
+          POSTGRES_DB: glossycms
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U glossycms"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=5
+
+    env:
+      POSTGRES_URL: postgresql://glossycms:glossycms@localhost:5432/glossycms
+      PAYLOAD_SECRET: e2e-test-secret-do-not-use-in-production
+      CRON_SECRET: e2e-cron-secret
+      PREVIEW_SECRET: e2e-preview-secret
+      NEXT_PUBLIC_SERVER_URL: http://localhost:3000
+      SITE_NAME: GlossyCMS
+      SITE_DESCRIPTION: A website powered by GlossyCMS.
+      FROM_EMAIL: test@example.com
+      FROM_NAME: GlossyCMS
+      PAYLOAD_DB_PUSH: 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install chromium --with-deps
+
+      - name: Start dev server
+        run: |
+          # PAYLOAD_DB_PUSH=true tells Payload to push the schema directly (skip migrations)
+          pnpm dev &
+          # Wait for the server to be ready
+          echo "Waiting for dev server..."
+          timeout=120
+          while ! curl -sf http://localhost:3000 > /dev/null 2>&1; do
+            timeout=$((timeout - 1))
+            if [ $timeout -le 0 ]; then
+              echo "Dev server failed to start within 120 seconds"
+              exit 1
+            fi
+            sleep 1
+          done
+          echo "Dev server is ready"
+
+      - name: Create user and seed database
+        run: |
+          # Register the first user (works because users table is empty)
+          echo "Creating first user..."
+          REGISTER_RESPONSE=$(curl -sf -X POST http://localhost:3000/api/users/first-register \
+            -H "Content-Type: application/json" \
+            -d '{"email":"ci@example.com","password":"ci-password-123"}')
+
+          TOKEN=$(echo "$REGISTER_RESPONSE" | node -e "
+            let data = '';
+            process.stdin.on('data', chunk => data += chunk);
+            process.stdin.on('end', () => {
+              const json = JSON.parse(data);
+              console.log(json.token);
+            });
+          ")
+
+          if [ -z "$TOKEN" ]; then
+            echo "Failed to get auth token"
+            exit 1
+          fi
+
+          echo "Seeding database..."
+          SEED_RESPONSE=$(curl -sf -X POST http://localhost:3000/next/seed \
+            -H "Content-Type: application/json" \
+            -H "Authorization: JWT $TOKEN")
+
+          echo "Seed response: $SEED_RESPONSE"
+
+          # Verify seed data exists
+          POSTS_COUNT=$(curl -sf http://localhost:3000/api/posts?limit=1 | node -e "
+            let data = '';
+            process.stdin.on('data', chunk => data += chunk);
+            process.stdin.on('end', () => {
+              const json = JSON.parse(data);
+              console.log(json.totalDocs);
+            });
+          ")
+
+          echo "Posts count: $POSTS_COUNT"
+          if [ "$POSTS_COUNT" -lt 3 ]; then
+            echo "Seeding failed — expected at least 3 posts, got $POSTS_COUNT"
+            exit 1
+          fi
+
+          echo "Database seeded successfully"
+
+      - name: Run E2E tests
+        run: pnpm exec playwright test --config=playwright.config.ts
+        env:
+          NODE_OPTIONS: '--no-deprecation'
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 14
+
+      - name: Upload test screenshots
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-screenshots
+          path: test-results/
+          retention-days: 7
