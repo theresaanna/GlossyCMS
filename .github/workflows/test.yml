@@ -32,12 +32,12 @@ jobs:
           COVERAGE=$(node -e "const c = require('./coverage/coverage-summary.json'); console.log(c.total.lines.pct)")
           echo "{\"schemaVersion\":1,\"label\":\"coverage\",\"message\":\"${COVERAGE}%\",\"color\":\"$(node -e "const p=${COVERAGE}; console.log(p>=80?'brightgreen':p>=60?'yellow':'red')")\"}" > coverage-badge.json
 
-      - name: Upload coverage badge
+      - name: Commit coverage badge
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        uses: actions/upload-artifact@v4
+        uses: stefanzweifel/git-auto-commit-action@v5
         with:
-          name: coverage-badge
-          path: coverage-badge.json
+          commit_message: 'Update coverage badge [skip ci]'
+          file_pattern: coverage-badge.json
 
       - name: Upload coverage report
         if: always()
