@@ -55,6 +55,16 @@ test.describe('Navigation', () => {
       await expect(payloadLink).toHaveAttribute('target', '_blank')
     })
 
+    test('displays powered by Glossy link', async ({ page }) => {
+      await page.goto('/')
+
+      const footer = page.locator('footer')
+      const glossyLink = footer.getByRole('link', { name: 'Powered by Glossy' })
+      await expect(glossyLink).toBeVisible()
+      await expect(glossyLink).toHaveAttribute('href', 'https://glossysites.live')
+      await expect(glossyLink).toHaveAttribute('target', '_blank')
+    })
+
     test('displays bug report link', async ({ page }) => {
       await page.goto('/')
 

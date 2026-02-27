@@ -4,16 +4,35 @@ import userEvent from '@testing-library/user-event'
 import { CommentForm } from '../CommentForm'
 
 const mockSubmitComment = vi.fn()
+const mockRequestCommentVerification = vi.fn()
 
 vi.mock('@/app/(frontend)/posts/[slug]/actions', () => ({
   submitComment: (...args: any[]) => mockSubmitComment(...args),
+  requestCommentVerification: (...args: any[]) => mockRequestCommentVerification(...args),
 }))
+
+/**
+ * Helper: simulate the verify flow so the submit button becomes enabled.
+ * Enters email, clicks Verify, and waits for the "✓ Verified" badge.
+ */
+async function verifyEmail(user: ReturnType<typeof userEvent.setup>, email = 'alice@test.com') {
+  await user.type(screen.getByPlaceholderText('your@email.com'), email)
+  await user.click(screen.getByRole('button', { name: 'Verify' }))
+  await waitFor(() => {
+    expect(screen.getByText('✓ Verified')).toBeDefined()
+  })
+}
 
 describe('CommentForm', () => {
   beforeEach(() => {
     vi.clearAllMocks()
     localStorage.clear()
     mockSubmitComment.mockResolvedValue({ success: true, message: 'Comment submitted!' })
+    // Default: verification returns "already verified" to fast-track tests
+    mockRequestCommentVerification.mockResolvedValue({
+      success: true,
+      message: 'Your email is already verified.',
+    })
   })
 
   it('renders name, email, and body fields', () => {
@@ -36,6 +55,25 @@ describe('CommentForm', () => {
     expect(screen.getByRole('button', { name: 'Reply' })).toBeDefined()
   })
 
+  it('renders a Verify button next to the email field', () => {
+    render(<CommentForm postId="post-1" />)
+
+    expect(screen.getByRole('button', { name: 'Verify' })).toBeDefined()
+  })
+
+  it('submit button is disabled before email is verified', () => {
+    render(<CommentForm postId="post-1" />)
+
+    const submitButton = screen.getByRole('button', { name: 'Post Comment' })
+    expect(submitButton).toHaveProperty('disabled', true)
+  })
+
+  it('shows verification hint when email is not verified', () => {
+    render(<CommentForm postId="post-1" />)
+
+    expect(screen.getByText('You must verify your email before posting a comment.')).toBeDefined()
+  })
+
   it('loads saved name and email from localStorage', () => {
     localStorage.setItem('commentAuthorName', 'Saved Name')
     localStorage.setItem('commentAuthorEmail', 'saved@email.com')
@@ -46,12 +84,72 @@ describe('CommentForm', () => {
     expect(screen.getByDisplayValue('saved@email.com')).toBeDefined()
   })
 
-  it('submits form data and shows success message', async () => {
+  it('clicking Verify without email shows error', async () => {
+    const user = userEvent.setup()
+    render(<CommentForm postId="post-1" />)
+
+    await user.click(screen.getByRole('button', { name: 'Verify' }))
+
+    await waitFor(() => {
+      expect(screen.getByText('Please enter your email address first.')).toBeDefined()
+    })
+  })
+
+  it('clicking Verify sends verification request', async () => {
+    mockRequestCommentVerification.mockResolvedValue({
+      success: true,
+      message: 'Verification email sent! Please check your inbox and click the link.',
+    })
+
+    const user = userEvent.setup()
+    render(<CommentForm postId="post-1" />)
+
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await user.click(screen.getByRole('button', { name: 'Verify' }))
+
+    await waitFor(() => {
+      expect(mockRequestCommentVerification).toHaveBeenCalledWith('alice@test.com')
+    })
+
+    expect(
+      screen.getByText('Verification email sent! Please check your inbox and click the link.'),
+    ).toBeDefined()
+  })
+
+  it('shows verified badge and enables submit after email is already verified', async () => {
+    const user = userEvent.setup()
+    render(<CommentForm postId="post-1" />)
+
+    await verifyEmail(user)
+
+    // Submit button should now be enabled
+    const submitButton = screen.getByRole('button', { name: 'Post Comment' })
+    expect(submitButton).toHaveProperty('disabled', false)
+  })
+
+  it('shows "I\'ve verified" button after verification email is sent', async () => {
+    mockRequestCommentVerification.mockResolvedValue({
+      success: true,
+      message: 'Verification email sent! Please check your inbox and click the link.',
+    })
+
+    const user = userEvent.setup()
+    render(<CommentForm postId="post-1" />)
+
+    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await user.click(screen.getByRole('button', { name: 'Verify' }))
+
+    await waitFor(() => {
+      expect(screen.getByRole('button', { name: "I've verified" })).toBeDefined()
+    })
+  })
+
+  it('submits form data and shows success message when email is verified', async () => {
     const user = userEvent.setup()
     render(<CommentForm postId="post-1" />)
 
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(screen.getByPlaceholderText('Write your comment...'), 'Hello world')
     await user.click(screen.getByRole('button', { name: 'Post Comment' }))
 
@@ -74,7 +172,7 @@ describe('CommentForm', () => {
     render(<CommentForm postId="post-1" parentId="parent-1" />)
 
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(screen.getByPlaceholderText('Write your comment...'), 'A reply')
     await user.click(screen.getByRole('button', { name: 'Reply' }))
 
@@ -91,7 +189,7 @@ describe('CommentForm', () => {
     render(<CommentForm postId="post-1" />)
 
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(screen.getByPlaceholderText('Write your comment...'), 'Test')
     await user.click(screen.getByRole('button', { name: 'Post Comment' }))
 
@@ -107,7 +205,7 @@ describe('CommentForm', () => {
 
     const bodyInput = screen.getByPlaceholderText('Write your comment...')
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(bodyInput, 'My comment')
     await user.click(screen.getByRole('button', { name: 'Post Comment' }))
 
@@ -122,7 +220,7 @@ describe('CommentForm', () => {
     render(<CommentForm postId="post-1" onSuccess={onSuccess} />)
 
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(screen.getByPlaceholderText('Write your comment...'), 'Test')
     await user.click(screen.getByRole('button', { name: 'Post Comment' }))
 
@@ -137,7 +235,7 @@ describe('CommentForm', () => {
     render(<CommentForm postId="post-1" />)
 
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(screen.getByPlaceholderText('Write your comment...'), 'Test')
     await user.click(screen.getByRole('button', { name: 'Post Comment' }))
 
@@ -158,7 +256,7 @@ describe('CommentForm', () => {
     render(<CommentForm postId="post-1" />)
 
     await user.type(screen.getByPlaceholderText('Your name'), 'Alice')
-    await user.type(screen.getByPlaceholderText('your@email.com'), 'alice@test.com')
+    await verifyEmail(user)
     await user.type(screen.getByPlaceholderText('Write your comment...'), 'Test')
     await user.click(screen.getByRole('button', { name: 'Post Comment' }))
 

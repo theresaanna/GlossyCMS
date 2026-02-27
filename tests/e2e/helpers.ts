@@ -130,3 +130,72 @@ export async function deleteUser(token: string, userId: number): Promise<void> {
     headers: { Authorization: `JWT ${token}` },
   })
 }
+
+/**
+ * Create a verified comment-verification token for an email address via the API.
+ * This simulates the user clicking the verification link in their email.
+ * Requires an authenticated admin token.
+ */
+export async function createVerifiedEmailToken(
+  authToken: string,
+  email: string,
+): Promise<number> {
+  const crypto = await import('crypto')
+  const token = crypto.randomBytes(32).toString('hex')
+  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString()
+
+  const res = await fetch(`${BASE_URL}/api/comment-verification-tokens`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `JWT ${authToken}`,
+    },
+    body: JSON.stringify({
+      email: email.toLowerCase(),
+      token,
+      expiresAt,
+      verified: true,
+    }),
+  })
+
+  if (!res.ok) {
+    const text = await res.text()
+    throw new Error(`Failed to create verification token: ${res.status} ${text}`)
+  }
+
+  const data = await res.json()
+  return data.doc.id
+}
+
+/**
+ * Delete a comment verification token by ID.
+ */
+export async function deleteVerificationToken(
+  authToken: string,
+  tokenId: number,
+): Promise<void> {
+  await fetch(`${BASE_URL}/api/comment-verification-tokens/${tokenId}`, {
+    method: 'DELETE',
+    headers: { Authorization: `JWT ${authToken}` },
+  })
+}
+
+/**
+ * Get a verification token doc by looking up the token string.
+ * Requires an authenticated admin token.
+ */
+export async function getVerificationTokenByValue(
+  authToken: string,
+  tokenValue: string,
+): Promise<{ id: number; email: string; verified: boolean; expiresAt: string } | null> {
+  const res = await fetch(
+    `${BASE_URL}/api/comment-verification-tokens?where[token][equals]=${tokenValue}&limit=1`,
+    {
+      headers: { Authorization: `JWT ${authToken}` },
+    },
+  )
+
+  if (!res.ok) return null
+  const data = await res.json()
+  return data.docs?.[0] || null
+}
