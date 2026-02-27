@@ -73,6 +73,7 @@ export interface Config {
     categories: Category;
     users: User;
     comments: Comment;
+    'comment-verification-tokens': CommentVerificationToken;
     'newsletter-recipients': NewsletterRecipient;
     newsletters: Newsletter;
     'provisioned-sites': ProvisionedSite;
@@ -99,6 +100,7 @@ export interface Config {
     categories: CategoriesSelect<false> | CategoriesSelect<true>;
     users: UsersSelect<false> | UsersSelect<true>;
     comments: CommentsSelect<false> | CommentsSelect<true>;
+    'comment-verification-tokens': CommentVerificationTokensSelect<false> | CommentVerificationTokensSelect<true>;
     'newsletter-recipients': NewsletterRecipientsSelect<false> | NewsletterRecipientsSelect<true>;
     newsletters: NewslettersSelect<false> | NewslettersSelect<true>;
     'provisioned-sites': ProvisionedSitesSelect<false> | ProvisionedSitesSelect<true>;
@@ -965,6 +967,19 @@ export interface Comment {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comment-verification-tokens".
+ */
+export interface CommentVerificationToken {
+  id: number;
+  email: string;
+  token: string;
+  expiresAt: string;
+  verified?: boolean | null;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "newsletter-recipients".
  */
 export interface NewsletterRecipient {
@@ -1254,6 +1269,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'comments';
         value: number | Comment;
+      } | null)
+    | ({
+        relationTo: 'comment-verification-tokens';
+        value: number | CommentVerificationToken;
       } | null)
     | ({
         relationTo: 'newsletter-recipients';
@@ -1718,6 +1737,18 @@ export interface CommentsSelect<T extends boolean = true> {
   depth?: T;
   status?: T;
   ipAddress?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "comment-verification-tokens_select".
+ */
+export interface CommentVerificationTokensSelect<T extends boolean = true> {
+  email?: T;
+  token?: T;
+  expiresAt?: T;
+  verified?: T;
   updatedAt?: T;
   createdAt?: T;
 }
