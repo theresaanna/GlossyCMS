@@ -116,7 +116,7 @@ export const provisionSiteTask: TaskConfig<{
         PREVIEW_SECRET: generateSecret(),
         RESEND_API_KEY: process.env.RESEND_API_KEY || '',
         BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN || '',
-        FROM_EMAIL: `hello@${domain}`,
+        FROM_EMAIL: `${subdomain}@glossysites.live`,
         FROM_NAME: site.siteName || subdomain,
         SITE_NAME: site.siteName || subdomain,
         SITE_DESCRIPTION: site.siteDescription || 'A website powered by GlossyCMS.',
