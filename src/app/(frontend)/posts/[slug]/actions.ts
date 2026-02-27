@@ -170,21 +170,30 @@ export async function submitComment(formData: FormData): Promise<SubmitCommentRe
   const now = new Date().toISOString()
   const normalizedEmail = authorEmail.trim().toLowerCase()
 
-  const verifiedToken = await payload.find({
-    collection: 'comment-verification-tokens',
-    overrideAccess: true,
-    where: {
-      email: { equals: normalizedEmail },
-      verified: { equals: true },
-      expiresAt: { greater_than: now },
-    },
-    limit: 1,
-  })
+  try {
+    const verifiedToken = await payload.find({
+      collection: 'comment-verification-tokens',
+      overrideAccess: true,
+      where: {
+        email: { equals: normalizedEmail },
+        verified: { equals: true },
+        expiresAt: { greater_than: now },
+      },
+      limit: 1,
+    })
 
-  if (verifiedToken.totalDocs === 0) {
+    if (verifiedToken.totalDocs === 0) {
+      return {
+        success: false,
+        message: 'Please verify your email address before posting a comment.',
+      }
+    }
+  } catch (err) {
+    // If the verification table doesn't exist or query fails, log and reject
+    console.error('[comment-submit] Email verification check failed:', err)
     return {
       success: false,
-      message: 'Please verify your email address before posting a comment.',
+      message: 'Unable to verify your email. Please try again.',
     }
   }
 
