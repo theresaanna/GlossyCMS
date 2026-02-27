@@ -48,6 +48,15 @@ export async function Footer() {
         <EditLink global="footer" label="Edit footer" inline className="text-white/60 hover:text-white" />
         <span className="text-white/20">·</span>
         <a
+          href="https://glossysites.live"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Powered by Glossy
+        </a>
+        <span className="text-white/20">·</span>
+        <a
           href="https://wkf.ms/4qSABHT"
           target="_blank"
           rel="noopener noreferrer"

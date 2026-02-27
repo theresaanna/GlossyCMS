@@ -5,7 +5,10 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { submitComment } from '@/app/(frontend)/posts/[slug]/actions'
+import {
+  submitComment,
+  requestCommentVerification,
+} from '@/app/(frontend)/posts/[slug]/actions'
 
 type CommentFormProps = {
   postId: string
@@ -20,6 +23,9 @@ export const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSu
   const [message, setMessage] = useState('')
   const [isError, setIsError] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [emailVerified, setEmailVerified] = useState(false)
+  const [verificationSent, setVerificationSent] = useState(false)
+  const [isSendingVerification, setIsSendingVerification] = useState(false)
 
   useEffect(() => {
     const savedName = localStorage.getItem('commentAuthorName')
@@ -27,6 +33,51 @@ export const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSu
     if (savedName) setAuthorName(savedName)
     if (savedEmail) setAuthorEmail(savedEmail)
   }, [])
+
+  async function handleVerifyEmail() {
+    if (!authorEmail?.trim()) {
+      setMessage('Please enter your email address first.')
+      setIsError(true)
+      return
+    }
+
+    setIsSendingVerification(true)
+    setMessage('')
+
+    const result = await requestCommentVerification(authorEmail)
+
+    setMessage(result.message)
+    setIsError(!result.success)
+    setIsSendingVerification(false)
+
+    if (result.success) {
+      if (result.message === 'Your email is already verified.') {
+        setEmailVerified(true)
+      } else {
+        setVerificationSent(true)
+      }
+    }
+  }
+
+  async function handleCheckVerification() {
+    setIsSendingVerification(true)
+    setMessage('')
+
+    // Re-request verification to check status — the server action returns
+    // "Your email is already verified." when the token has been clicked.
+    const result = await requestCommentVerification(authorEmail)
+
+    setIsSendingVerification(false)
+
+    if (result.success && result.message === 'Your email is already verified.') {
+      setEmailVerified(true)
+      setMessage('Email verified! You can now post your comment.')
+      setIsError(false)
+    } else {
+      setMessage('Email not yet verified. Please check your inbox and click the verification link.')
+      setIsError(true)
+    }
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -69,14 +120,48 @@ export const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSu
         </div>
         <div className="space-y-2">
           <Label htmlFor={`email-${parentId || 'root'}`}>Email</Label>
-          <Input
-            id={`email-${parentId || 'root'}`}
-            type="email"
-            value={authorEmail}
-            onChange={(e) => setAuthorEmail(e.target.value)}
-            required
-            placeholder="your@email.com"
-          />
+          <div className="flex gap-2">
+            <Input
+              id={`email-${parentId || 'root'}`}
+              type="email"
+              value={authorEmail}
+              onChange={(e) => {
+                setAuthorEmail(e.target.value)
+                setEmailVerified(false)
+                setVerificationSent(false)
+              }}
+              required
+              placeholder="your@email.com"
+              disabled={emailVerified}
+            />
+            {!emailVerified && !verificationSent && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleVerifyEmail}
+                disabled={isSendingVerification}
+                className="shrink-0"
+              >
+                {isSendingVerification ? 'Sending...' : 'Verify'}
+              </Button>
+            )}
+            {!emailVerified && verificationSent && (
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCheckVerification}
+                disabled={isSendingVerification}
+                className="shrink-0"
+              >
+                {isSendingVerification ? 'Checking...' : "I've verified"}
+              </Button>
+            )}
+            {emailVerified && (
+              <span className="inline-flex items-center text-sm text-green-600 shrink-0 px-2">
+                ✓ Verified
+              </span>
+            )}
+          </div>
         </div>
       </div>
       <div className="space-y-2">
@@ -95,9 +180,14 @@ export const CommentForm: React.FC<CommentFormProps> = ({ postId, parentId, onSu
           {message}
         </p>
       )}
-      <Button type="submit" disabled={isSubmitting}>
+      <Button type="submit" disabled={isSubmitting || !emailVerified}>
         {isSubmitting ? 'Submitting...' : parentId ? 'Reply' : 'Post Comment'}
       </Button>
+      {!emailVerified && (
+        <p className="text-sm text-muted-foreground">
+          You must verify your email before posting a comment.
+        </p>
+      )}
     </form>
   )
 }

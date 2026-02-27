@@ -7,6 +7,7 @@ import { resendAdapter } from '@payloadcms/email-resend'
 
 import { Categories } from './collections/Categories'
 import { Comments } from './collections/Comments'
+import { CommentVerificationTokens } from './collections/CommentVerificationTokens'
 import { Media } from './collections/Media'
 import { Pages } from './collections/Pages'
 import { Posts } from './collections/Posts'
@@ -108,6 +109,7 @@ export default buildConfig({
     Categories,
     Users,
     Comments,
+    CommentVerificationTokens,
     NewsletterRecipients,
     Newsletters,
     ProvisionedSites,
