@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
+import { isAdmin } from '@/access/isAdmin'
 import { revalidateGallery } from './hooks/revalidateGallery'
 
 export const Gallery: GlobalConfig = {
@@ -7,6 +8,7 @@ export const Gallery: GlobalConfig = {
   label: 'Gallery',
   access: {
     read: () => true,
+    update: isAdmin,
   },
   fields: [
     {

@@ -2,6 +2,7 @@ import type { CollectionConfig } from 'payload'
 
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
+import { isAdmin } from '../../access/isAdmin'
 import { setSubscriptionDates } from './hooks/setSubscriptionDates'
 
 export const NewsletterRecipients: CollectionConfig = {
@@ -9,8 +10,8 @@ export const NewsletterRecipients: CollectionConfig = {
   access: {
     create: anyone,
     read: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    update: isAdmin,
+    delete: isAdmin,
   },
   defaultSort: '-createdAt',
   admin: {

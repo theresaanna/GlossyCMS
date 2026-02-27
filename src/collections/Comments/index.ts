@@ -3,6 +3,7 @@ import type { CollectionConfig } from 'payload'
 import { anyone } from '../../access/anyone'
 import { approvedOrAuthenticated } from '../../access/approvedOrAuthenticated'
 import { authenticated } from '../../access/authenticated'
+import { isAdmin } from '../../access/isAdmin'
 import { notifyCommentRecipients } from './hooks/notifyCommentRecipients'
 import { revalidateComment, revalidateCommentDelete } from './hooks/revalidateComment'
 
@@ -11,8 +12,8 @@ export const Comments: CollectionConfig = {
   access: {
     create: anyone,
     read: approvedOrAuthenticated,
-    update: authenticated,
-    delete: authenticated,
+    update: isAdmin,
+    delete: isAdmin,
   },
   defaultSort: '-createdAt',
   admin: {

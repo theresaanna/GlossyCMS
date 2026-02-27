@@ -33,6 +33,7 @@ import * as migration_20260222_030000_add_pending_payment_status from './2026022
 import * as migration_20260222_040000_add_site_api_key from './20260222_040000_add_site_api_key';
 import * as migration_20260223_120000_add_favicon_field from './20260223_120000_add_favicon_field';
 import * as migration_20260223_130000_add_neon_branch_id from './20260223_130000_add_neon_branch_id';
+import * as migration_20260226_120000_add_user_roles from './20260226_120000_add_user_roles';
 
 export const migrations = [
   {
@@ -209,5 +210,10 @@ export const migrations = [
     up: migration_20260223_130000_add_neon_branch_id.up,
     down: migration_20260223_130000_add_neon_branch_id.down,
     name: '20260223_130000_add_neon_branch_id',
+  },
+  {
+    up: migration_20260226_120000_add_user_roles.up,
+    down: migration_20260226_120000_add_user_roles.down,
+    name: '20260226_120000_add_user_roles',
   },
 ];

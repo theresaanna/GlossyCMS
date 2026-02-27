@@ -1,5 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
+import { isAdmin } from '@/access/isAdmin'
 import { revalidateAdultContent } from './hooks/revalidateAdultContent'
 
 export const AdultContent: GlobalConfig = {
@@ -10,6 +11,7 @@ export const AdultContent: GlobalConfig = {
   },
   access: {
     read: () => true,
+    update: isAdmin,
   },
   fields: [
     {

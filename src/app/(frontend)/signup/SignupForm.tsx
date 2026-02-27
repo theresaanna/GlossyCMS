@@ -115,7 +115,7 @@ export const SignupForm: React.FC = () => {
 
       {/* Cancelled checkout banner */}
       {cancelled && (
-        <div className="mb-6 rounded-md border border-amber-300 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-800 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+        <div className="mb-6 rounded-md border border-warning bg-warning/30 px-4 py-3 text-sm">
           Your payment was cancelled. You can try again whenever you&apos;re ready.
           <button
             type="button"
@@ -134,7 +134,7 @@ export const SignupForm: React.FC = () => {
         {/* Plan Selection */}
         <div>
           <label className="block text-sm font-medium mb-3">
-            Plan <span className="text-red-500">*</span>
+            Plan <span className="text-destructive">*</span>
           </label>
           <div className="grid grid-cols-2 gap-3">
             <button
@@ -173,7 +173,7 @@ export const SignupForm: React.FC = () => {
         {/* Subdomain */}
         <div>
           <label htmlFor="subdomain" className="block text-sm font-medium mb-2">
-            Subdomain <span className="text-red-500">*</span>
+            Subdomain <span className="text-destructive">*</span>
           </label>
           <div className="flex items-center gap-0">
             <input
@@ -200,12 +200,12 @@ export const SignupForm: React.FC = () => {
               <span className="text-muted-foreground">Checking availability...</span>
             )}
             {availability === 'available' && (
-              <span className="text-green-600 dark:text-green-400">
+              <span className="text-success">
                 {subdomain}.glossysites.live is available
               </span>
             )}
             {availability === 'unavailable' && (
-              <span className="text-red-600 dark:text-red-400">{availabilityReason}</span>
+              <span className="text-destructive">{availabilityReason}</span>
             )}
           </div>
         </div>
@@ -213,7 +213,7 @@ export const SignupForm: React.FC = () => {
         {/* Email */}
         <div>
           <label htmlFor="ownerEmail" className="block text-sm font-medium mb-2">
-            Email <span className="text-red-500">*</span>
+            Email <span className="text-destructive">*</span>
           </label>
           <input
             type="email"
@@ -272,7 +272,7 @@ export const SignupForm: React.FC = () => {
 
         {/* Error */}
         {error && (
-          <div className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400">
+          <div className="rounded-md border border-error bg-error/30 px-4 py-3 text-sm">
             {error}
           </div>
         )}

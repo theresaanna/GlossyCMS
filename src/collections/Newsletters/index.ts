@@ -7,15 +7,16 @@ import {
 } from '@payloadcms/richtext-lexical'
 
 import { authenticated } from '../../access/authenticated'
+import { isAdmin } from '../../access/isAdmin'
 import { sendNewsletterHandler } from './endpoints/sendNewsletter'
 
 export const Newsletters: CollectionConfig = {
   slug: 'newsletters',
   access: {
-    create: authenticated,
+    create: isAdmin,
     read: authenticated,
-    update: authenticated,
-    delete: authenticated,
+    update: isAdmin,
+    delete: isAdmin,
   },
   defaultSort: '-createdAt',
   admin: {
