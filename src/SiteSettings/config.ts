@@ -1,6 +1,6 @@
 import type { GlobalConfig } from 'payload'
 
-import { authenticated } from '@/access/authenticated'
+import { isAdmin } from '@/access/isAdmin'
 import { type ColorSchemeMode, colorSchemes } from '@/colorSchemes'
 import { revalidateSiteSettings } from './hooks/revalidateSiteSettings'
 
@@ -19,7 +19,7 @@ export const SiteSettings: GlobalConfig = {
   label: 'Site Settings',
   access: {
     read: () => true,
-    update: authenticated,
+    update: isAdmin,
   },
   fields: [
     {

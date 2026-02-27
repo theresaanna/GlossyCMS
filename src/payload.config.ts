@@ -47,7 +47,7 @@ export default buildConfig({
       Component: '@/components/AdminAvatar',
     },
     components: {
-      actions: ['@/components/admin/ViewLiveSiteLink'],
+      actions: ['@/components/admin/ReportBugLink', '@/components/admin/ViewLiveSiteLink'],
       graphics: {
         Logo: '@/components/AdminLogo',
         Icon: '@/components/AdminIcon',

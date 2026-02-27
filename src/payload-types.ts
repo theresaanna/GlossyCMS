@@ -471,6 +471,10 @@ export interface Category {
 export interface User {
   id: number;
   name?: string | null;
+  /**
+   * Admins have full access. Viewers can only view content in the admin panel.
+   */
+  role: 'admin' | 'viewer';
   updatedAt: string;
   createdAt: string;
   email: string;
@@ -1683,6 +1687,7 @@ export interface CategoriesSelect<T extends boolean = true> {
  */
 export interface UsersSelect<T extends boolean = true> {
   name?: T;
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
@@ -2179,13 +2184,7 @@ export interface SiteSetting {
    * Your profile picture. Displayed in the admin panel navigation and on the site banner.
    */
   userImage?: (number | null) | Media;
-  /**
-   * The color scheme used when the site is in light mode.
-   */
   colorSchemeLight?: ('default' | 'eggplant' | 'ocean' | 'spring' | 'cherry' | '80s') | null;
-  /**
-   * The color scheme used when the site is in dark mode.
-   */
   colorSchemeDark?: ('default' | 'eggplant' | 'ocean' | 'autumn' | 'cherry' | '80s') | null;
   updatedAt?: string | null;
   createdAt?: string | null;

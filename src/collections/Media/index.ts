@@ -10,6 +10,7 @@ import { fileURLToPath } from 'url'
 
 import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
+import { isAdmin } from '../../access/isAdmin'
 import { revalidateMedia, revalidateMediaDelete } from './hooks/revalidateMedia'
 import { canUploadMediaType, PLAN_UPLOAD_ERROR } from '../../utilities/plan'
 
@@ -20,10 +21,10 @@ export const Media: CollectionConfig = {
   slug: 'media',
   folders: true,
   access: {
-    create: authenticated,
-    delete: authenticated,
+    create: isAdmin,
+    delete: isAdmin,
     read: anyone,
-    update: authenticated,
+    update: isAdmin,
   },
   admin: {
     defaultColumns: ['filename', 'filesize', 'createdAt', '_parentFolder'],

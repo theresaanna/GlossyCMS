@@ -3,6 +3,7 @@ import {
   DefaultNodeTypes,
   SerializedBlockNode,
   SerializedLinkNode,
+  SerializedUploadNode,
   type DefaultTypedEditorState,
 } from '@payloadcms/richtext-lexical'
 import {
@@ -16,10 +17,12 @@ import { CodeBlock, CodeBlockProps } from '@/blocks/Code/Component'
 import type {
   BannerBlock as BannerBlockProps,
   CallToActionBlock as CTABlockProps,
+  Media,
   MediaBlock as MediaBlockProps,
 } from '@/payload-types'
 import { BannerBlock } from '@/blocks/Banner/Component'
 import { CallToActionBlock } from '@/blocks/CallToAction/Component'
+import { InlineUploadMedia } from '@/components/RichText/InlineUploadMedia'
 import { cn } from '@/utilities/ui'
 
 type NodeTypes =
@@ -38,6 +41,14 @@ const internalDocToHref = ({ linkNode }: { linkNode: SerializedLinkNode }) => {
 const jsxConverters: JSXConvertersFunction<NodeTypes> = ({ defaultConverters }) => ({
   ...defaultConverters,
   ...LinkJSXConverter({ internalDocToHref }),
+  upload: ({ node }: { node: SerializedUploadNode }) => {
+    const media = node.value as Media | undefined
+    if (typeof node.value !== 'object' || !media) {
+      return null
+    }
+    const alt = (node.fields as { alt?: string })?.alt || media.alt || ''
+    return <InlineUploadMedia media={media} alt={alt} />
+  },
   blocks: {
     banner: ({ node }) => <BannerBlock className="col-start-2 mb-4" {...node.fields} />,
     mediaBlock: ({ node }) => (

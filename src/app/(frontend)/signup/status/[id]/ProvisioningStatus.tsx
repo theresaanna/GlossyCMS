@@ -63,14 +63,14 @@ export const ProvisioningStatus: React.FC<Props> = ({
       {/* Status indicator */}
       <div className="mb-8">
         {(status === 'pending_payment' || status === 'pending' || status === 'provisioning') && (
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 mb-4">
-            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin" />
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/10 mb-4">
+            <div className="w-8 h-8 border-2 border-primary border-t-transparent rounded-full animate-spin" />
           </div>
         )}
         {status === 'active' && (
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-success/30 mb-4">
             <svg
-              className="w-8 h-8 text-green-600 dark:text-green-400"
+              className="w-8 h-8 text-success"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -81,9 +81,9 @@ export const ProvisioningStatus: React.FC<Props> = ({
           </div>
         )}
         {status === 'failed' && (
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/30 mb-4">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-error/30 mb-4">
             <svg
-              className="w-8 h-8 text-red-600 dark:text-red-400"
+              className="w-8 h-8 text-destructive"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -178,7 +178,7 @@ export const ProvisioningStatus: React.FC<Props> = ({
       {status === 'failed' && (
         <div className="space-y-4">
           {error && (
-            <div className="rounded-md border border-red-300 bg-red-50 dark:bg-red-950/20 dark:border-red-800 px-4 py-3 text-sm text-red-700 dark:text-red-400 text-left">
+            <div className="rounded-md border border-error bg-error/30 px-4 py-3 text-sm text-left">
               {error}
             </div>
           )}
@@ -211,9 +211,9 @@ function ProgressStep({
       <div
         className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 ${
           done
-            ? 'bg-green-500'
+            ? 'bg-success'
             : active
-              ? 'bg-blue-500'
+              ? 'bg-primary'
               : 'bg-muted-foreground/20'
         }`}
       >
