@@ -34,6 +34,7 @@ import * as migration_20260222_040000_add_site_api_key from './20260222_040000_a
 import * as migration_20260223_120000_add_favicon_field from './20260223_120000_add_favicon_field';
 import * as migration_20260223_130000_add_neon_branch_id from './20260223_130000_add_neon_branch_id';
 import * as migration_20260226_120000_add_user_roles from './20260226_120000_add_user_roles';
+import * as migration_20260227_030053_add_comment_verification_tokens from './20260227_030053_add_comment_verification_tokens';
 
 export const migrations = [
   {
@@ -215,5 +216,10 @@ export const migrations = [
     up: migration_20260226_120000_add_user_roles.up,
     down: migration_20260226_120000_add_user_roles.down,
     name: '20260226_120000_add_user_roles',
+  },
+  {
+    up: migration_20260227_030053_add_comment_verification_tokens.up,
+    down: migration_20260227_030053_add_comment_verification_tokens.down,
+    name: '20260227_030053_add_comment_verification_tokens'
   },
 ];
