@@ -18,8 +18,8 @@ describe('Users collection config', () => {
     expect(Users.admin?.useAsTitle).toBe('name')
   })
 
-  it('has default columns of name and email', () => {
-    expect(Users.admin?.defaultColumns).toEqual(['name', 'email'])
+  it('has default columns of name, email, and role', () => {
+    expect(Users.admin?.defaultColumns).toEqual(['name', 'email', 'role'])
   })
 
   it('has a name text field', () => {
@@ -35,7 +35,8 @@ describe('Users collection config', () => {
       .filter((f) => 'name' in f)
       .map((f) => ('name' in f ? f.name : ''))
     expect(fieldNames).toContain('name')
-    expect(fieldNames).toHaveLength(1)
+    expect(fieldNames).toContain('role')
+    expect(fieldNames).toHaveLength(2)
   })
 
   it('has authenticated access control on all operations', () => {
