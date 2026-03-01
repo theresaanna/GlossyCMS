@@ -128,6 +128,160 @@ export const colorSchemes = [
     },
   },
   {
+    value: 'ink-wash',
+    label: 'Ink Wash',
+    modes: ['light', 'dark'],
+    colors: {
+      light: [
+        'oklch(96.5% 0.005 70deg)',
+        'oklch(22.0% 0.005 70deg)',
+        'oklch(22.0% 0.005 70deg)',
+        'oklch(90.0% 0.005 70deg)',
+        'oklch(90.0% 0.005 70deg)',
+      ],
+      dark: [
+        'oklch(22.0% 0.005 70deg)',
+        'oklch(85.0% 0.005 70deg)',
+        'oklch(85.0% 0.005 70deg)',
+        'oklch(27.0% 0.005 70deg)',
+        'oklch(30.0% 0.005 70deg)',
+      ],
+    },
+  },
+  {
+    value: 'rose-quartz',
+    label: 'Rose Quartz',
+    modes: ['light', 'dark'],
+    colors: {
+      light: [
+        'oklch(96.0% 0.008 15deg)',
+        'oklch(33.0% 0.095 12deg)',
+        'oklch(50.0% 0.130 18deg)',
+        'oklch(91.0% 0.008 15deg)',
+        'oklch(76.0% 0.095 15deg)',
+      ],
+      dark: [
+        'oklch(24.0% 0.04 12deg)',
+        'oklch(89.0% 0.006 20deg)',
+        'oklch(56.0% 0.12 18deg)',
+        'oklch(30.0% 0.05 15deg)',
+        'oklch(35.0% 0.06 15deg)',
+      ],
+    },
+  },
+  {
+    value: 'calcite',
+    label: 'Calcite',
+    modes: ['dark'],
+    colors: {
+      dark: [
+        'oklch(28.0% 0.008 240deg)',
+        'oklch(89.0% 0.003 70deg)',
+        'oklch(72.0% 0.16 50deg)',
+        'oklch(33.0% 0.008 240deg)',
+        'oklch(36.0% 0.015 50deg)',
+      ],
+    },
+  },
+  {
+    value: 'amethyst-dawn-haze',
+    label: 'Amethyst Dawn Haze',
+    modes: ['dark'],
+    colors: {
+      dark: [
+        'oklch(24.0% 0.13 290deg)',
+        'oklch(78.0% 0.10 290deg)',
+        'oklch(84.0% 0.16 100deg)',
+        'oklch(30.0% 0.08 300deg)',
+        'oklch(33.0% 0.07 310deg)',
+      ],
+    },
+  },
+  {
+    value: 'frosted-aura',
+    label: 'Frosted Aura',
+    modes: ['light', 'dark'],
+    colors: {
+      light: [
+        'oklch(100% 0 0deg)',
+        'oklch(46.0% 0.03 230deg)',
+        'oklch(46.0% 0.03 230deg)',
+        'oklch(91.0% 0.01 230deg)',
+        'oklch(87.0% 0.015 230deg)',
+      ],
+      dark: [
+        'oklch(24.0% 0.015 230deg)',
+        'oklch(91.0% 0.01 230deg)',
+        'oklch(87.0% 0.015 230deg)',
+        'oklch(30.0% 0.02 230deg)',
+        'oklch(34.0% 0.02 230deg)',
+      ],
+    },
+  },
+  {
+    value: 'tropical-sunrise',
+    label: 'Tropical Sunrise',
+    modes: ['light'],
+    colors: {
+      light: [
+        'oklch(97.5% 0.01 80deg)',
+        'oklch(50.0% 0.08 200deg)',
+        'oklch(50.0% 0.08 200deg)',
+        'oklch(88.0% 0.04 145deg)',
+        'oklch(88.0% 0.06 45deg)',
+      ],
+    },
+  },
+  {
+    value: 'tropical-sunset',
+    label: 'Tropical Sunset',
+    modes: ['dark'],
+    colors: {
+      dark: [
+        'oklch(24.0% 0.04 200deg)',
+        'oklch(90.0% 0.04 80deg)',
+        'oklch(78.0% 0.10 45deg)',
+        'oklch(30.0% 0.04 200deg)',
+        'oklch(34.0% 0.04 45deg)',
+      ],
+    },
+  },
+  {
+    value: 'tropical-heat',
+    label: 'Tropical Heat',
+    modes: ['light'],
+    colors: {
+      light: [
+        'oklch(97.0% 0.02 85deg)',
+        'oklch(35.0% 0.10 30deg)',
+        'oklch(55.0% 0.18 30deg)',
+        'oklch(90.0% 0.05 85deg)',
+        'oklch(82.0% 0.10 55deg)',
+      ],
+    },
+  },
+  {
+    value: 'urban',
+    label: 'Urban',
+    modes: ['light', 'dark'],
+    colors: {
+      light: [
+        'oklch(95.0% 0.003 100deg)',
+        'oklch(15.0% 0.003 0deg)',
+        'oklch(15.0% 0.003 0deg)',
+        'oklch(88.0% 0.003 100deg)',
+        'oklch(88.0% 0.14 105deg)',
+      ],
+      dark: [
+        'oklch(15.0% 0.003 0deg)',
+        'oklch(88.0% 0.003 100deg)',
+        'oklch(88.0% 0.14 105deg)',
+        'oklch(22.0% 0.003 0deg)',
+        'oklch(28.0% 0.003 0deg)',
+      ],
+    },
+  },
+  {
     value: '80s',
     label: "80's",
     modes: ['light', 'dark'],
