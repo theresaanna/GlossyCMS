@@ -78,6 +78,12 @@ export const provisionSiteTask: TaskConfig<{
           'Add it in Vercel project settings before provisioning new sites.',
       )
     }
+    if (!process.env.HIVE_API_KEY) {
+      throw new Error(
+        'HIVE_API_KEY is not set on the primary instance. ' +
+          'Add it in Vercel project settings before provisioning new sites.',
+      )
+    }
 
     // Update status to provisioning
     await req.payload.update({
@@ -116,6 +122,7 @@ export const provisionSiteTask: TaskConfig<{
         PREVIEW_SECRET: generateSecret(),
         RESEND_API_KEY: process.env.RESEND_API_KEY || '',
         BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN || '',
+        HIVE_API_KEY: process.env.HIVE_API_KEY || '',
         FROM_EMAIL: `${subdomain}@glossysites.live`,
         FROM_NAME: site.siteName || subdomain,
         SITE_NAME: site.siteName || subdomain,

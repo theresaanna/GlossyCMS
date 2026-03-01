@@ -1,6 +1,16 @@
 import { describe, it, expect, vi, beforeAll, beforeEach, afterAll } from 'vitest'
 import type { CollectionBeforeChangeHook } from 'payload'
 
+vi.mock('@/utilities/hive-moderation', () => ({
+  scanImageForCSAM: vi.fn().mockResolvedValue({
+    flagged: false,
+    scanned: true,
+    confidence: 0,
+    flaggedClass: null,
+    error: null,
+  }),
+}))
+
 const originalEnv = process.env
 
 let validateMimeTypeHook: CollectionBeforeChangeHook
@@ -10,7 +20,8 @@ beforeAll(async () => {
   const { Media } = await import('../index')
   const hooks = Media.hooks!.beforeChange! as CollectionBeforeChangeHook[]
   validateMimeTypeHook = hooks[0]
-  setMetadataHook = hooks[1]
+  // hooks[1] is the CSAM scan hook (tested separately in scanImageUpload.test.ts)
+  setMetadataHook = hooks[2]
 })
 
 function makeArgs(

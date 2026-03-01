@@ -12,6 +12,7 @@ import { anyone } from '../../access/anyone'
 import { authenticated } from '../../access/authenticated'
 import { isAdmin } from '../../access/isAdmin'
 import { revalidateMedia, revalidateMediaDelete } from './hooks/revalidateMedia'
+import { scanImageUpload } from './hooks/scanImageUpload'
 import { canUploadMediaType, PLAN_UPLOAD_ERROR } from '../../utilities/plan'
 
 const filename = fileURLToPath(import.meta.url)
@@ -166,6 +167,7 @@ export const Media: CollectionConfig = {
 
         return data
       },
+      scanImageUpload,
       async ({ data, req, operation }) => {
         // Video compression and thumbnail extraction are handled client-side
         // via @ffmpeg/ffmpeg WASM. This hook ensures metadata fallbacks are set.

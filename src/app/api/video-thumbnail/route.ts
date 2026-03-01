@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { getSitePlan, isPrimaryInstance } from '@/utilities/plan'
+import { scanImageForCSAM } from '@/utilities/hive-moderation'
 
 export async function POST(req: NextRequest) {
   if (getSitePlan() !== 'pro' && !isPrimaryInstance()) {
@@ -16,6 +17,33 @@ export async function POST(req: NextRequest) {
 
     if (!file) {
       return NextResponse.json({ error: 'No file provided' }, { status: 400 })
+    }
+
+    // Scan thumbnail image for CSAM before uploading to Blob
+    const arrayBuf = await new Response(file).arrayBuffer()
+    const imageBuffer = Buffer.from(arrayBuf)
+    let scanResult
+    try {
+      scanResult = await scanImageForCSAM(imageBuffer, file.name || 'thumbnail.jpg')
+    } catch {
+      return NextResponse.json(
+        { error: 'Image upload is temporarily unavailable. Please try again later.' },
+        { status: 503 },
+      )
+    }
+
+    if (scanResult.flagged) {
+      return NextResponse.json(
+        { error: 'This image cannot be uploaded because it violates our content policy.' },
+        { status: 400 },
+      )
+    }
+
+    if (!scanResult.scanned) {
+      return NextResponse.json(
+        { error: 'Image upload is temporarily unavailable. Please try again later.' },
+        { status: 503 },
+      )
     }
 
     const thumbFilename = `thumb-${Date.now()}-${Math.random().toString(36).slice(2, 8)}.jpg`
