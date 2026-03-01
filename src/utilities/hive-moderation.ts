@@ -37,7 +37,7 @@ export async function scanImageForCSAM(
     response = await fetch(HIVE_API_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Token ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: formData,
     })

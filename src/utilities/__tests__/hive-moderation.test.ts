@@ -50,7 +50,7 @@ describe('scanImageForCSAM', () => {
       'https://api.thehive.ai/api/v2/task/sync',
       expect.objectContaining({
         method: 'POST',
-        headers: { Authorization: 'Token test-hive-key' },
+        headers: { Authorization: 'Bearer test-hive-key' },
       }),
     )
 
@@ -146,7 +146,7 @@ describe('scanImageForCSAM', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('includes authorization header with Token prefix (not Bearer)', async () => {
+  it('includes authorization header with Bearer prefix', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
       json: () => Promise.resolve(makeHiveResponse(0)),
@@ -155,8 +155,7 @@ describe('scanImageForCSAM', () => {
     await scanImageForCSAM(testBuffer, testFilename)
 
     const headers = mockFetch.mock.calls[0][1].headers
-    expect(headers.Authorization).toBe('Token test-hive-key')
-    expect(headers.Authorization).not.toMatch(/^Bearer/)
+    expect(headers.Authorization).toBe('Bearer test-hive-key')
   })
 
   it('handles malformed API response gracefully', async () => {
