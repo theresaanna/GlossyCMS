@@ -48,6 +48,7 @@ describe('SignupForm', () => {
     expect(screen.getByLabelText(/site name/i)).toBeDefined()
     expect(screen.getByLabelText(/site description/i)).toBeDefined()
     expect(screen.getByRole('button', { name: 'Continue to Payment' })).toBeDefined()
+    expect(screen.getByLabelText(/I agree to the/i)).toBeDefined()
   })
 
   it('redirects to Stripe Checkout on successful submission', async () => {
@@ -64,6 +65,7 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
     await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.click(screen.getByLabelText(/I agree to the/i))
     await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
@@ -89,6 +91,7 @@ describe('SignupForm', () => {
 
     await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.click(screen.getByLabelText(/I agree to the/i))
     await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
@@ -110,6 +113,7 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
     await user.type(screen.getByLabelText(/subdomain/i), 'taken')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.click(screen.getByLabelText(/I agree to the/i))
     await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
@@ -129,6 +133,7 @@ describe('SignupForm', () => {
     const user = userEvent.setup()
     await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
     await user.type(screen.getByLabelText(/email/i), 'test@example.com')
+    await user.click(screen.getByLabelText(/I agree to the/i))
     await user.click(screen.getByRole('button', { name: 'Continue to Payment' }))
 
     await waitFor(() => {
@@ -148,6 +153,7 @@ describe('SignupForm', () => {
     render(<SignupForm />)
 
     const user = userEvent.setup()
+    await user.click(screen.getByLabelText(/I agree to the/i))
     await user.type(screen.getByLabelText(/subdomain/i), 'my-site')
 
     // Wait for the debounced check to trigger
