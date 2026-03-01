@@ -16,19 +16,18 @@ export interface HiveScanResult {
   error: string | null
 }
 
-function getHiveApiKey(): string {
-  const key = process.env.HIVE_API_KEY
-  if (!key) {
-    throw new Error('HIVE_API_KEY environment variable is required for image moderation.')
-  }
-  return key
+export function isCSAMScanningEnabled(): boolean {
+  return !!process.env.HIVE_API_KEY
 }
 
 export async function scanImageForCSAM(
   imageBuffer: Buffer,
   filename: string,
-): Promise<HiveScanResult> {
-  const apiKey = getHiveApiKey()
+): Promise<HiveScanResult | null> {
+  const apiKey = process.env.HIVE_API_KEY
+  if (!apiKey) {
+    return null
+  }
 
   const formData = new FormData()
   formData.append('image', new Blob([imageBuffer]), filename)

@@ -152,18 +152,16 @@ describe('POST /api/video-thumbnail', () => {
     expect(mockPut).not.toHaveBeenCalled()
   })
 
-  it('returns 503 when HIVE_API_KEY is missing', async () => {
+  it('allows upload when HIVE_API_KEY is not configured (scan returns null)', async () => {
     mockGetSitePlan.mockReturnValue('pro')
-    mockScanImageForCSAM.mockRejectedValue(
-      new Error('HIVE_API_KEY environment variable is required'),
-    )
+    mockScanImageForCSAM.mockResolvedValue(null)
+    mockPut.mockResolvedValue({ url: 'https://blob.vercel-storage.com/thumb-no-key.jpg' })
 
     const res = await POST(makeRequest(makeThumbnailFile()))
-    expect(res.status).toBe(503)
+    expect(res.status).toBe(200)
 
     const body = await res.json()
-    expect(body.error).toMatch(/temporarily unavailable/)
-    expect(mockPut).not.toHaveBeenCalled()
+    expect(body.url).toBe('https://blob.vercel-storage.com/thumb-no-key.jpg')
   })
 
   it('scans thumbnail before uploading to Blob', async () => {

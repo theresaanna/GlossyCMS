@@ -105,14 +105,19 @@ describe('scanImageUpload hook', () => {
     }
   })
 
-  it('blocks upload when HIVE_API_KEY is missing (scanImageForCSAM throws)', async () => {
-    mockScanImageForCSAM.mockRejectedValue(
-      new Error('HIVE_API_KEY environment variable is required for image moderation.'),
+  it('allows upload when HIVE_API_KEY is not configured (returns null)', async () => {
+    mockScanImageForCSAM.mockResolvedValue(null)
+    const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
+
+    const args = makeArgs()
+    const result = await scanImageUpload(args)
+
+    expect(result).toEqual(args.data)
+    expect(consoleSpy).toHaveBeenCalledWith(
+      expect.stringContaining('HIVE_API_KEY is not configured'),
     )
 
-    await expect(scanImageUpload(makeArgs())).rejects.toThrow(
-      'Image upload is temporarily unavailable. Please try again later.',
-    )
+    consoleSpy.mockRestore()
   })
 
   it('skips scanning for non-image MIME types', async () => {

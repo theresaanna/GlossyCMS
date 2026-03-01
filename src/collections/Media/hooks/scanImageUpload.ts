@@ -11,13 +11,11 @@ export const scanImageUpload: CollectionBeforeChangeHook = async ({ data, req, o
   const buffer = req.file.data as Buffer
   if (!buffer || buffer.length === 0) return data
 
-  let result
-  try {
-    result = await scanImageForCSAM(buffer, req.file.name || 'upload')
-  } catch (error) {
-    console.error('[CSAM Scan] Configuration error:', error)
-    const { APIError } = await import('payload')
-    throw new APIError('Image upload is temporarily unavailable. Please try again later.', 503)
+  const result = await scanImageForCSAM(buffer, req.file.name || 'upload')
+
+  if (result === null) {
+    console.warn('[CSAM Scan] HIVE_API_KEY is not configured — skipping scan')
+    return data
   }
 
   console.log(

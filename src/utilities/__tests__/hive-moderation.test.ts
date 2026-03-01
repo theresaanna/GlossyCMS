@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { scanImageForCSAM, CSAM_CONFIDENCE_THRESHOLD } from '../hive-moderation'
+import { scanImageForCSAM, CSAM_CONFIDENCE_THRESHOLD, isCSAMScanningEnabled } from '../hive-moderation'
 
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
@@ -67,11 +67,11 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.flagged).toBe(true)
-    expect(result.confidence).toBe(0.95)
-    expect(result.flaggedClass).toBe('yes_csam')
-    expect(result.scanned).toBe(true)
-    expect(result.error).toBeNull()
+    expect(result!.flagged).toBe(true)
+    expect(result!.confidence).toBe(0.95)
+    expect(result!.flaggedClass).toBe('yes_csam')
+    expect(result!.scanned).toBe(true)
+    expect(result!.error).toBeNull()
   })
 
   it('returns flagged: true when confidence equals threshold exactly', async () => {
@@ -82,8 +82,8 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.flagged).toBe(true)
-    expect(result.confidence).toBe(0.9)
+    expect(result!.flagged).toBe(true)
+    expect(result!.confidence).toBe(0.9)
   })
 
   it('returns flagged: false when confidence is below threshold', async () => {
@@ -94,11 +94,11 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.flagged).toBe(false)
-    expect(result.confidence).toBe(0.1)
-    expect(result.flaggedClass).toBeNull()
-    expect(result.scanned).toBe(true)
-    expect(result.error).toBeNull()
+    expect(result!.flagged).toBe(false)
+    expect(result!.confidence).toBe(0.1)
+    expect(result!.flaggedClass).toBeNull()
+    expect(result!.scanned).toBe(true)
+    expect(result!.error).toBeNull()
   })
 
   it('returns flagged: false for clean images with zero score', async () => {
@@ -109,9 +109,9 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.flagged).toBe(false)
-    expect(result.confidence).toBe(0)
-    expect(result.scanned).toBe(true)
+    expect(result!.flagged).toBe(false)
+    expect(result!.confidence).toBe(0)
+    expect(result!.scanned).toBe(true)
   })
 
   it('returns scanned: false when API returns non-200 status', async () => {
@@ -122,9 +122,9 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.scanned).toBe(false)
-    expect(result.flagged).toBe(false)
-    expect(result.error).toBe('Hive API returned status 500')
+    expect(result!.scanned).toBe(false)
+    expect(result!.flagged).toBe(false)
+    expect(result!.error).toBe('Hive API returned status 500')
   })
 
   it('returns scanned: false when fetch throws network error', async () => {
@@ -132,15 +132,18 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.scanned).toBe(false)
-    expect(result.flagged).toBe(false)
-    expect(result.error).toContain('ECONNREFUSED')
+    expect(result!.scanned).toBe(false)
+    expect(result!.flagged).toBe(false)
+    expect(result!.error).toContain('ECONNREFUSED')
   })
 
-  it('throws when HIVE_API_KEY is missing', async () => {
+  it('returns null when HIVE_API_KEY is missing', async () => {
     delete process.env.HIVE_API_KEY
 
-    await expect(scanImageForCSAM(testBuffer, testFilename)).rejects.toThrow('HIVE_API_KEY')
+    const result = await scanImageForCSAM(testBuffer, testFilename)
+
+    expect(result).toBeNull()
+    expect(mockFetch).not.toHaveBeenCalled()
   })
 
   it('includes authorization header with Token prefix (not Bearer)', async () => {
@@ -164,9 +167,9 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.scanned).toBe(true)
-    expect(result.flagged).toBe(false)
-    expect(result.confidence).toBe(0)
+    expect(result!.scanned).toBe(true)
+    expect(result!.flagged).toBe(false)
+    expect(result!.confidence).toBe(0)
   })
 
   it('handles JSON parse failure gracefully', async () => {
@@ -177,11 +180,22 @@ describe('scanImageForCSAM', () => {
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
-    expect(result.scanned).toBe(false)
-    expect(result.error).toContain('Failed to parse Hive API response')
+    expect(result!.scanned).toBe(false)
+    expect(result!.error).toContain('Failed to parse Hive API response')
   })
 
   it('exports CSAM_CONFIDENCE_THRESHOLD as 0.9', () => {
     expect(CSAM_CONFIDENCE_THRESHOLD).toBe(0.9)
+  })
+})
+
+describe('isCSAMScanningEnabled', () => {
+  it('returns true when HIVE_API_KEY is set', () => {
+    expect(isCSAMScanningEnabled()).toBe(true)
+  })
+
+  it('returns false when HIVE_API_KEY is not set', () => {
+    delete process.env.HIVE_API_KEY
+    expect(isCSAMScanningEnabled()).toBe(false)
   })
 })
