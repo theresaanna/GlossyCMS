@@ -56,6 +56,20 @@ export async function Footer() {
           Powered by Glossy
         </a>
         <span className="text-white/20">·</span>
+        <Link
+          href="/terms-of-service"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Terms
+        </Link>
+        <span className="text-white/20">·</span>
+        <Link
+          href="/privacy-policy"
+          className="text-sm text-white/60 hover:text-white transition-colors"
+        >
+          Privacy
+        </Link>
+        <span className="text-white/20">·</span>
         <a
           href="https://wkf.ms/4qSABHT"
           target="_blank"
