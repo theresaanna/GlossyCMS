@@ -29,8 +29,21 @@ export async function scanImageForCSAM(
     return null
   }
 
+  // Determine MIME type from filename extension
+  const ext = filename.split('.').pop()?.toLowerCase() || ''
+  const mimeMap: Record<string, string> = {
+    jpg: 'image/jpeg',
+    jpeg: 'image/jpeg',
+    png: 'image/png',
+    gif: 'image/gif',
+    webp: 'image/webp',
+    bmp: 'image/bmp',
+    svg: 'image/svg+xml',
+  }
+  const mimeType = mimeMap[ext] || 'image/jpeg'
+
   const formData = new FormData()
-  formData.append('media', new Blob([imageBuffer]), filename)
+  formData.append('media', new Blob([imageBuffer], { type: mimeType }), filename)
 
   let response: Response
   try {
@@ -53,6 +66,13 @@ export async function scanImageForCSAM(
   }
 
   if (!response.ok) {
+    let errorBody = ''
+    try {
+      errorBody = await response.text()
+    } catch {
+      // ignore
+    }
+    console.error(`[CSAM Scan] Hive API error ${response.status}: ${errorBody}`)
     return {
       flagged: false,
       confidence: 0,
