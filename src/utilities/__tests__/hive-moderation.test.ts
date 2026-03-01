@@ -15,19 +15,52 @@ afterEach(() => {
   process.env = originalEnv
 })
 
-function makeHiveResponse(csamScore: number) {
+/** Build a Hive CSAM combined API response with classifier scores */
+function makeClassifierResponse(csamScore: number) {
   return {
     status: [
       {
+        status: { code: 200, message: 'SUCCESS' },
         response: {
-          output: [
-            {
-              classes: [
-                { class: 'yes_csam', score: csamScore },
-                { class: 'no_csam', score: 1 - csamScore },
-              ],
+          output: {
+            file: {
+              fileType: 'image',
+              reasons: [],
+              classifierPrediction: {
+                csam_classifier: {
+                  csam: csamScore,
+                  pornography: Math.max(0, 0.5 - csamScore),
+                  other: Math.max(0, 1 - csamScore - 0.5),
+                },
+              },
             },
-          ],
+            hashes: [],
+          },
+        },
+      },
+    ],
+  }
+}
+
+/** Build a Hive CSAM combined API response with a hash match */
+function makeHashMatchResponse() {
+  return {
+    status: [
+      {
+        status: { code: 200, message: 'SUCCESS' },
+        response: {
+          output: {
+            file: {
+              fileType: 'image',
+              reasons: ['matched'],
+              classifierPrediction: {
+                csam_classifier: { csam: 0.98, pornography: 0.01, other: 0.01 },
+              },
+            },
+            hashes: [
+              { hashType: 'saferhashv0', matchTypes: ['CSAM'], reasons: ['matched'] },
+            ],
+          },
         },
       },
     ],
@@ -41,7 +74,7 @@ describe('scanImageForCSAM', () => {
   it('sends correct request to Hive API', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeHiveResponse(0.01)),
+      json: () => Promise.resolve(makeClassifierResponse(0.01)),
     })
 
     await scanImageForCSAM(testBuffer, testFilename)
@@ -50,7 +83,7 @@ describe('scanImageForCSAM', () => {
       'https://api.thehive.ai/api/v2/task/sync',
       expect.objectContaining({
         method: 'POST',
-        headers: { Authorization: 'Bearer test-hive-key' },
+        headers: { Authorization: 'Token test-hive-key' },
       }),
     )
 
@@ -59,17 +92,30 @@ describe('scanImageForCSAM', () => {
     expect(body).toBeInstanceOf(FormData)
   })
 
-  it('returns flagged: true when CSAM confidence exceeds threshold', async () => {
+  it('uses "media" as the form field name', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeHiveResponse(0.95)),
+      json: () => Promise.resolve(makeClassifierResponse(0.01)),
+    })
+
+    await scanImageForCSAM(testBuffer, testFilename)
+
+    const body = mockFetch.mock.calls[0][1].body as FormData
+    expect(body.has('media')).toBe(true)
+    expect(body.has('image')).toBe(false)
+  })
+
+  it('returns flagged: true when CSAM classifier score exceeds threshold', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeClassifierResponse(0.95)),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
     expect(result!.flagged).toBe(true)
     expect(result!.confidence).toBe(0.95)
-    expect(result!.flaggedClass).toBe('yes_csam')
+    expect(result!.flaggedClass).toBe('csam')
     expect(result!.scanned).toBe(true)
     expect(result!.error).toBeNull()
   })
@@ -77,7 +123,7 @@ describe('scanImageForCSAM', () => {
   it('returns flagged: true when confidence equals threshold exactly', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeHiveResponse(0.9)),
+      json: () => Promise.resolve(makeClassifierResponse(0.9)),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
@@ -89,7 +135,7 @@ describe('scanImageForCSAM', () => {
   it('returns flagged: false when confidence is below threshold', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeHiveResponse(0.1)),
+      json: () => Promise.resolve(makeClassifierResponse(0.1)),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
@@ -104,13 +150,27 @@ describe('scanImageForCSAM', () => {
   it('returns flagged: false for clean images with zero score', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeHiveResponse(0)),
+      json: () => Promise.resolve(makeClassifierResponse(0)),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
     expect(result!.flagged).toBe(false)
     expect(result!.confidence).toBe(0)
+    expect(result!.scanned).toBe(true)
+  })
+
+  it('returns flagged: true with confidence 1 for hash matches', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeHashMatchResponse()),
+    })
+
+    const result = await scanImageForCSAM(testBuffer, testFilename)
+
+    expect(result!.flagged).toBe(true)
+    expect(result!.confidence).toBe(1)
+    expect(result!.flaggedClass).toBe('hash_match')
     expect(result!.scanned).toBe(true)
   })
 
@@ -146,16 +206,16 @@ describe('scanImageForCSAM', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('includes authorization header with Bearer prefix', async () => {
+  it('includes authorization header with Token prefix', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeHiveResponse(0)),
+      json: () => Promise.resolve(makeClassifierResponse(0)),
     })
 
     await scanImageForCSAM(testBuffer, testFilename)
 
     const headers = mockFetch.mock.calls[0][1].headers
-    expect(headers.Authorization).toBe('Bearer test-hive-key')
+    expect(headers.Authorization).toBe('Token test-hive-key')
   })
 
   it('handles malformed API response gracefully', async () => {
