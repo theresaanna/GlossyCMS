@@ -1045,6 +1045,7 @@ export interface ProvisionedSite {
   stripeCheckoutSessionId?: string | null;
   siteApiKey?: string | null;
   provisioningError?: string | null;
+  tosAcceptedAt?: string | null;
   provisionedAt?: string | null;
   updatedAt: string;
   createdAt: string;
@@ -1799,6 +1800,7 @@ export interface ProvisionedSitesSelect<T extends boolean = true> {
   stripeCheckoutSessionId?: T;
   siteApiKey?: T;
   provisioningError?: T;
+  tosAcceptedAt?: T;
   provisionedAt?: T;
   updatedAt?: T;
   createdAt?: T;
@@ -2214,8 +2216,39 @@ export interface SiteSetting {
    * Your profile picture. Displayed in the admin panel navigation and on the site banner.
    */
   userImage?: (number | null) | Media;
-  colorSchemeLight?: ('default' | 'eggplant' | 'ocean' | 'spring' | 'cherry' | '80s') | null;
-  colorSchemeDark?: ('default' | 'eggplant' | 'ocean' | 'autumn' | 'cherry' | '80s') | null;
+  colorSchemeLight?:
+    | (
+        | 'default'
+        | 'eggplant'
+        | 'ocean'
+        | 'spring'
+        | 'cherry'
+        | 'ink-wash'
+        | 'rose-quartz'
+        | 'frosted-aura'
+        | 'tropical-sunrise'
+        | 'tropical-heat'
+        | 'urban'
+        | '80s'
+      )
+    | null;
+  colorSchemeDark?:
+    | (
+        | 'default'
+        | 'eggplant'
+        | 'ocean'
+        | 'autumn'
+        | 'cherry'
+        | 'ink-wash'
+        | 'rose-quartz'
+        | 'calcite'
+        | 'amethyst-dawn-haze'
+        | 'frosted-aura'
+        | 'tropical-sunset'
+        | 'urban'
+        | '80s'
+      )
+    | null;
   updatedAt?: string | null;
   createdAt?: string | null;
 }

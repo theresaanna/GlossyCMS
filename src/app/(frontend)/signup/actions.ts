@@ -30,8 +30,13 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
   const siteName = formData.get('siteName') as string | null
   const siteDescription = formData.get('siteDescription') as string | null
   const plan = (formData.get('plan') as string) || 'basic'
+  const tosAccepted = formData.get('tosAccepted') === 'on'
 
   // Validate required fields
+  if (!tosAccepted) {
+    return { success: false, message: 'You must accept the Terms of Service to continue.' }
+  }
+
   if (!rawSubdomain?.trim()) {
     return { success: false, message: 'Subdomain is required.' }
   }
@@ -130,6 +135,7 @@ export async function createSite(formData: FormData): Promise<CreateSiteResult> 
         siteDescription: siteDescription?.trim() || undefined,
         status: 'pending_payment',
         plan: plan as 'basic' | 'pro',
+        tosAcceptedAt: new Date().toISOString(),
       },
     })
 
