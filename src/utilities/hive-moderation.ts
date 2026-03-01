@@ -6,7 +6,7 @@ export const CSAM_CONFIDENCE_THRESHOLD = 0.9
 export interface HiveScanResult {
   /** Whether the image was flagged as CSAM */
   flagged: boolean
-  /** The highest confidence score from CSAM-related classes */
+  /** The highest confidence score from the CSAM classifier class */
   confidence: number
   /** Raw class name from Hive that triggered the flag (for audit logging) */
   flaggedClass: string | null
@@ -30,14 +30,14 @@ export async function scanImageForCSAM(
   }
 
   const formData = new FormData()
-  formData.append('image', new Blob([imageBuffer]), filename)
+  formData.append('media', new Blob([imageBuffer]), filename)
 
   let response: Response
   try {
     response = await fetch(HIVE_API_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Bearer ${apiKey}`,
+        Authorization: `Token ${apiKey}`,
       },
       body: formData,
     })
@@ -65,27 +65,40 @@ export async function scanImageForCSAM(
   try {
     const data = await response.json()
 
-    let maxConfidence = 0
-    let maxClass: string | null = null
+    // Hive CSAM combined API response structure:
+    // { status: [{ response: { output: { file: { reasons: [...], classifierPrediction: { csam_classifier: { csam: 0.98, pornography: 0.01, other: 0.01 } } } } } }] }
+    let csamScore = 0
+    let flaggedReason: string | null = null
 
     const results = data?.status || []
     for (const result of results) {
-      const models = result?.response?.output || []
-      for (const model of models) {
-        const classes = model?.classes || []
-        for (const cls of classes) {
-          if (cls.class === 'yes_csam' && cls.score > maxConfidence) {
-            maxConfidence = cls.score
-            maxClass = cls.class
-          }
+      const output = result?.response?.output
+      if (!output?.file) continue
+
+      // Check hash matching results (reasons array contains "matched" for known CSAM)
+      const reasons: string[] = output.file.reasons || []
+      if (reasons.includes('matched') || reasons.includes('csam')) {
+        return {
+          flagged: true,
+          confidence: 1,
+          flaggedClass: reasons.includes('matched') ? 'hash_match' : 'csam',
+          scanned: true,
+          error: null,
         }
+      }
+
+      // Check classifier predictions
+      const classifier = output.file.classifierPrediction?.csam_classifier
+      if (classifier && classifier.csam > csamScore) {
+        csamScore = classifier.csam
+        flaggedReason = 'csam'
       }
     }
 
     return {
-      flagged: maxConfidence >= CSAM_CONFIDENCE_THRESHOLD,
-      confidence: maxConfidence,
-      flaggedClass: maxConfidence >= CSAM_CONFIDENCE_THRESHOLD ? maxClass : null,
+      flagged: csamScore >= CSAM_CONFIDENCE_THRESHOLD,
+      confidence: csamScore,
+      flaggedClass: csamScore >= CSAM_CONFIDENCE_THRESHOLD ? flaggedReason : null,
       scanned: true,
       error: null,
     }
