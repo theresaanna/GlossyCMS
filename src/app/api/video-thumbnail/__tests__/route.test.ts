@@ -12,12 +12,24 @@ vi.mock('@/utilities/plan', () => ({
   isPrimaryInstance: () => mockIsPrimaryInstance(),
 }))
 
+const mockScanImageForCSAM = vi.fn()
+vi.mock('@/utilities/hive-moderation', () => ({
+  scanImageForCSAM: (...args: unknown[]) => mockScanImageForCSAM(...args),
+}))
+
 import { POST } from '../route'
 
 beforeEach(() => {
   vi.clearAllMocks()
   mockGetSitePlan.mockReturnValue('basic')
   mockIsPrimaryInstance.mockReturnValue(false)
+  mockScanImageForCSAM.mockResolvedValue({
+    flagged: false,
+    scanned: true,
+    confidence: 0.01,
+    flaggedClass: null,
+    error: null,
+  })
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token'
 })
 
@@ -102,5 +114,69 @@ describe('POST /api/video-thumbnail', () => {
         multipart: true,
       }),
     )
+  })
+
+  it('returns 400 when thumbnail is flagged by CSAM scan', async () => {
+    mockGetSitePlan.mockReturnValue('pro')
+    mockScanImageForCSAM.mockResolvedValue({
+      flagged: true,
+      scanned: true,
+      confidence: 0.95,
+      flaggedClass: 'yes_csam',
+      error: null,
+    })
+
+    const res = await POST(makeRequest(makeThumbnailFile()))
+    expect(res.status).toBe(400)
+
+    const body = await res.json()
+    expect(body.error).toMatch(/violates our content policy/)
+    expect(mockPut).not.toHaveBeenCalled()
+  })
+
+  it('returns 503 when CSAM scan API is unavailable', async () => {
+    mockGetSitePlan.mockReturnValue('pro')
+    mockScanImageForCSAM.mockResolvedValue({
+      flagged: false,
+      scanned: false,
+      confidence: 0,
+      flaggedClass: null,
+      error: 'Hive API returned status 500',
+    })
+
+    const res = await POST(makeRequest(makeThumbnailFile()))
+    expect(res.status).toBe(503)
+
+    const body = await res.json()
+    expect(body.error).toMatch(/temporarily unavailable/)
+    expect(mockPut).not.toHaveBeenCalled()
+  })
+
+  it('allows upload when HIVE_API_KEY is not configured (scan returns null)', async () => {
+    mockGetSitePlan.mockReturnValue('pro')
+    mockScanImageForCSAM.mockResolvedValue(null)
+    mockPut.mockResolvedValue({ url: 'https://blob.vercel-storage.com/thumb-no-key.jpg' })
+
+    const res = await POST(makeRequest(makeThumbnailFile()))
+    expect(res.status).toBe(200)
+
+    const body = await res.json()
+    expect(body.url).toBe('https://blob.vercel-storage.com/thumb-no-key.jpg')
+  })
+
+  it('scans thumbnail before uploading to Blob', async () => {
+    mockGetSitePlan.mockReturnValue('pro')
+    mockPut.mockResolvedValue({ url: 'https://blob.vercel-storage.com/thumb.jpg' })
+
+    await POST(makeRequest(makeThumbnailFile()))
+
+    expect(mockScanImageForCSAM).toHaveBeenCalledWith(
+      expect.any(Buffer),
+      'thumbnail.jpg',
+    )
+    // Scan should be called before put
+    const scanOrder = mockScanImageForCSAM.mock.invocationCallOrder[0]
+    const putOrder = mockPut.mock.invocationCallOrder[0]
+    expect(scanOrder).toBeLessThan(putOrder)
   })
 })
