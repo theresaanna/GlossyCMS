@@ -14,6 +14,7 @@ export const SignupForm: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [plan, setPlan] = useState<Plan>('basic')
   const [cancelled, setCancelled] = useState(false)
+  const [tosAccepted, setTosAccepted] = useState(false)
   const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const topRef = useRef<HTMLDivElement>(null)
 
@@ -270,6 +271,30 @@ export const SignupForm: React.FC = () => {
           />
         </div>
 
+        {/* Terms of Service */}
+        <div className="flex items-start gap-3">
+          <input
+            type="checkbox"
+            id="tosAccepted"
+            name="tosAccepted"
+            checked={tosAccepted}
+            onChange={(e) => setTosAccepted(e.target.checked)}
+            className="mt-1 h-4 w-4 rounded border-border text-primary focus:ring-ring"
+          />
+          <label htmlFor="tosAccepted" className="text-sm">
+            I agree to the{' '}
+            <a
+              href="/terms-of-service"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-primary underline hover:no-underline"
+            >
+              Terms of Service
+            </a>{' '}
+            <span className="text-destructive">*</span>
+          </label>
+        </div>
+
         {/* Error */}
         {error && (
           <div className="rounded-md border border-error bg-error/30 px-4 py-3 text-sm">
@@ -280,7 +305,12 @@ export const SignupForm: React.FC = () => {
         {/* Submit */}
         <button
           type="submit"
-          disabled={isSubmitting || availability === 'unavailable' || availability === 'checking'}
+          disabled={
+            isSubmitting ||
+            availability === 'unavailable' ||
+            availability === 'checking' ||
+            !tosAccepted
+          }
           className="w-full rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           {isSubmitting ? 'Redirecting to payment...' : 'Continue to Payment'}

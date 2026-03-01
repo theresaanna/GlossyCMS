@@ -152,6 +152,14 @@ export const ProvisionedSites: CollectionConfig = {
       },
     },
     {
+      name: 'tosAcceptedAt',
+      type: 'date',
+      admin: {
+        position: 'sidebar',
+        readOnly: true,
+      },
+    },
+    {
       name: 'provisionedAt',
       type: 'date',
       admin: {
