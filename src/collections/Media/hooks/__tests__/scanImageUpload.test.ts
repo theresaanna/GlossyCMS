@@ -38,12 +38,12 @@ function makeArgs(
   } as any
 }
 
-function cleanResult(overrides: Partial<{ flagged: boolean; scanned: boolean; confidence: number; flaggedClass: string | null; error: string | null }> = {}) {
+function cleanResult(overrides: Partial<{ flagged: boolean; scanned: boolean; classification: string | null; matchType: string | null; error: string | null }> = {}) {
   return {
     flagged: false,
     scanned: true,
-    confidence: 0.01,
-    flaggedClass: null,
+    classification: 'no-known-match',
+    matchType: null,
     error: null,
     ...overrides,
   }
@@ -61,7 +61,7 @@ describe('scanImageUpload hook', () => {
 
   it('blocks upload when scan returns flagged result', async () => {
     mockScanImageForCSAM.mockResolvedValue(
-      cleanResult({ flagged: true, confidence: 0.95, flaggedClass: 'yes_csam' }),
+      cleanResult({ flagged: true, classification: 'csam', matchType: 'exact' }),
     )
 
     await expect(scanImageUpload(makeArgs())).rejects.toThrow(
@@ -71,7 +71,7 @@ describe('scanImageUpload hook', () => {
 
   it('blocks with status 400 when flagged', async () => {
     mockScanImageForCSAM.mockResolvedValue(
-      cleanResult({ flagged: true, confidence: 0.95, flaggedClass: 'yes_csam' }),
+      cleanResult({ flagged: true, classification: 'csam', matchType: 'exact' }),
     )
 
     try {
@@ -84,7 +84,7 @@ describe('scanImageUpload hook', () => {
 
   it('blocks upload when scan API is unavailable (fail closed)', async () => {
     mockScanImageForCSAM.mockResolvedValue(
-      cleanResult({ scanned: false, error: 'Hive API returned status 500' }),
+      cleanResult({ scanned: false, error: 'Arachnid Shield returned status 500' }),
     )
 
     await expect(scanImageUpload(makeArgs())).rejects.toThrow(
@@ -105,7 +105,7 @@ describe('scanImageUpload hook', () => {
     }
   })
 
-  it('allows upload when HIVE_API_KEY is not configured (returns null)', async () => {
+  it('allows upload when credentials are not configured (returns null)', async () => {
     mockScanImageForCSAM.mockResolvedValue(null)
     const consoleSpy = vi.spyOn(console, 'warn').mockImplementation(() => {})
 
@@ -114,7 +114,7 @@ describe('scanImageUpload hook', () => {
 
     expect(result).toEqual(args.data)
     expect(consoleSpy).toHaveBeenCalledWith(
-      expect.stringContaining('HIVE_API_KEY is not configured'),
+      expect.stringContaining('Arachnid Shield credentials are not configured'),
     )
 
     consoleSpy.mockRestore()
@@ -171,7 +171,7 @@ describe('scanImageUpload hook', () => {
 
   it('logs scan results for audit trail', async () => {
     const consoleSpy = vi.spyOn(console, 'log').mockImplementation(() => {})
-    mockScanImageForCSAM.mockResolvedValue(cleanResult({ confidence: 0.05 }))
+    mockScanImageForCSAM.mockResolvedValue(cleanResult())
 
     await scanImageUpload(makeArgs({ fileName: 'audit-test.jpg' }))
 

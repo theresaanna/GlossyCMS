@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
-import { scanImageForCSAM, CSAM_CONFIDENCE_THRESHOLD, isCSAMScanningEnabled } from '../hive-moderation'
+import { scanImageForCSAM, isCSAMScanningEnabled } from '../hive-moderation'
 
 const mockFetch = vi.fn()
 vi.stubGlobal('fetch', mockFetch)
@@ -8,62 +8,68 @@ const originalEnv = process.env
 
 beforeEach(() => {
   vi.clearAllMocks()
-  process.env = { ...originalEnv, HIVE_API_KEY: 'test-hive-key' }
+  process.env = {
+    ...originalEnv,
+    ARACHNID_SHIELD_USERNAME: 'test-user',
+    ARACHNID_SHIELD_PASSWORD: 'test-pass',
+  }
 })
 
 afterEach(() => {
   process.env = originalEnv
 })
 
-/** Build a Hive CSAM combined API response with classifier scores */
-function makeClassifierResponse(csamScore: number) {
+/** Build an Arachnid Shield response for a clean image */
+function makeCleanResponse() {
   return {
-    status: [
-      {
-        status: { code: 200, message: 'SUCCESS' },
-        response: {
-          output: {
-            file: {
-              fileType: 'image',
-              reasons: [],
-              classifierPrediction: {
-                csam_classifier: {
-                  csam: csamScore,
-                  pornography: Math.max(0, 0.5 - csamScore),
-                  other: Math.max(0, 1 - csamScore - 0.5),
-                },
-              },
-            },
-            hashes: [],
-          },
-        },
-      },
+    sha1_base32: 'ABC123',
+    sha256_hex: 'def456',
+    classification: 'no-known-match',
+    is_match: false,
+    match_type: null,
+    size_bytes: 1024,
+    near_match_details: [],
+  }
+}
+
+/** Build an Arachnid Shield response for a CSAM exact match */
+function makeCSAMExactMatchResponse() {
+  return {
+    sha1_base32: 'XYZ789',
+    sha256_hex: 'abc012',
+    classification: 'csam',
+    is_match: true,
+    match_type: 'exact',
+    size_bytes: 2048,
+    near_match_details: [],
+  }
+}
+
+/** Build an Arachnid Shield response for a CSAM near match */
+function makeCSAMNearMatchResponse() {
+  return {
+    sha1_base32: 'MNO345',
+    sha256_hex: 'ghi678',
+    classification: 'csam',
+    is_match: true,
+    match_type: 'near',
+    size_bytes: 3072,
+    near_match_details: [
+      { sha1_base32: 'REF001', sha256_hex: 'ref002', classification: 'csam', timestamp: 1234567890 },
     ],
   }
 }
 
-/** Build a Hive CSAM combined API response with a hash match */
-function makeHashMatchResponse() {
+/** Build an Arachnid Shield response for harmful/abusive material */
+function makeHarmfulResponse() {
   return {
-    status: [
-      {
-        status: { code: 200, message: 'SUCCESS' },
-        response: {
-          output: {
-            file: {
-              fileType: 'image',
-              reasons: ['matched'],
-              classifierPrediction: {
-                csam_classifier: { csam: 0.98, pornography: 0.01, other: 0.01 },
-              },
-            },
-            hashes: [
-              { hashType: 'saferhashv0', matchTypes: ['CSAM'], reasons: ['matched'] },
-            ],
-          },
-        },
-      },
-    ],
+    sha1_base32: 'HAM001',
+    sha256_hex: 'ham002',
+    classification: 'harmful-abusive-material',
+    is_match: true,
+    match_type: 'exact',
+    size_bytes: 4096,
+    near_match_details: [],
   }
 }
 
@@ -71,106 +77,97 @@ describe('scanImageForCSAM', () => {
   const testBuffer = Buffer.from('fake-image-data')
   const testFilename = 'photo.jpg'
 
-  it('sends correct request to Hive API', async () => {
+  it('sends correct request to Arachnid Shield API', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0.01)),
+      json: () => Promise.resolve(makeCleanResponse()),
     })
 
     await scanImageForCSAM(testBuffer, testFilename)
 
+    const expectedCredentials = Buffer.from('test-user:test-pass').toString('base64')
+
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://api.thehive.ai/api/v2/task/sync',
+      'https://shield.projectarachnid.ca/v1/media/',
       expect.objectContaining({
         method: 'POST',
-        headers: { Authorization: 'Token test-hive-key' },
+        headers: {
+          Authorization: `Basic ${expectedCredentials}`,
+          'Content-Type': 'image/jpeg',
+          Accept: 'application/json',
+        },
       }),
     )
+  })
+
+  it('sends the image bytes as the request body', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeCleanResponse()),
+    })
+
+    await scanImageForCSAM(testBuffer, testFilename)
 
     const callArgs = mockFetch.mock.calls[0]
     const body = callArgs[1].body
-    expect(body).toBeInstanceOf(FormData)
+    expect(body).toBeInstanceOf(Uint8Array)
   })
 
-  it('uses "media" as the form field name', async () => {
+  it('returns flagged: false for clean images (no-known-match)', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0.01)),
-    })
-
-    await scanImageForCSAM(testBuffer, testFilename)
-
-    const body = mockFetch.mock.calls[0][1].body as FormData
-    expect(body.has('media')).toBe(true)
-    expect(body.has('image')).toBe(false)
-  })
-
-  it('returns flagged: true when CSAM classifier score exceeds threshold', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0.95)),
-    })
-
-    const result = await scanImageForCSAM(testBuffer, testFilename)
-
-    expect(result!.flagged).toBe(true)
-    expect(result!.confidence).toBe(0.95)
-    expect(result!.flaggedClass).toBe('csam')
-    expect(result!.scanned).toBe(true)
-    expect(result!.error).toBeNull()
-  })
-
-  it('returns flagged: true when confidence equals threshold exactly', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0.9)),
-    })
-
-    const result = await scanImageForCSAM(testBuffer, testFilename)
-
-    expect(result!.flagged).toBe(true)
-    expect(result!.confidence).toBe(0.9)
-  })
-
-  it('returns flagged: false when confidence is below threshold', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0.1)),
+      json: () => Promise.resolve(makeCleanResponse()),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
     expect(result!.flagged).toBe(false)
-    expect(result!.confidence).toBe(0.1)
-    expect(result!.flaggedClass).toBeNull()
+    expect(result!.classification).toBe('no-known-match')
+    expect(result!.matchType).toBeNull()
     expect(result!.scanned).toBe(true)
     expect(result!.error).toBeNull()
   })
 
-  it('returns flagged: false for clean images with zero score', async () => {
+  it('returns flagged: true for CSAM exact match', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0)),
-    })
-
-    const result = await scanImageForCSAM(testBuffer, testFilename)
-
-    expect(result!.flagged).toBe(false)
-    expect(result!.confidence).toBe(0)
-    expect(result!.scanned).toBe(true)
-  })
-
-  it('returns flagged: true with confidence 1 for hash matches', async () => {
-    mockFetch.mockResolvedValue({
-      ok: true,
-      json: () => Promise.resolve(makeHashMatchResponse()),
+      json: () => Promise.resolve(makeCSAMExactMatchResponse()),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
     expect(result!.flagged).toBe(true)
-    expect(result!.confidence).toBe(1)
-    expect(result!.flaggedClass).toBe('hash_match')
+    expect(result!.classification).toBe('csam')
+    expect(result!.matchType).toBe('exact')
+    expect(result!.scanned).toBe(true)
+    expect(result!.error).toBeNull()
+  })
+
+  it('returns flagged: true for CSAM near match', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeCSAMNearMatchResponse()),
+    })
+
+    const result = await scanImageForCSAM(testBuffer, testFilename)
+
+    expect(result!.flagged).toBe(true)
+    expect(result!.classification).toBe('csam')
+    expect(result!.matchType).toBe('near')
+    expect(result!.scanned).toBe(true)
+  })
+
+  it('returns flagged: true for harmful/abusive material', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeHarmfulResponse()),
+    })
+
+    const result = await scanImageForCSAM(testBuffer, testFilename)
+
+    expect(result!.flagged).toBe(true)
+    expect(result!.classification).toBe('harmful-abusive-material')
+    expect(result!.matchType).toBe('exact')
     expect(result!.scanned).toBe(true)
   })
 
@@ -178,13 +175,14 @@ describe('scanImageForCSAM', () => {
     mockFetch.mockResolvedValue({
       ok: false,
       status: 500,
+      text: () => Promise.resolve('Internal Server Error'),
     })
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
     expect(result!.scanned).toBe(false)
     expect(result!.flagged).toBe(false)
-    expect(result!.error).toBe('Hive API returned status 500')
+    expect(result!.error).toBe('Arachnid Shield returned status 500')
   })
 
   it('returns scanned: false when fetch throws network error', async () => {
@@ -197,8 +195,9 @@ describe('scanImageForCSAM', () => {
     expect(result!.error).toContain('ECONNREFUSED')
   })
 
-  it('returns null when HIVE_API_KEY is missing', async () => {
-    delete process.env.HIVE_API_KEY
+  it('returns null when credentials are missing', async () => {
+    delete process.env.ARACHNID_SHIELD_USERNAME
+    delete process.env.ARACHNID_SHIELD_PASSWORD
 
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
@@ -206,16 +205,50 @@ describe('scanImageForCSAM', () => {
     expect(mockFetch).not.toHaveBeenCalled()
   })
 
-  it('includes authorization header with Token prefix', async () => {
+  it('returns null when only username is set', async () => {
+    delete process.env.ARACHNID_SHIELD_PASSWORD
+
+    const result = await scanImageForCSAM(testBuffer, testFilename)
+
+    expect(result).toBeNull()
+    expect(mockFetch).not.toHaveBeenCalled()
+  })
+
+  it('includes Basic auth header with base64-encoded credentials', async () => {
     mockFetch.mockResolvedValue({
       ok: true,
-      json: () => Promise.resolve(makeClassifierResponse(0)),
+      json: () => Promise.resolve(makeCleanResponse()),
     })
 
     await scanImageForCSAM(testBuffer, testFilename)
 
     const headers = mockFetch.mock.calls[0][1].headers
-    expect(headers.Authorization).toBe('Token test-hive-key')
+    const expectedCredentials = Buffer.from('test-user:test-pass').toString('base64')
+    expect(headers.Authorization).toBe(`Basic ${expectedCredentials}`)
+  })
+
+  it('detects MIME type from filename extension', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeCleanResponse()),
+    })
+
+    await scanImageForCSAM(testBuffer, 'photo.png')
+
+    const headers = mockFetch.mock.calls[0][1].headers
+    expect(headers['Content-Type']).toBe('image/png')
+  })
+
+  it('defaults to image/jpeg for unknown extensions', async () => {
+    mockFetch.mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve(makeCleanResponse()),
+    })
+
+    await scanImageForCSAM(testBuffer, 'photo.xyz')
+
+    const headers = mockFetch.mock.calls[0][1].headers
+    expect(headers['Content-Type']).toBe('image/jpeg')
   })
 
   it('handles malformed API response gracefully', async () => {
@@ -228,7 +261,7 @@ describe('scanImageForCSAM', () => {
 
     expect(result!.scanned).toBe(true)
     expect(result!.flagged).toBe(false)
-    expect(result!.confidence).toBe(0)
+    expect(result!.classification).toBe('no-known-match')
   })
 
   it('handles JSON parse failure gracefully', async () => {
@@ -240,21 +273,28 @@ describe('scanImageForCSAM', () => {
     const result = await scanImageForCSAM(testBuffer, testFilename)
 
     expect(result!.scanned).toBe(false)
-    expect(result!.error).toContain('Failed to parse Hive API response')
-  })
-
-  it('exports CSAM_CONFIDENCE_THRESHOLD as 0.9', () => {
-    expect(CSAM_CONFIDENCE_THRESHOLD).toBe(0.9)
+    expect(result!.error).toContain('Failed to parse Arachnid Shield response')
   })
 })
 
 describe('isCSAMScanningEnabled', () => {
-  it('returns true when HIVE_API_KEY is set', () => {
+  it('returns true when both credentials are set', () => {
     expect(isCSAMScanningEnabled()).toBe(true)
   })
 
-  it('returns false when HIVE_API_KEY is not set', () => {
-    delete process.env.HIVE_API_KEY
+  it('returns false when username is not set', () => {
+    delete process.env.ARACHNID_SHIELD_USERNAME
+    expect(isCSAMScanningEnabled()).toBe(false)
+  })
+
+  it('returns false when password is not set', () => {
+    delete process.env.ARACHNID_SHIELD_PASSWORD
+    expect(isCSAMScanningEnabled()).toBe(false)
+  })
+
+  it('returns false when both are not set', () => {
+    delete process.env.ARACHNID_SHIELD_USERNAME
+    delete process.env.ARACHNID_SHIELD_PASSWORD
     expect(isCSAMScanningEnabled()).toBe(false)
   })
 })

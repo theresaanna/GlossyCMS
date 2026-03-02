@@ -1,15 +1,12 @@
-const HIVE_API_URL = 'https://api.thehive.ai/api/v2/task/sync'
+const ARACHNID_SHIELD_URL = 'https://shield.projectarachnid.ca/v1/media/'
 
-/** Confidence threshold above which an image is flagged as CSAM. */
-export const CSAM_CONFIDENCE_THRESHOLD = 0.9
-
-export interface HiveScanResult {
-  /** Whether the image was flagged as CSAM */
+export interface CSAMScanResult {
+  /** Whether the image was flagged as CSAM or harmful/abusive material */
   flagged: boolean
-  /** The highest confidence score from the CSAM classifier class */
-  confidence: number
-  /** Raw class name from Hive that triggered the flag (for audit logging) */
-  flaggedClass: string | null
+  /** Classification from Arachnid Shield ('csam' | 'harmful-abusive-material' | 'no-known-match') */
+  classification: string | null
+  /** Match type ('exact' | 'near' | null) */
+  matchType: string | null
   /** Whether the scan completed successfully */
   scanned: boolean
   /** Error message if scan failed */
@@ -17,15 +14,16 @@ export interface HiveScanResult {
 }
 
 export function isCSAMScanningEnabled(): boolean {
-  return !!process.env.HIVE_API_KEY
+  return !!(process.env.ARACHNID_SHIELD_USERNAME && process.env.ARACHNID_SHIELD_PASSWORD)
 }
 
 export async function scanImageForCSAM(
   imageBuffer: Buffer,
   filename: string,
-): Promise<HiveScanResult | null> {
-  const apiKey = process.env.HIVE_API_KEY
-  if (!apiKey) {
+): Promise<CSAMScanResult | null> {
+  const username = process.env.ARACHNID_SHIELD_USERNAME
+  const password = process.env.ARACHNID_SHIELD_PASSWORD
+  if (!username || !password) {
     return null
   }
 
@@ -37,31 +35,32 @@ export async function scanImageForCSAM(
     png: 'image/png',
     gif: 'image/gif',
     webp: 'image/webp',
-    bmp: 'image/bmp',
-    svg: 'image/svg+xml',
   }
   const mimeType = mimeMap[ext] || 'image/jpeg'
 
-  const formData = new FormData()
-  formData.append('media', new Blob([imageBuffer], { type: mimeType }), filename)
+  // Convert Buffer to Uint8Array for reliable cross-runtime Blob construction
+  const bytes = new Uint8Array(imageBuffer.buffer, imageBuffer.byteOffset, imageBuffer.byteLength)
+  const credentials = Buffer.from(`${username}:${password}`).toString('base64')
 
   let response: Response
   try {
-    response = await fetch(HIVE_API_URL, {
+    response = await fetch(ARACHNID_SHIELD_URL, {
       method: 'POST',
       headers: {
-        Authorization: `Token ${apiKey}`,
+        Authorization: `Basic ${credentials}`,
+        'Content-Type': mimeType,
+        Accept: 'application/json',
       },
-      body: formData,
+      body: bytes,
     })
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error)
     return {
       flagged: false,
-      confidence: 0,
-      flaggedClass: null,
+      classification: null,
+      matchType: null,
       scanned: false,
-      error: `Hive API request failed: ${message}`,
+      error: `Arachnid Shield request failed: ${message}`,
     }
   }
 
@@ -72,53 +71,32 @@ export async function scanImageForCSAM(
     } catch {
       // ignore
     }
-    console.error(`[CSAM Scan] Hive API error ${response.status}: ${errorBody}`)
+    console.error(`[CSAM Scan] Arachnid Shield error ${response.status}: ${errorBody}`)
     return {
       flagged: false,
-      confidence: 0,
-      flaggedClass: null,
+      classification: null,
+      matchType: null,
       scanned: false,
-      error: `Hive API returned status ${response.status}`,
+      error: `Arachnid Shield returned status ${response.status}`,
     }
   }
 
   try {
     const data = await response.json()
 
-    // Hive CSAM combined API response structure:
-    // { status: [{ response: { output: { file: { reasons: [...], classifierPrediction: { csam_classifier: { csam: 0.98, pornography: 0.01, other: 0.01 } } } } } }] }
-    let csamScore = 0
-    let flaggedReason: string | null = null
+    // Arachnid Shield response:
+    // { classification: 'csam' | 'harmful-abusive-material' | 'no-known-match',
+    //   is_match: boolean, match_type: 'exact' | 'near' | null, ... }
+    const classification: string = data?.classification || 'no-known-match'
+    const isMatch: boolean = data?.is_match === true
+    const matchType: string | null = data?.match_type || null
 
-    const results = data?.status || []
-    for (const result of results) {
-      const output = result?.response?.output
-      if (!output?.file) continue
-
-      // Check hash matching results (reasons array contains "matched" for known CSAM)
-      const reasons: string[] = output.file.reasons || []
-      if (reasons.includes('matched') || reasons.includes('csam')) {
-        return {
-          flagged: true,
-          confidence: 1,
-          flaggedClass: reasons.includes('matched') ? 'hash_match' : 'csam',
-          scanned: true,
-          error: null,
-        }
-      }
-
-      // Check classifier predictions
-      const classifier = output.file.classifierPrediction?.csam_classifier
-      if (classifier && classifier.csam > csamScore) {
-        csamScore = classifier.csam
-        flaggedReason = 'csam'
-      }
-    }
+    const flagged = isMatch || classification === 'csam' || classification === 'harmful-abusive-material'
 
     return {
-      flagged: csamScore >= CSAM_CONFIDENCE_THRESHOLD,
-      confidence: csamScore,
-      flaggedClass: csamScore >= CSAM_CONFIDENCE_THRESHOLD ? flaggedReason : null,
+      flagged,
+      classification,
+      matchType,
       scanned: true,
       error: null,
     }
@@ -126,10 +104,10 @@ export async function scanImageForCSAM(
     const message = error instanceof Error ? error.message : String(error)
     return {
       flagged: false,
-      confidence: 0,
-      flaggedClass: null,
+      classification: null,
+      matchType: null,
       scanned: false,
-      error: `Failed to parse Hive API response: ${message}`,
+      error: `Failed to parse Arachnid Shield response: ${message}`,
     }
   }
 }
