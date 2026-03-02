@@ -14,12 +14,12 @@ export const scanImageUpload: CollectionBeforeChangeHook = async ({ data, req, o
   const result = await scanImageForCSAM(buffer, req.file.name || 'upload')
 
   if (result === null) {
-    console.warn('[CSAM Scan] HIVE_API_KEY is not configured — skipping scan')
+    console.warn('[CSAM Scan] Arachnid Shield credentials are not configured — skipping scan')
     return data
   }
 
   console.log(
-    `[CSAM Scan] file="${req.file.name}" scanned=${result.scanned} flagged=${result.flagged} confidence=${result.confidence}`,
+    `[CSAM Scan] file="${req.file.name}" scanned=${result.scanned} flagged=${result.flagged} classification=${result.classification}`,
   )
 
   if (result.flagged) {

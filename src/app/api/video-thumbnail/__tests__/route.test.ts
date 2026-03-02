@@ -26,8 +26,8 @@ beforeEach(() => {
   mockScanImageForCSAM.mockResolvedValue({
     flagged: false,
     scanned: true,
-    confidence: 0.01,
-    flaggedClass: null,
+    classification: 'no-known-match',
+    matchType: null,
     error: null,
   })
   process.env.BLOB_READ_WRITE_TOKEN = 'test-token'
@@ -121,8 +121,8 @@ describe('POST /api/video-thumbnail', () => {
     mockScanImageForCSAM.mockResolvedValue({
       flagged: true,
       scanned: true,
-      confidence: 0.95,
-      flaggedClass: 'yes_csam',
+      classification: 'csam',
+      matchType: 'exact',
       error: null,
     })
 
@@ -141,7 +141,7 @@ describe('POST /api/video-thumbnail', () => {
       scanned: false,
       confidence: 0,
       flaggedClass: null,
-      error: 'Hive API returned status 500',
+      error: 'Arachnid Shield returned status 500',
     })
 
     const res = await POST(makeRequest(makeThumbnailFile()))
@@ -152,7 +152,7 @@ describe('POST /api/video-thumbnail', () => {
     expect(mockPut).not.toHaveBeenCalled()
   })
 
-  it('allows upload when HIVE_API_KEY is not configured (scan returns null)', async () => {
+  it('allows upload when Shield credentials are not configured (scan returns null)', async () => {
     mockGetSitePlan.mockReturnValue('pro')
     mockScanImageForCSAM.mockResolvedValue(null)
     mockPut.mockResolvedValue({ url: 'https://blob.vercel-storage.com/thumb-no-key.jpg' })

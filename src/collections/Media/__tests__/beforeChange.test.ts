@@ -5,8 +5,8 @@ vi.mock('@/utilities/hive-moderation', () => ({
   scanImageForCSAM: vi.fn().mockResolvedValue({
     flagged: false,
     scanned: true,
-    confidence: 0,
-    flaggedClass: null,
+    classification: 'no-known-match',
+    matchType: null,
     error: null,
   }),
 }))

@@ -78,10 +78,10 @@ export const provisionSiteTask: TaskConfig<{
           'Add it in Vercel project settings before provisioning new sites.',
       )
     }
-    if (!process.env.HIVE_API_KEY) {
+    if (!process.env.ARACHNID_SHIELD_USERNAME || !process.env.ARACHNID_SHIELD_PASSWORD) {
       throw new Error(
-        'HIVE_API_KEY is not set on the primary instance. ' +
-          'Add it in Vercel project settings before provisioning new sites.',
+        'ARACHNID_SHIELD_USERNAME and ARACHNID_SHIELD_PASSWORD are not set on the primary instance. ' +
+          'Add them in Vercel project settings before provisioning new sites.',
       )
     }
 
@@ -122,7 +122,8 @@ export const provisionSiteTask: TaskConfig<{
         PREVIEW_SECRET: generateSecret(),
         RESEND_API_KEY: process.env.RESEND_API_KEY || '',
         BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN || '',
-        HIVE_API_KEY: process.env.HIVE_API_KEY || '',
+        ARACHNID_SHIELD_USERNAME: process.env.ARACHNID_SHIELD_USERNAME || '',
+        ARACHNID_SHIELD_PASSWORD: process.env.ARACHNID_SHIELD_PASSWORD || '',
         FROM_EMAIL: `${subdomain}@glossysites.live`,
         FROM_NAME: site.siteName || subdomain,
         SITE_NAME: site.siteName || subdomain,
