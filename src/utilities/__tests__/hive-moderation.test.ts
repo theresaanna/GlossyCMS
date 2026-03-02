@@ -83,7 +83,7 @@ describe('scanImageForCSAM', () => {
       'https://api.thehive.ai/api/v2/task/sync',
       expect.objectContaining({
         method: 'POST',
-        headers: { Authorization: 'Token test-hive-key' },
+        headers: { Authorization: 'Token test-hive-key', Accept: 'application/json' },
       }),
     )
 

@@ -42,8 +42,12 @@ export async function scanImageForCSAM(
   }
   const mimeType = mimeMap[ext] || 'image/jpeg'
 
+  // Convert Buffer to Uint8Array to avoid potential Node.js Buffer/Blob issues
+  const bytes = new Uint8Array(imageBuffer.buffer, imageBuffer.byteOffset, imageBuffer.byteLength)
+  const file = new File([bytes], filename, { type: mimeType })
+
   const formData = new FormData()
-  formData.append('media', new Blob([imageBuffer], { type: mimeType }), filename)
+  formData.append('media', file)
 
   let response: Response
   try {
@@ -51,6 +55,7 @@ export async function scanImageForCSAM(
       method: 'POST',
       headers: {
         Authorization: `Token ${apiKey}`,
+        Accept: 'application/json',
       },
       body: formData,
     })
