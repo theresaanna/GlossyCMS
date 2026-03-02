@@ -88,7 +88,7 @@ describe('scanImageForCSAM', () => {
     const expectedCredentials = Buffer.from('test-user:test-pass').toString('base64')
 
     expect(mockFetch).toHaveBeenCalledWith(
-      'https://shield.projectarachnid.ca/v1/media/',
+      'https://shield.projectarachnid.com/v1/media/',
       expect.objectContaining({
         method: 'POST',
         headers: {

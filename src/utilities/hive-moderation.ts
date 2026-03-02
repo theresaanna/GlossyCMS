@@ -1,4 +1,4 @@
-const ARACHNID_SHIELD_URL = 'https://shield.projectarachnid.ca/v1/media/'
+const ARACHNID_SHIELD_URL = 'https://shield.projectarachnid.com/v1/media/'
 
 export interface CSAMScanResult {
   /** Whether the image was flagged as CSAM or harmful/abusive material */
