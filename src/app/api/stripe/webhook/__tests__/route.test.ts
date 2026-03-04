@@ -42,6 +42,7 @@ function makePayload(overrides: Record<string, unknown> = {}) {
     find: vi.fn().mockResolvedValue({ docs: [], totalDocs: 0 }),
     findByID: vi.fn().mockResolvedValue(null),
     update: vi.fn().mockResolvedValue({}),
+    delete: vi.fn().mockResolvedValue({}),
     jobs: { queue: vi.fn().mockResolvedValue({}) },
     ...overrides,
   }
@@ -184,6 +185,101 @@ describe('POST /api/stripe/webhook', () => {
       const res = await POST(makeRequest())
       expect(res.status).toBe(200)
       expect(mockPayload.update).not.toHaveBeenCalled()
+    })
+  })
+
+  describe('checkout.session.expired', () => {
+    it('deletes a pending_payment site to free the subdomain', async () => {
+      const site = makeSite({ status: 'pending_payment', id: 42, subdomain: 'claimed-name' })
+      const mockPayload = makePayload()
+      mockPayload.findByID.mockResolvedValue(site)
+      mockGetPayload.mockResolvedValue(mockPayload)
+
+      const event = makeStripeEvent('checkout.session.expired', {
+        metadata: { siteId: '42' },
+      })
+      mockGetStripe.mockReturnValue({
+        webhooks: { constructEvent: () => event },
+      })
+
+      const res = await POST(makeRequest())
+      expect(res.status).toBe(200)
+
+      expect(mockPayload.delete).toHaveBeenCalledWith(
+        expect.objectContaining({
+          collection: 'provisioned-sites',
+          id: 42,
+          overrideAccess: true,
+        }),
+      )
+    })
+
+    it('skips if site is no longer in pending_payment status', async () => {
+      const site = makeSite({ status: 'active', id: 42 })
+      const mockPayload = makePayload()
+      mockPayload.findByID.mockResolvedValue(site)
+      mockGetPayload.mockResolvedValue(mockPayload)
+
+      const event = makeStripeEvent('checkout.session.expired', {
+        metadata: { siteId: '42' },
+      })
+      mockGetStripe.mockReturnValue({
+        webhooks: { constructEvent: () => event },
+      })
+
+      const res = await POST(makeRequest())
+      expect(res.status).toBe(200)
+      expect(mockPayload.delete).not.toHaveBeenCalled()
+    })
+
+    it('handles missing siteId metadata gracefully', async () => {
+      const mockPayload = makePayload()
+      mockGetPayload.mockResolvedValue(mockPayload)
+
+      const event = makeStripeEvent('checkout.session.expired', {
+        metadata: {},
+      })
+      mockGetStripe.mockReturnValue({
+        webhooks: { constructEvent: () => event },
+      })
+
+      const res = await POST(makeRequest())
+      expect(res.status).toBe(200)
+      expect(mockPayload.delete).not.toHaveBeenCalled()
+    })
+
+    it('handles site not found (already deleted)', async () => {
+      const mockPayload = makePayload()
+      mockPayload.findByID.mockResolvedValue(null)
+      mockGetPayload.mockResolvedValue(mockPayload)
+
+      const event = makeStripeEvent('checkout.session.expired', {
+        metadata: { siteId: '999' },
+      })
+      mockGetStripe.mockReturnValue({
+        webhooks: { constructEvent: () => event },
+      })
+
+      const res = await POST(makeRequest())
+      expect(res.status).toBe(200)
+      expect(mockPayload.delete).not.toHaveBeenCalled()
+    })
+
+    it('handles findByID throwing (record already deleted)', async () => {
+      const mockPayload = makePayload()
+      mockPayload.findByID.mockRejectedValue(new Error('Not Found'))
+      mockGetPayload.mockResolvedValue(mockPayload)
+
+      const event = makeStripeEvent('checkout.session.expired', {
+        metadata: { siteId: '999' },
+      })
+      mockGetStripe.mockReturnValue({
+        webhooks: { constructEvent: () => event },
+      })
+
+      const res = await POST(makeRequest())
+      expect(res.status).toBe(200)
+      expect(mockPayload.delete).not.toHaveBeenCalled()
     })
   })
 
