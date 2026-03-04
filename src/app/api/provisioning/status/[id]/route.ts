@@ -25,10 +25,14 @@ export async function GET(
       overrideAccess: true,
     })
 
-    // If the site is in "pending" status, a job has been queued but not yet
-    // started. Run it now — the browser is polling so it can wait for this
-    // request to complete. Subsequent polls will see "provisioning" or later.
+    // If the site is in "pending" status, ensure a job is queued then run it.
+    // This handles both the normal Stripe flow (job already queued by webhook)
+    // and admin-created records (no job queued yet).
     if (site.status === 'pending') {
+      await payload.jobs.queue({
+        task: 'provision-site',
+        input: { siteId: numericId },
+      })
       await payload.jobs.run()
 
       // Re-fetch after the job ran so the response reflects the new status
