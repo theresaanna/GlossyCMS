@@ -55,6 +55,11 @@ export async function POST(req: NextRequest): Promise<Response> {
       break
     }
 
+    case 'checkout.session.expired': {
+      await handleCheckoutExpired(event.data.object as Stripe.Checkout.Session, payload)
+      break
+    }
+
     case 'customer.subscription.updated': {
       await handleSubscriptionUpdated(event.data.object as Stripe.Subscription, payload)
       break
@@ -124,6 +129,49 @@ async function handleCheckoutCompleted(session: Stripe.Checkout.Session, payload
     task: 'provision-site',
     input: { siteId: Number(siteId) },
   })
+}
+
+async function handleCheckoutExpired(session: Stripe.Checkout.Session, payload: Payload) {
+  const siteId = session.metadata?.siteId
+  if (!siteId) {
+    console.error('Webhook: checkout.session.expired missing siteId metadata')
+    return
+  }
+
+  let site
+  try {
+    site = await payload.findByID({
+      collection: 'provisioned-sites',
+      id: Number(siteId),
+      overrideAccess: true,
+    })
+  } catch {
+    // Record may already have been deleted
+    console.log(`Webhook: site ${siteId} not found (may already be deleted)`)
+    return
+  }
+
+  if (!site) {
+    console.log(`Webhook: site ${siteId} not found (may already be deleted)`)
+    return
+  }
+
+  if (site.status !== 'pending_payment') {
+    console.log(
+      `Webhook: site ${siteId} in status ${site.status}, skipping expired checkout cleanup`,
+    )
+    return
+  }
+
+  await payload.delete({
+    collection: 'provisioned-sites',
+    id: Number(siteId),
+    overrideAccess: true,
+  })
+
+  console.log(
+    `Webhook: deleted pending_payment site ${siteId} (${site.subdomain}) — checkout session expired`,
+  )
 }
 
 async function handleSubscriptionSuspend(
